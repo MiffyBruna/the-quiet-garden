@@ -78,17 +78,17 @@ export const ZONES: Zone[] = [
   // ── 1. DRYLAND ────────────────────────────────────────────────────────────
   {
     id: 'dryland',
-    name: 'The Dusty Dryland',
+    name: 'The Valley That Forgot The Rain',
     guide: {
-      name: 'Sage',
-      emoji: '🌾',
+      name: 'Moss',
+      emoji: '🐸',
       greeting:
-        'Water is sacred here. Every drop that stays in the earth is a gift to life.',
+        'Nothing is wrong with this place. It has simply forgotten how to keep water.',
     },
     emoji: '🌵',
-    tagline: 'Parched earth, waiting for rain to stay',
+    tagline: 'A valley that has forgotten how to hold the rain',
     description:
-      'A dry, cracked landscape where rainwater runs off before it can sink in. Soil crusts hard in the sun, and only the toughest plants cling on.',
+      'The valley is dry. No birds. No insects. Cracked soil and the memory of water that once moved slowly through this land. Nothing is lost — only forgotten.',
     gradientFrom: '#C87941',
     gradientTo: '#E8B87A',
     headerTextColor: '#FFFBF0',
@@ -179,17 +179,17 @@ export const ZONES: Zone[] = [
   // ── 2. MEADOW ─────────────────────────────────────────────────────────────
   {
     id: 'meadow',
-    name: 'The Lost Meadow',
+    name: 'The Meadow of Forgotten Wings',
     guide: {
-      name: 'Meadow',
-      emoji: '🧚',
+      name: 'Clover',
+      emoji: '🐝',
       greeting:
-        'Pollinators need corridors — unbroken paths of flowers they can follow across the land.',
+        'There were so many species here — hundreds! Each one needs different flowers at different times of year. We have a lot of work to do. I am very excited about this.',
     },
     emoji: '🌸',
-    tagline: 'Once alive with wings and colour, now silent',
+    tagline: 'Once filled with wings and colour, now silent',
     description:
-      'A meadow overgrown with invasive plants, where the hum of pollinators has faded. The native wildflowers that fed them are gone.',
+      'A meadow where the hum of bees and flutter of butterflies has faded. Invasive plants crowd out the native wildflowers that kept pollinators fed and flying.',
     gradientFrom: '#7B5C8A',
     gradientTo: '#C4A8C3',
     headerTextColor: '#FFF8FF',
@@ -282,17 +282,17 @@ export const ZONES: Zone[] = [
   // ── 3. FOREST ─────────────────────────────────────────────────────────────
   {
     id: 'forest',
-    name: 'The Forgotten Forest',
+    name: 'The Forest That Feeds Itself',
     guide: {
-      name: 'Fern',
-      emoji: '🌿',
+      name: 'Rowan',
+      emoji: '🦊',
       greeting:
-        'Trees talk to each other through the wood wide web — a network of fungi connecting their roots underground.',
+        "I have several theories about what happened to this forest. They can't all be right. The most interesting one involves fungi — though I may have gotten a detail slightly wrong.",
     },
     emoji: '🌲',
-    tagline: 'Bare hillsides where trees once stood',
+    tagline: 'A hillside stripped bare, where topsoil washes away',
     description:
-      'A cleared hillside where topsoil washes away with every rain. The soil is compacted, the streams run brown, and something is missing.',
+      "A cleared hillside where soil runs off with every rain. Something essential is missing — not just the trees, but the entire living community they were part of.",
     gradientFrom: '#2E5E2E',
     gradientTo: '#5C8C4A',
     headerTextColor: '#F0FFF0',
@@ -385,17 +385,17 @@ export const ZONES: Zone[] = [
   // ── 4. WETLAND ────────────────────────────────────────────────────────────
   {
     id: 'wetland',
-    name: 'The Silted Wetland',
+    name: 'The Wetland That Remembers',
     guide: {
-      name: 'Mira',
-      emoji: '💧',
+      name: 'Ripple',
+      emoji: '🦦',
       greeting:
-        'Wetlands are the kidneys of the land. They filter, store, and breathe for everything downstream.',
+        "Water remembers everywhere it's been. This wetland remembers what it was. We just need to help it find its way back.",
     },
     emoji: '🦆',
-    tagline: 'Choked with sediment, longing to breathe',
+    tagline: 'Choked with sediment, longing to breathe again',
     description:
-      'A wetland filling with silt, where the water barely moves. Reeds struggle to grow and the birds that once nested here are gone.',
+      "A wetland slowly filling with silt, where water barely moves. The reeds are struggling and the creatures that called this place home have moved on — for now.",
     gradientFrom: '#1E6678',
     gradientTo: '#4A9EB0',
     headerTextColor: '#F0FBFF',
@@ -488,19 +488,19 @@ export const ZONES: Zone[] = [
   // ── 5. COASTAL DUNE ───────────────────────────────────────────────────────
   {
     id: 'dune',
-    name: 'The Drifting Dune',
+    name: 'The Coastal Dunes',
     guide: {
-      name: 'Sandy',
-      emoji: '🌊',
+      name: 'Sable',
+      emoji: '🐦',
       greeting:
-        'Dunes are not just sand — they are living systems built over centuries by grasses, birds, and the patient wind.',
+        'The dune is a border between sea and land. Everything behind us depends on what we protect here. I take this seriously.',
     },
     emoji: '🏖️',
-    tagline: 'Sand dunes shifting, losing their ancient shape',
+    tagline: 'Sand dunes drifting, losing their ancient hold',
     description:
-      'A coastal dune destabilised by trampling and development, slowly drifting. Without its grasses, it has nothing to hold itself together.',
-    gradientFrom: '#9A7A50',
-    gradientTo: '#D4B47A',
+      'A coastal dune system destabilised by trampling and development. Without its grasses, the dune has no anchor — it drifts grain by grain toward the sea.',
+    gradientFrom: '#8A8060',
+    gradientTo: '#C8B880',
     headerTextColor: '#FFF8EE',
     unlockAfterZoneId: 'wetland',
     unlockAtZoneHealth: 30,

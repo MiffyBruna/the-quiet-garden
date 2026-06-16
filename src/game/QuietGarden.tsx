@@ -785,10 +785,11 @@ function FairySanctuary({ guides, totalRestorations }: FairySanctuaryProps) {
         <div style={{ textAlign: 'center', marginBottom: theme.spacing.lg }}>
           <div style={{ fontSize: 40, marginBottom: theme.spacing.sm }}>🌺</div>
           <div style={{ fontSize: theme.fontSize.xl, fontWeight: theme.fontWeight.bold }}>
-            The Fairy Sanctuary
+            The Sanctuary Garden
           </div>
           <div style={{ fontSize: theme.fontSize.sm, opacity: 0.8, marginTop: theme.spacing.xs }}>
-            Your guides have gathered to celebrate {totalRestorations} acts of restoration.
+            Moss, Clover, Rowan, Ripple, and Sable have gathered to celebrate{' '}
+            {totalRestorations} acts of restoration.
           </div>
         </div>
 
@@ -823,10 +824,21 @@ function FairySanctuary({ guides, totalRestorations }: FairySanctuaryProps) {
             opacity: 0.9,
           }}
         >
-          &ldquo;Every ecosystem in this garden is part of the same watershed. The dryland
-          holds water for the meadow. The forest slows the flood. The wetland purifies
-          what the dune needs to be stable. You did not restore five places — you restored
-          one living world.&rdquo;
+          &ldquo;The valley feeds the wetland. The wetland feeds the river. The river supports
+          the forest. Pollinators connect every ecosystem. The coast protects them all.
+          You did not restore five places — you restored one living world.&rdquo;
+        </div>
+        <div
+          style={{
+            marginTop: theme.spacing.md,
+            textAlign: 'center',
+            fontSize: theme.fontSize.lg,
+            fontWeight: theme.fontWeight.bold,
+            opacity: 0.9,
+            letterSpacing: '0.02em',
+          }}
+        >
+          Nothing thrives alone.
         </div>
       </div>
     </div>
