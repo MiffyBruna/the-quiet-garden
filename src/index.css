@@ -1,0 +1,40 @@
+/* Global base reset + viewport lock. Imported once at the true app root
+   (src/main.tsx) so it applies under any App.tsx root, not just the starter.
+
+   The host runs the game in a fixed portrait viewport that's smaller than
+   `100vh` (the host overlays its own chrome — see RundotGameAPI.system.getSafeArea).
+   Locking the document to the *visible* viewport and scrolling tab content
+   internally keeps bottom UI (the tab bar) from sliding below the visible area.
+   Pair this with the safe-area insets from `getSafeArea()` for host chrome. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+#root {
+  height: 100%;
+}
+
+/* App shell: exactly the visible viewport. `dvh` tracks the dynamic viewport
+   (excludes collapsing browser chrome); `vh` is the fallback for engines
+   without `dvh` support. */
+.kit-app-shell {
+  height: 100vh;
+  height: 100dvh;
+}

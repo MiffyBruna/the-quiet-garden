@@ -1,0 +1,20 @@
+node_modules/
+dist/
+dist-ssr/
+*.log
+.env*
+!.env.local.example
+.DS_Store
+.vscode/
+.idea/
+coverage/
+.rundot-docs
+
+# Agent planning/review trails — internal "how the sausage is made".
+# This kit ships externally, so these never belong in the repo or a PR.
+.agent-docs/
+
+# Internal tooling config (harness rubric, local permission allowlist).
+# .claude/launch.json is intentionally tracked (shared preview config).
+.claude/evaluator-rubric.md
+.claude/settings.json
