@@ -21,6 +21,7 @@ import {
   WildlifeSighting,
   FairyMilestone,
 } from './gardenData';
+import { Journal } from './Journal';
 
 // ---------------------------------------------------------------------------
 // Module-scope lifecycle registration — runs once per page load.
@@ -99,6 +100,7 @@ export function QuietGarden() {
   });
   const [wisdom, setWisdom] = useState<WisdomMessage | null>(null);
   const [expandedZone, setExpandedZone] = useState<string | null>('dryland');
+  const [showJournal, setShowJournal] = useState(false);
 
   // Always-current save function wired to module-scope ref
   const saveRef = useRef<() => Promise<void>>(async () => {});
@@ -315,11 +317,33 @@ export function QuietGarden() {
                 : `${gardenData.totalRestorations} restoration${gardenData.totalRestorations === 1 ? '' : 's'} made`}
             </div>
           </div>
-          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-            <div style={{ fontSize: theme.fontSize.lg, fontWeight: theme.fontWeight.bold, lineHeight: 1.2 }}>
-              {overallHealth}%
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: theme.spacing.md }}>
+            {/* Journal button */}
+            <button
+              onClick={() => {
+                setShowJournal(true);
+                track('custom_journal_opened');
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.12)',
+                border: '1px solid rgba(255,255,255,0.22)',
+                borderRadius: theme.borderRadius.sm,
+                color: '#F0FFF0',
+                fontSize: 20,
+                lineHeight: 1,
+                padding: '6px 10px',
+                cursor: 'pointer',
+              }}
+              title="Open Field Journal"
+            >
+              📖
+            </button>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: theme.fontSize.lg, fontWeight: theme.fontWeight.bold, lineHeight: 1.2 }}>
+                {overallHealth}%
+              </div>
+              <div style={{ fontSize: theme.fontSize.xs, opacity: 0.75 }}>restored</div>
             </div>
-            <div style={{ fontSize: theme.fontSize.xs, opacity: 0.75 }}>restored</div>
           </div>
         </div>
         {/* Overall progress bar */}
@@ -391,6 +415,17 @@ export function QuietGarden() {
 
       {/* ── Wisdom overlay ─────────────────────────────────────────────────── */}
       {wisdom && <WisdomOverlay wisdom={wisdom} onClose={closeWisdom} />}
+
+      {/* ── Field Journal overlay ───────────────────────────────────────────── */}
+      {showJournal && (
+        <Journal
+          zoneHealthMap={zoneHealthMap}
+          onClose={() => {
+            setShowJournal(false);
+            track('custom_journal_closed');
+          }}
+        />
+      )}
     </div>
   );
 }
