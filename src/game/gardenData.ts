@@ -12,6 +12,26 @@ export interface GuideCharacter {
   greeting: string;
 }
 
+export interface WildlifeSighting {
+  id: string;
+  name: string;
+  emoji: string;
+  role: string;
+  fact: string;
+  /** Zone health % at which this animal first arrives */
+  appearsAtHealth: number;
+}
+
+export interface FairyMilestone {
+  id: string;
+  name: string;
+  /** Short personality hint shown in the card */
+  personality: string;
+  wisdom: string;
+  /** Zone health % at which this fairy first visits */
+  appearsAtHealth: number;
+}
+
 export interface RestorationAction {
   id: string;
   label: string;
@@ -41,6 +61,10 @@ export interface Zone {
   unlockAfterZoneId?: string;
   unlockAtZoneHealth?: number;
   actions: RestorationAction[];
+  /** Wildlife that return as the zone heals */
+  wildlife: WildlifeSighting[];
+  /** Fairies that visit at restoration milestones */
+  fairies: FairyMilestone[];
 }
 
 // ---------------------------------------------------------------------------
@@ -174,6 +198,79 @@ export const ZONES: Zone[] = [
           'The first rain on restored dryland is something to witness. It sinks in rather than running off. The soil exhales a smell called petrichor — released by soil bacteria greeting the water they\'ve been waiting for. Life is returning.',
       },
     ],
+    wildlife: [
+      {
+        id: 'harvester_ant',
+        name: 'Harvester Ant',
+        emoji: '🐜',
+        role: 'Soil builder',
+        fact: 'Ant tunnels aerate the soil and dramatically improve water infiltration. Before you see them, they are already working.',
+        appearsAtHealth: 10,
+      },
+      {
+        id: 'darkling_beetle',
+        name: 'Darkling Beetle',
+        emoji: '🪲',
+        role: 'Decomposer',
+        fact: 'Darkling beetles recycle organic matter back into the soil. They are the cleanup crew that every dry ecosystem depends on.',
+        appearsAtHealth: 20,
+      },
+      {
+        id: 'solitary_bee',
+        name: 'Solitary Bee',
+        emoji: '🐝',
+        role: 'First pollinator',
+        fact: 'Most bee species are solitary — no hive, no queen, just one bee raising her young alone. The first one to return means there are flowers worth visiting.',
+        appearsAtHealth: 30,
+      },
+      {
+        id: 'painted_lady',
+        name: 'Painted Lady Butterfly',
+        emoji: '🦋',
+        role: 'Migratory pollinator',
+        fact: 'Painted ladies migrate thousands of miles, following the bloom. Their arrival means the valley is back on the map of living places.',
+        appearsAtHealth: 55,
+      },
+      {
+        id: 'california_quail',
+        name: 'California Quail',
+        emoji: '🐦',
+        role: 'Seed disperser',
+        fact: 'Quail disperse seeds as they scratch and forage. Each quail is also a small gardener, unknowingly planting the valley\'s next generation.',
+        appearsAtHealth: 75,
+      },
+      {
+        id: 'red_tailed_hawk',
+        name: 'Red-Tailed Hawk',
+        emoji: '🦅',
+        role: 'Apex predator',
+        fact: 'A hawk in residence means the whole food web is working. You cannot have a hawk without mice. You cannot have mice without seeds. You cannot have seeds without flowers.',
+        appearsAtHealth: 92,
+      },
+    ],
+    fairies: [
+      {
+        id: 'rain_fairy',
+        name: 'Rain Fairy',
+        personality: 'Playful, curious',
+        wisdom: 'The land does not drink faster because it is thirsty.',
+        appearsAtHealth: 15,
+      },
+      {
+        id: 'marigold_fairy',
+        name: 'Marigold Fairy',
+        personality: 'Cheerful, encouraging',
+        wisdom: 'Small roots hold small worlds together.',
+        appearsAtHealth: 45,
+      },
+      {
+        id: 'stream_fairy',
+        name: 'Stream Fairy',
+        personality: 'Wise, ancient',
+        wisdom: 'Water remembers every kindness.',
+        appearsAtHealth: 85,
+      },
+    ],
   },
 
   // ── 2. MEADOW ─────────────────────────────────────────────────────────────
@@ -275,6 +372,79 @@ export const ZONES: Zone[] = [
         unlockAtHealth: 75,
         wisdom:
           'Bats are a sign of a healthy insect population — and a healthy insect population means a healthy meadow. One pipistrelle bat eats 3,000 insects a night. When they return, the food web is working again.',
+      },
+    ],
+    wildlife: [
+      {
+        id: 'mason_bee',
+        name: 'Mason Bee',
+        emoji: '🐝',
+        role: 'Early pollinator',
+        fact: 'Mason bees are excellent pollinators and very rarely sting. They\'re here because there are now flowers worth visiting.',
+        appearsAtHealth: 10,
+      },
+      {
+        id: 'bumblebee',
+        name: 'Bumblebee',
+        emoji: '🐝',
+        role: 'Cold-weather pollinator',
+        fact: 'Bumblebees can fly in colder temperatures than honeybees. They buzz-pollinate — vibrating flowers to release pollen that no other bee can reach.',
+        appearsAtHealth: 25,
+      },
+      {
+        id: 'hoverfly',
+        name: 'Hoverfly',
+        emoji: '🪰',
+        role: 'Pollinator',
+        fact: 'Many hoverflies mimic bees for protection — striped but harmless. They are among the most important pollinators in meadows.',
+        appearsAtHealth: 40,
+      },
+      {
+        id: 'swallowtail',
+        name: 'Swallowtail Butterfly',
+        emoji: '🦋',
+        role: 'Pollinator',
+        fact: 'Swallowtail caterpillars need very specific host plants. Their arrival means the meadow has matured enough to support the whole life cycle.',
+        appearsAtHealth: 60,
+      },
+      {
+        id: 'hummingbird',
+        name: 'Rufous Hummingbird',
+        emoji: '🐦',
+        role: 'Long-distance pollinator',
+        fact: 'The rufous hummingbird migrates thousands of miles despite being barely 8cm long. A meadow worth visiting from that far away is a meadow worth celebrating.',
+        appearsAtHealth: 80,
+      },
+      {
+        id: 'tree_swallow',
+        name: 'Tree Swallow',
+        emoji: '🐦',
+        role: 'Aerial insect hunter',
+        fact: 'Tree swallows consume hundreds of insects daily. Their aerobatics above the meadow are a sign that the insect population has truly recovered.',
+        appearsAtHealth: 92,
+      },
+    ],
+    fairies: [
+      {
+        id: 'bee_fairy',
+        name: 'Bee Fairy',
+        personality: 'Busy, energetic',
+        wisdom: 'Many small visits become a harvest.',
+        appearsAtHealth: 15,
+      },
+      {
+        id: 'butterfly_fairy',
+        name: 'Butterfly Fairy',
+        personality: 'Dreamy, artistic',
+        wisdom: 'Change often begins hidden.',
+        appearsAtHealth: 50,
+      },
+      {
+        id: 'stone_fairy',
+        name: 'Stone Fairy',
+        personality: 'Quiet, thoughtful',
+        wisdom: 'Stillness is a kind of work.',
+        appearsAtHealth: 85,
       },
     ],
   },
@@ -380,6 +550,79 @@ export const ZONES: Zone[] = [
           'The cuckoo is an indicator species — it arrives in spring to lay its eggs in the nests of caterpillar-eating birds. No cuckoo means no caterpillars. No caterpillars means the forest is not yet whole. But it\'s getting there.',
       },
     ],
+    wildlife: [
+      {
+        id: 'chipmunk',
+        name: 'Chipmunk',
+        emoji: '🐿️',
+        role: 'Seed disperser',
+        fact: 'Chipmunks cache thousands of seeds and forget many of them — inadvertently planting the next generation of trees.',
+        appearsAtHealth: 12,
+      },
+      {
+        id: 'woodpecker',
+        name: 'Woodpecker',
+        emoji: '🐦',
+        role: 'Insect controller',
+        fact: 'Woodpecker holes later become nesting sites for owls, ducks, and small mammals. One woodpecker creates homes for dozens of future residents.',
+        appearsAtHealth: 28,
+      },
+      {
+        id: 'salamander',
+        name: 'Salamander',
+        emoji: '🦎',
+        role: 'Forest health indicator',
+        fact: 'Salamanders require moist, cool forest floors to survive. Their presence means the canopy is closing and the soil is holding moisture.',
+        appearsAtHealth: 48,
+      },
+      {
+        id: 'great_horned_owl',
+        name: 'Great Horned Owl',
+        emoji: '🦉',
+        role: 'Apex predator',
+        fact: 'Owls can rotate their heads 270°. They miss almost nothing. A hunting owl means the forest has enough prey, which means the forest has enough of everything.',
+        appearsAtHealth: 70,
+      },
+      {
+        id: 'deer',
+        name: 'Black-Tailed Deer',
+        emoji: '🦌',
+        role: 'Herbivore',
+        fact: 'Deer browse selectively, opening gaps in vegetation that let light reach the forest floor. They are editors as much as grazers.',
+        appearsAtHealth: 80,
+      },
+      {
+        id: 'fox_kits',
+        name: 'Fox Kits',
+        emoji: '🦊',
+        role: 'Symbol of maturity',
+        fact: 'Fox kits tumbling outside a den are one of the most joyful signs of an ecosystem that has grown up. They need large territories with diverse prey.',
+        appearsAtHealth: 92,
+      },
+    ],
+    fairies: [
+      {
+        id: 'mushroom_fairy',
+        name: 'Mushroom Fairy',
+        personality: 'Mysterious',
+        wisdom: 'The strongest connections are often invisible.',
+        appearsAtHealth: 18,
+      },
+      {
+        id: 'forest_fairy',
+        name: 'Forest Fairy',
+        personality: 'Patient',
+        wisdom: 'No tree grows alone.',
+        appearsAtHealth: 52,
+      },
+      {
+        id: 'frog_lantern_fairy',
+        name: 'Frog Lantern Fairy',
+        personality: 'Warm, gentle',
+        wisdom: 'Memories are gardens too.',
+        appearsAtHealth: 88,
+      },
+    ],
   },
 
   // ── 4. WETLAND ────────────────────────────────────────────────────────────
@@ -483,6 +726,79 @@ export const ZONES: Zone[] = [
           'Otters sit at the top of the freshwater food web. When they return, it means fish are plentiful, the water is clean, and the banks are undisturbed enough to raise young. An otter is the wetland declaring itself healed.',
       },
     ],
+    wildlife: [
+      {
+        id: 'pacific_tree_frog',
+        name: 'Pacific Tree Frog',
+        emoji: '🐸',
+        role: 'Indicator species',
+        fact: 'Frogs absorb water through their skin — they feel everything the wetland feels. Their return is the water announcing that it is clean again.',
+        appearsAtHealth: 10,
+      },
+      {
+        id: 'dragonfly',
+        name: 'Dragonfly',
+        emoji: '🟢',
+        role: 'Aerial predator',
+        fact: 'Dragonflies spend most of their lives as aquatic nymphs. An adult dragonfly hovering above the water began its life in the sediment below.',
+        appearsAtHealth: 20,
+      },
+      {
+        id: 'mallard_duck',
+        name: 'Mallard Duck',
+        emoji: '🦆',
+        role: 'Seed disperser',
+        fact: 'Mallards carry seeds in their gut and disperse them across wetlands as they feed and travel. They are living seed libraries.',
+        appearsAtHealth: 38,
+      },
+      {
+        id: 'great_blue_heron',
+        name: 'Great Blue Heron',
+        emoji: '🦢',
+        role: 'Apex wader',
+        fact: 'The great blue heron can stand motionless for an hour waiting for a single fish. Its patience is a form of intelligence the wetland rewards.',
+        appearsAtHealth: 58,
+      },
+      {
+        id: 'beaver',
+        name: 'Beaver',
+        emoji: '🦫',
+        role: 'Ecosystem engineer',
+        fact: 'Beavers create wetland habitat for hundreds of species. A single beaver family can transform a degraded stream into a thriving wetland complex.',
+        appearsAtHealth: 78,
+      },
+      {
+        id: 'river_otter',
+        name: 'River Otter',
+        emoji: '🦦',
+        role: 'Wetland ambassador',
+        fact: 'River otters are playful, social, and unmistakably joyful. Their return to a restored wetland feels exactly like what it is: a celebration.',
+        appearsAtHealth: 92,
+      },
+    ],
+    fairies: [
+      {
+        id: 'rain_fairy_wetland',
+        name: 'Rain Fairy',
+        personality: 'Playful, curious',
+        wisdom: 'The land does not drink faster because it is thirsty.',
+        appearsAtHealth: 15,
+      },
+      {
+        id: 'moon_pond_fairy',
+        name: 'Moon Pond Fairy',
+        personality: 'Dreamlike',
+        wisdom: 'The moon visits every pond differently.',
+        appearsAtHealth: 50,
+      },
+      {
+        id: 'stream_fairy_wetland',
+        name: 'Stream Fairy',
+        personality: 'Wise, ancient',
+        wisdom: 'Water remembers every kindness.',
+        appearsAtHealth: 88,
+      },
+    ],
   },
 
   // ── 5. COASTAL DUNE ───────────────────────────────────────────────────────
@@ -584,6 +900,71 @@ export const ZONES: Zone[] = [
         unlockAtHealth: 75,
         wisdom:
           'Dune orchids are indicators of the rarest, most undisturbed dune habitats. They take years to appear — first as a single leaf, then a rosette, finally a flower spike. An orchid on a dune is decades of patience made visible.',
+      },
+    ],
+    wildlife: [
+      {
+        id: 'sand_crab',
+        name: 'Sand Crab',
+        emoji: '🦀',
+        role: 'Nutrient recycler',
+        fact: 'Sand crabs filter-feed in the swash zone, recycling organic matter back into the beach system. They are the base of the coastal food web.',
+        appearsAtHealth: 10,
+      },
+      {
+        id: 'sandpiper',
+        name: 'Sandpiper',
+        emoji: '🐦',
+        role: 'Shorebird',
+        fact: 'Sandpipers probe the wet sand with sensitive bills, detecting invertebrates by touch and pressure. They read the beach like a map.',
+        appearsAtHealth: 25,
+      },
+      {
+        id: 'snowy_plover',
+        name: 'Snowy Plover',
+        emoji: '🐦',
+        role: 'Protected nesting species',
+        fact: 'Snowy plovers nest in small scrapes on open sand. They are among the most vulnerable shorebirds — their nests are invisible, and they need humans to simply not walk where they live.',
+        appearsAtHealth: 45,
+      },
+      {
+        id: 'western_gull',
+        name: 'Western Gull',
+        emoji: '🦅',
+        role: 'Coastal scavenger',
+        fact: 'Gulls are ecosystem cleaners. They remove what the ocean leaves behind, recycling nutrients back into the coastal system.',
+        appearsAtHealth: 65,
+      },
+      {
+        id: 'harbor_seal',
+        name: 'Harbor Seal',
+        emoji: '🦭',
+        role: 'Coastal predator',
+        fact: 'Harbor seals haul out on stable, undisturbed beaches to rest and raise their pups. A seal on a restored dune is the coast declaring itself safe again.',
+        appearsAtHealth: 88,
+      },
+    ],
+    fairies: [
+      {
+        id: 'wind_fairy',
+        name: 'Wind Fairy',
+        personality: 'Adventurous',
+        wisdom: 'Movement and stability belong together.',
+        appearsAtHealth: 15,
+      },
+      {
+        id: 'stone_fairy_coast',
+        name: 'Stone Fairy',
+        personality: 'Quiet, thoughtful',
+        wisdom: 'Stillness is a kind of work.',
+        appearsAtHealth: 52,
+      },
+      {
+        id: 'watershed_fairy',
+        name: 'Watershed Fairy',
+        personality: 'Ancient, serene',
+        wisdom: 'Nothing thrives alone.',
+        appearsAtHealth: 90,
       },
     ],
   },

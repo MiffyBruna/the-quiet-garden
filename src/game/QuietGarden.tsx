@@ -18,6 +18,8 @@ import {
   getOverallHealth,
   Zone,
   RestorationAction,
+  WildlifeSighting,
+  FairyMilestone,
 } from './gardenData';
 
 // ---------------------------------------------------------------------------
@@ -585,6 +587,16 @@ function ZoneCard({ zone, health, unlocked, isExpanded, completedActionIds, onTo
               {health >= 90 ? '🌟 Fully restored' : '✨ Keep going — more actions unlock as the zone heals'}
             </div>
           )}
+
+          {/* ── Wildlife ───────────────────────────────────────────────── */}
+          {zone.wildlife.length > 0 && (
+            <WildlifePanel wildlife={zone.wildlife} health={health} />
+          )}
+
+          {/* ── Fairy visits ───────────────────────────────────────────── */}
+          {zone.fairies.length > 0 && (
+            <FairyPanel fairies={zone.fairies} health={health} />
+          )}
         </div>
       )}
     </div>
@@ -662,6 +674,159 @@ function ActionButton({ action, state, onClick }: ActionButtonProps) {
         </span>
       )}
     </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// WildlifePanel
+// ---------------------------------------------------------------------------
+
+interface WildlifePanelProps {
+  wildlife: WildlifeSighting[];
+  health: number;
+}
+
+function WildlifePanel({ wildlife, health }: WildlifePanelProps) {
+  const c = theme.colors;
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const arrived = wildlife.filter((w) => health >= w.appearsAtHealth);
+  const incoming = wildlife.find((w) => health < w.appearsAtHealth);
+
+  if (arrived.length === 0 && !incoming) return null;
+
+  return (
+    <div style={{ marginTop: theme.spacing.lg }}>
+      <SectionLabel label="Wildlife returning" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs }}>
+        {arrived.map((w) => (
+          <button
+            key={w.id}
+            onClick={() => setExpandedId(expandedId === w.id ? null : w.id)}
+            style={{
+              width: '100%',
+              textAlign: 'left',
+              background: 'rgba(92,140,102,0.06)',
+              border: `1px solid rgba(92,140,102,0.2)`,
+              borderRadius: theme.borderRadius.sm,
+              padding: `${theme.spacing.sm}px`,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: theme.spacing.sm,
+            }}
+          >
+            <span style={{ fontSize: 22, flexShrink: 0 }}>{w.emoji}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: theme.fontSize.sm, fontWeight: theme.fontWeight.semibold, color: c.text.primary }}>
+                {w.name}
+              </div>
+              <div style={{ fontSize: 11, color: c.text.muted }}>{w.role}</div>
+              {expandedId === w.id && (
+                <div
+                  style={{
+                    marginTop: theme.spacing.xs,
+                    fontSize: theme.fontSize.sm,
+                    color: c.text.muted,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {w.fact}
+                </div>
+              )}
+            </div>
+            <span style={{ fontSize: 10, color: c.text.muted, flexShrink: 0, paddingTop: 3 }}>
+              {expandedId === w.id ? '▲' : '▼'}
+            </span>
+          </button>
+        ))}
+        {incoming && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing.sm,
+              padding: `${theme.spacing.xs}px ${theme.spacing.sm}px`,
+              opacity: 0.45,
+              fontSize: theme.fontSize.sm,
+              color: c.text.muted,
+            }}
+          >
+            <span style={{ fontSize: 20 }}>🌫️</span>
+            <span>Something is on its way as the {health < 30 ? 'restoration begins' : 'healing continues'}…</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// FairyPanel
+// ---------------------------------------------------------------------------
+
+interface FairyPanelProps {
+  fairies: FairyMilestone[];
+  health: number;
+}
+
+function FairyPanel({ fairies, health }: FairyPanelProps) {
+  const c = theme.colors;
+  const visited = fairies.filter((f) => health >= f.appearsAtHealth);
+  const nextFairy = fairies.find((f) => health < f.appearsAtHealth);
+
+  if (visited.length === 0 && !nextFairy) return null;
+
+  return (
+    <div style={{ marginTop: theme.spacing.lg }}>
+      <SectionLabel label="Fairy visits" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}>
+        {visited.map((f) => (
+          <div
+            key={f.id}
+            style={{
+              background: 'rgba(180,140,200,0.08)',
+              border: `1px solid rgba(180,140,200,0.25)`,
+              borderRadius: theme.borderRadius.sm,
+              padding: theme.spacing.sm,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: theme.spacing.sm,
+            }}
+          >
+            <span style={{ fontSize: 20, flexShrink: 0 }}>✨</span>
+            <div>
+              <div style={{ fontSize: theme.fontSize.xs, fontWeight: theme.fontWeight.semibold, color: c.text.muted }}>
+                {f.name} · {f.personality}
+              </div>
+              <div
+                style={{
+                  fontSize: theme.fontSize.sm,
+                  color: c.text.primary,
+                  lineHeight: 1.5,
+                  fontStyle: 'italic',
+                  marginTop: 2,
+                }}
+              >
+                &ldquo;{f.wisdom}&rdquo;
+              </div>
+            </div>
+          </div>
+        ))}
+        {nextFairy && visited.length === 0 && (
+          <div
+            style={{
+              fontSize: theme.fontSize.sm,
+              color: c.text.muted,
+              fontStyle: 'italic',
+              opacity: 0.6,
+              paddingLeft: theme.spacing.xs,
+            }}
+          >
+            ✨ A fairy is waiting in the wings…
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

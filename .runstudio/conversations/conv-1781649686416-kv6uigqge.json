@@ -678,11 +678,455 @@
       "timestamp": 1781650923079,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1781651193697",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "# The Quiet Garden\n\n# Encyclopedia Database v1.0\n\n---\n\n# Plant Encyclopedia\n\nEach plant should have:\n\n* Name\n* Biome\n* Ecological Role\n* Gameplay Role\n* Educational Fact\n* Attracted Wildlife\n\n---\n\n# Chapter 1: Dryland Restoration\n\n## Blue Grama Grass\n\nBiome:\nDryland\n\nRole:\nPioneer species\n\nGameplay:\n\n* Grows in poor soil\n* Stabilizes soil\n* Reduces erosion\n\nEducational Fact:\n\nBlue grama is a drought-tolerant grass native to North America and is often among the first plants to establish in recovering grasslands.\n\nAttracts:\n\n* Ants\n* Beetles\n* Grasshoppers\n\n---\n\n## Desert Marigold\n\nBiome:\nDryland\n\nRole:\nPollinator support\n\nGameplay:\n\n* Blooms early\n* Attracts pollinators\n\nEducational Fact:\n\nDesert marigolds thrive in arid regions and provide nectar during dry seasons.\n\nAttracts:\n\n* Solitary bees\n* Hoverflies\n\n---\n\n## Lupine\n\nBiome:\nDryland\n\nRole:\nNitrogen fixer\n\nGameplay:\n\n* Improves nearby fertility\n\nEducational Fact:\n\nLupines host bacteria that convert atmospheric nitrogen into nutrients plants can use.\n\nAttracts:\n\n* Butterflies\n* Bees\n\n---\n\n## Sage\n\nBiome:\nDryland\n\nRole:\nDrought specialist\n\nGameplay:\n\n* Requires little water\n* Creates habitat\n\nEducational Fact:\n\nSage species evolved to survive prolonged drought conditions.\n\nAttracts:\n\n* Native bees\n* Beetles\n\n---\n\n## Milkweed\n\nBiome:\nDryland\n\nRole:\nHost plant\n\nGameplay:\n\n* Unlocks monarch butterflies\n\nEducational Fact:\n\nMonarch caterpillars can only develop on milkweed plants.\n\nAttracts:\n\n* Monarch butterflies\n\n---\n\n# Chapter 2: Meadow\n\n## Camas\n\nRole:\nEarly bloom\n\nEducational Fact:\n\nIndigenous peoples cultivated camas for food long before modern agriculture.\n\nAttracts:\n\n* Mason bees\n\n---\n\n## Violet\n\nRole:\nEarly pollinator food\n\nAttracts:\n\n* Bumblebees\n\n---\n\n## Yarrow\n\nRole:\nMid-season bloom\n\nEducational Fact:\n\nYarrow supports dozens of pollinator species.\n\nAttracts:\n\n* Hoverflies\n* Bees\n\n---\n\n## Bee Balm\n\nRole:\nHummingbird plant\n\nAttracts:\n\n* Hummingbirds\n* Bumblebees\n\n---\n\n## Goldenrod\n\nRole:\nLate-season nectar\n\nEducational Fact:\n\nGoldenrod is often blamed for allergies, but ragweed is usually responsible.\n\nAttracts:\n\n* Butterflies\n* Bees\n\n---\n\n## Aster\n\nRole:\nLate bloom\n\nAttracts:\n\n* Migrating pollinators\n\n---\n\n# Chapter 3: Forest\n\n## Oak\n\nRole:\nKeystone tree\n\nEducational Fact:\n\nA single mature oak can support hundreds of wildlife species.\n\nAttracts:\n\n* Birds\n* Squirrels\n* Deer\n\n---\n\n## Chestnut\n\nRole:\nFood producer\n\nAttracts:\n\n* Deer\n* Small mammals\n\n---\n\n## Serviceberry\n\nRole:\nFruit tree\n\nAttracts:\n\n* Birds\n\n---\n\n## Elderberry\n\nRole:\nShrub layer\n\nAttracts:\n\n* Songbirds\n\n---\n\n## Comfrey\n\nRole:\nNutrient accumulator\n\nEducational Fact:\n\nComfrey pulls nutrients from deep soil layers.\n\n---\n\n## Clover\n\nRole:\nGround cover\n\nEducational Fact:\n\nClover fixes nitrogen and feeds pollinators.\n\n---\n\n## Wild Strawberry\n\nRole:\nGround cover\n\nAttracts:\n\n* Birds\n* Pollinators\n\n---\n\n## Oyster Mushroom Log\n\nRole:\nDecomposer\n\nEducational Fact:\n\nFungi recycle nutrients back into ecosystems.\n\n---\n\n# Chapter 4: Wetland\n\n## Cattail\n\nRole:\nWater filter\n\nEducational Fact:\n\nCattails help remove pollutants from water.\n\nAttracts:\n\n* Ducks\n* Insects\n\n---\n\n## Sedge\n\nRole:\nBank stabilizer\n\nAttracts:\n\n* Frogs\n\n---\n\n## Rush\n\nRole:\nWetland habitat\n\nAttracts:\n\n* Dragonflies\n\n---\n\n## Willow\n\nRole:\nWater-loving tree\n\nEducational Fact:\n\nWillows stabilize streambanks.\n\nAttracts:\n\n* Beavers\n\n---\n\n## Water Lily\n\nRole:\nAquatic habitat\n\nAttracts:\n\n* Frogs\n* Dragonflies\n\n---\n\n# Chapter 5: Coastal Dunes\n\n## Beach Grass\n\nRole:\nSand stabilizer\n\nEducational Fact:\n\nBeach grass helps build dunes by trapping blowing sand.\n\n---\n\n## Sea Rocket\n\nRole:\nPioneer coastal plant\n\nAttracts:\n\n* Coastal pollinators\n\n---\n\n## Dune Lupine\n\nRole:\nNitrogen fixer\n\nAttracts:\n\n* Butterflies\n\n---\n\n## Beach Strawberry\n\nRole:\nGround cover\n\nAttracts:\n\n* Birds\n\n---\n\n# Wildlife Encyclopedia\n\n---\n\n# Dryland Animals\n\n## Harvester Ant\n\nRole:\nSoil builder\n\nFact:\n\nAnt tunnels improve water infiltration.\n\nAppears:\nRestoration Score 20\n\n---\n\n## Darkling Beetle\n\nRole:\nDecomposer\n\nFact:\n\nDarkling beetles recycle organic matter.\n\nAppears:\nFertility 25\n\n---\n\n## Solitary Bee\n\nRole:\nPollinator\n\nFact:\n\nMost bee species are solitary.\n\nAppears:\nFirst flower\n\n---\n\n## Hoverfly\n\nRole:\nPollinator\n\nFact:\n\nMany hoverflies mimic bees for protection.\n\nAppears:\nThree blooming plants\n\n---\n\n## Painted Lady Butterfly\n\nRole:\nMigratory pollinator\n\nFact:\n\nPainted ladies migrate thousands of miles.\n\nAppears:\nLupine bloom\n\n---\n\n## Monarch Butterfly\n\nRole:\nSpecialist pollinator\n\nFact:\n\nMonarchs depend on milkweed.\n\nAppears:\nMature milkweed\n\n---\n\n## Desert Cottontail\n\nRole:\nHerbivore\n\nFact:\n\nProvides food for predators.\n\nAppears:\nDense vegetation\n\n---\n\n## California Quail\n\nRole:\nSeed disperser\n\nAppears:\nRestoration Score 70\n\n---\n\n## House Finch\n\nRole:\nSeed disperser\n\nAppears:\nPlant diversity 4+\n\n---\n\n## Red-Tailed Hawk\n\nRole:\nTop predator\n\nFact:\n\nHealthy ecosystems support predators.\n\nAppears:\nRestoration Score 100\n\n---\n\n# Meadow Wildlife\n\n## Mason Bee\n\nRole:\nEarly pollinator\n\nFact:\n\nMason bees are excellent pollinators and rarely sting.\n\n---\n\n## Bumblebee\n\nRole:\nPollinator\n\nFact:\n\nCan fly in colder temperatures than honeybees.\n\n---\n\n## Swallowtail Butterfly\n\nRole:\nPollinator\n\n---\n\n## Rufous Hummingbird\n\nRole:\nPollinator\n\nFact:\n\nMigrates thousands of miles despite its tiny size.\n\n---\n\n## Tree Swallow\n\nRole:\nInsect control\n\nFact:\n\nCan consume hundreds of insects daily.\n\n---\n\n# Forest Wildlife\n\n## Chipmunk\n\nRole:\nSeed disperser\n\n---\n\n## Woodpecker\n\nRole:\nInsect control\n\nFact:\n\nWoodpecker holes later become homes for other animals.\n\n---\n\n## Salamander\n\nRole:\nForest health indicator\n\nFact:\n\nSalamanders require moist, healthy forests.\n\n---\n\n## Black-Tailed Deer\n\nRole:\nHerbivore\n\n---\n\n## Great Horned Owl\n\nRole:\nPredator\n\n---\n\n## Fox Kits\n\nRole:\nSymbol of ecosystem maturity\n\n---\n\n# Wetland Wildlife\n\n## Dragonfly\n\nRole:\nPredator insect\n\nFact:\n\nDragonflies spend much of their lives underwater.\n\n---\n\n## Pacific Tree Frog\n\nRole:\nIndicator species\n\nFact:\n\nFrogs are sensitive to environmental change.\n\n---\n\n## Mallard Duck\n\nRole:\nSeed disperser\n\n---\n\n## Great Blue Heron\n\nRole:\nPredator\n\n---\n\n## Beaver\n\nRole:\nEcosystem engineer\n\nFact:\n\nBeavers create habitat for hundreds of species.\n\n---\n\n## River Otter\n\nRole:\nWetland ambassador\n\n---\n\n# Coastal Wildlife\n\n## Sand Crab\n\nRole:\nNutrient recycler\n\n---\n\n## Sandpiper\n\nRole:\nShorebird\n\n---\n\n## Snowy Plover\n\nRole:\nProtected nesting species\n\n---\n\n## Western Gull\n\nRole:\nScavenger\n\n---\n\n## Harbor Seal\n\nRole:\nCoastal predator\n\n---\n\n# Fairy Encyclopedia\n\n---\n\n# Marigold Fairy\n\nAppears:\nFirst flower\n\nPersonality:\n\n* Cheerful\n* Encouraging\n\nWisdom:\n\n\"Small roots hold small worlds together.\"\n\n---\n\n# Rain Fairy\n\nAppears:\nFirst successful bund\n\nPersonality:\n\n* Playful\n* Curious\n\nWisdom:\n\n\"The land does not drink faster because it is thirsty.\"\n\n---\n\n# Stone Fairy\n\nAppears:\nFirst habitat patch\n\nPersonality:\n\n* Quiet\n* Thoughtful\n\nWisdom:\n\n\"Stillness is a kind of work.\"\n\n---\n\n# Bee Fairy\n\nAppears:\nFirst pollinator\n\nPersonality:\n\n* Busy\n* Energetic\n\nWisdom:\n\n\"Many small visits become a harvest.\"\n\n---\n\n# Butterfly Fairy\n\nAppears:\nFirst butterfly\n\nPersonality:\n\n* Dreamy\n* Artistic\n\nWisdom:\n\n\"Change often begins hidden.\"\n\n---\n\n# Stream Fairy\n\nAppears:\nSeasonal stream restored\n\nPersonality:\n\n* Wise\n* Ancient\n\nWisdom:\n\n\"Water remembers every kindness.\"\n\n---\n\n# Forest Fairy\n\nAppears:\nFirst forest guild\n\nPersonality:\n\n* Patient\n\nWisdom:\n\n\"No tree grows alone.\"\n\n---\n\n# Mushroom Fairy\n\nAppears:\nFirst fungal network\n\nPersonality:\n\n* Mysterious\n\nWisdom:\n\n\"The strongest connections are often invisible.\"\n\n---\n\n# Frog Lantern Fairy\n\nAppears:\nFirst reflection object\n\nPersonality:\n\n* Warm\n* Gentle\n\nWisdom:\n\n\"Memories are gardens too.\"\n\n---\n\n# Moon Pond Fairy\n\nAppears:\nLarge personal garden pond\n\nPersonality:\n\n* Dreamlike\n\nWisdom:\n\n\"The moon visits every pond differently.\"\n\n---\n\n# Wind Fairy\n\nAppears:\nCoastal restoration\n\nPersonality:\n\n* Adventurous\n\nWisdom:\n\n\"Movement and stability belong together.\"\n\n---\n\n# Watershed Fairy\n\nAppears:\nFinal chapter\n\nPersonality:\n\n* Ancient\n* Serene\n\nWisdom:\n\n\"Nothing thrives alone.\"\n\nThis fairy appears only after every biome has been restored and represents the connection between all living systems in the game.",
+      "timestamp": 1781651193697,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781651332475-dksmeuz5j",
+      "role": "assistant",
+      "content": "What a rich document. The encyclopedia adds three new systems: **specific plants** (the actual actions become named species), **wildlife that returns** at restoration thresholds, and **fairies** that appear as milestones. Let me wire all three into the game.",
+      "isShownToUser": true,
+      "timestamp": 1781651333348,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781651334856-1qun9c0pk",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781651334856,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781651339690-ezr73nql8",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651339690,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651341786-2sjbvxxnv",
+      "role": "assistant",
+      "content": "Good. Now I'll add the two new interfaces and then wire wildlife + fairies into each zone:",
+      "isShownToUser": true,
+      "timestamp": 1781651342291,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781651345263-n1frpsmsp",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651345263,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651350199-d2x4cnfwq",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651350199,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651350200-vfxvdta23",
+      "role": "assistant",
+      "content": "Now add wildlife + fairies to the dryland zone:",
+      "isShownToUser": true,
+      "timestamp": 1781651351936,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781651365933-k6e7ukm46",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651365933,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651368548-xjzk8weel",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651368548,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651371635-fnxwbhyxo",
+      "role": "assistant",
+      "content": "Using tool: Grep",
+      "isShownToUser": true,
+      "timestamp": 1781651371635,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Grep"
+      }
+    },
+    {
+      "id": "1781651374175-vnvoom19h",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651374175,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651388639-t5s46l0r6",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651388639,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651391460-3vwr76zq4",
+      "role": "assistant",
+      "content": "Using tool: Grep",
+      "isShownToUser": true,
+      "timestamp": 1781651391460,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Grep"
+      }
+    },
+    {
+      "id": "1781651393786-46qzr6x76",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651393786,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651409390-mx14himfd",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651409390,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651412463-mqy6d5ln4",
+      "role": "assistant",
+      "content": "Using tool: Grep",
+      "isShownToUser": true,
+      "timestamp": 1781651412463,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Grep"
+      }
+    },
+    {
+      "id": "1781651414656-gf7pbgtn9",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651414656,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651429515-tstkcg1k2",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651429515,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651432095-hyby9qibn",
+      "role": "assistant",
+      "content": "Using tool: Grep",
+      "isShownToUser": true,
+      "timestamp": 1781651432095,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Grep"
+      }
+    },
+    {
+      "id": "1781651434145-miekpaaw3",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651434145,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651447678-cqj0236ax",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651447678,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651451149-gpdjjhq6n",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781651451149,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781651451150-ijj0guc8k",
+      "role": "assistant",
+      "content": "Now update `QuietGarden.tsx` to show the wildlife and fairy sections inside each expanded zone card:",
+      "isShownToUser": true,
+      "timestamp": 1781651453257,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781651453922-1dcdsg5pf",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651453922,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651456068-jdd7et3in",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651456068,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651458887-wsn77xwbo",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651458887,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651463087-sy851l4yt",
+      "role": "assistant",
+      "content": "First update the import to include the new types:",
+      "isShownToUser": true,
+      "timestamp": 1781651463651,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781651464328-sz5gbphof",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651464328,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651466709-har2jgrfj",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651466709,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651470070-qkk2k3x72",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651470070,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651470071-h899afjnt",
+      "role": "assistant",
+      "content": "Now add the wildlife + fairy panels inside the expanded zone card, and two new sub-components at the bottom of the file:",
+      "isShownToUser": true,
+      "timestamp": 1781651472127,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781651476868-668c6pemb",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651476868,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651476868-vp0q8dh54",
+      "role": "assistant",
+      "content": "Now add the two new components before `WisdomOverlay`:",
+      "isShownToUser": true,
+      "timestamp": 1781651479048,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781651479470-rbadju60x",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651479470,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651482213-hmcjhkjjh",
+      "role": "assistant",
+      "content": "Using tool: Grep",
+      "isShownToUser": true,
+      "timestamp": 1781651482213,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Grep"
+      }
+    },
+    {
+      "id": "1781651484523-zwva0xo54",
+      "role": "assistant",
+      "content": "Using tool: Grep",
+      "isShownToUser": true,
+      "timestamp": 1781651484523,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Grep"
+      }
+    },
+    {
+      "id": "1781651486617-b7qhapi7b",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781651486617,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781651505803-7o5ts9uj1",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781651505803,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781651508721-exlvhi86k",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781651508721,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781651516099-vioszsh8q",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781651516099,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781651516100-lkyxg1fra",
+      "role": "assistant",
+      "content": "Clean. Everything is wired. Here's what changed:\n\n**Wildlife returning** — each expanded zone now has a live panel showing which animals have arrived based on your current restoration progress. Tap any animal to read its ecological fact. A misty \"something is on its way…\" hint appears when the next arrival is close.\n\nDryland: Harvester Ant → Darkling Beetle → Solitary Bee → Painted Lady → California Quail → Red-Tailed Hawk  \nMeadow: Mason Bee → Bumblebee → Hoverfly → Swallowtail → Rufous Hummingbird → Tree Swallow  \nForest: Chipmunk → Woodpecker → Salamander → Great Horned Owl → Black-Tailed Deer → Fox Kits  \nWetland: Pacific Tree Frog → Dragonfly → Mallard Duck → Great Blue Heron → Beaver → River Otter  \nDunes: Sand Crab → Sandpiper → Snowy Plover → Western Gull → Harbor Seal\n\n**Fairy visits** — three fairies per zone, appearing at 15%, 50–52%, and 85–90% restoration. Each shows their name, personality, and wisdom quote. Matching the encyclopedia exactly: Rain Fairy, Marigold Fairy, Stream Fairy, Bee Fairy, Butterfly Fairy, Stone Fairy, Mushroom Fairy, Forest Fairy, Frog Lantern Fairy, Moon Pond Fairy, Wind Fairy, Watershed Fairy.\n\nThe final Watershed Fairy on the coastal dunes says \"Nothing thrives alone\" — and then the Sanctuary Garden opens to say the same thing, louder.",
+      "isShownToUser": true,
+      "timestamp": 1781651525811,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781650923118,
-  "tokenUsage": 48306,
+  "updatedAt": 1781651525850,
+  "tokenUsage": 68592,
   "script": "ftue-remix",
   "claudeSessionId": "f38d4727-f6c3-4225-a9da-0d3b83ee7a37"
 }
