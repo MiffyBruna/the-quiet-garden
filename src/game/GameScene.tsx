@@ -24,7 +24,7 @@ import {
   getTile,
 } from './engine/gameEngine';
 import {
-  INSPECT_HIGHLIGHTS, BUND_HIGHLIGHT, SEED_HIGHLIGHT,
+  INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS, SEED_HIGHLIGHT,
 } from './engine/mapGen';
 
 // Module-scope lifecycle telemetry (registered once per page load)
@@ -101,6 +101,7 @@ function renderFrame(
   gs: GameState,
   highlights: Array<{ x: number; y: number }>,
   tick: number,
+  stencilTiles: Array<{ x: number; y: number }> = [],
 ): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -237,6 +238,17 @@ function renderFrame(
         ctx.lineWidth = 2;
         ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
       }
+
+      // Bund stencil preview (teal outline — shown while positioning before confirm)
+      const isStencil = stencilTiles.some((s) => s.x === tx && s.y === ty);
+      if (isStencil) {
+        const spulse = 0.5 + 0.5 * Math.sin(tick * 0.10 + tx * 0.5 + ty * 0.5);
+        ctx.fillStyle = `rgba(80,210,190,${0.10 + spulse * 0.08})`;
+        ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
+        ctx.strokeStyle = `rgba(80,210,190,${0.6 + spulse * 0.4})`;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
+      }
     }
   }
 
@@ -349,6 +361,8 @@ const INITIAL_UI: UIState = {
   heldPlant: null,
   previousTool: null,
   fastDialogue: false,
+  bundMode: null,
+  bundTargetTiles: [],
 };
 
 export function GameScene({ onShowWatershed }: {
@@ -483,8 +497,9 @@ export function GameScene({ onShowWatershed }: {
         newTools = [...new Set([...newTools, 'rain' as ToolType])];
         break;
       case 'dig_bund':
-        highlights.push(...BUND_HIGHLIGHT);
+        // No pre-set highlights — player positions and confirms the bund stencil themselves
         newTools = [...new Set([...newTools, 'bund' as ToolType, 'shovel' as ToolType])];
+        objective = 'Select Dig Bund 🌙 and place the stencil';
         break;
       case 'second_rain':
         newTools = [...new Set([...newTools, 'rain' as ToolType])];
@@ -528,6 +543,42 @@ export function GameScene({ onShowWatershed }: {
       queueDialogue(dialogues);
     }
   }, [queueDialogue]);
+
+  // -------------------------------------------------------------------------
+  // Bund stencil: confirm (lock tiles for digging) or cancel
+  // -------------------------------------------------------------------------
+  const confirmBund = useCallback(() => {
+    const gs = gsRef.current;
+    const validTiles = BUND_SHAPE_OFFSETS
+      .map(({ dx, dy }) => ({ x: gs.playerTX + dx, y: gs.playerTY + dy }))
+      .filter(({ x, y }) => {
+        if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
+        const t = getTile(gs.tiles, x, y);
+        return t && t.terrain !== 'rock' && t.terrain !== 'water';
+      });
+    gs.highlightTiles = validTiles;
+    setUI((p) => ({
+      ...p,
+      bundMode: 'digging',
+      bundTargetTiles: validTiles,
+      questObjective: gs.questStep === 'dig_bund'
+        ? `Dig the half-moon bund (0/${validTiles.length})`
+        : p.questObjective,
+    }));
+    RundotGameAPI.analytics.recordCustomEvent('bund_stencil_confirmed', {
+      cx: gs.playerTX, cy: gs.playerTY, tiles: validTiles.length,
+    });
+  }, []);
+
+  const cancelBund = useCallback(() => {
+    gsRef.current.highlightTiles = [];
+    setUI((p) => ({
+      ...p,
+      bundMode: null,
+      bundTargetTiles: [],
+      activeTool: 'move',
+    }));
+  }, []);
 
   // -------------------------------------------------------------------------
   // Completion event — camera pan → dialogue → landscape tool
@@ -636,19 +687,25 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'bund') {
-        if (gs.questStep === 'dig_bund') {
-          const inShape = BUND_HIGHLIGHT.some(({ x, y }) => x === tx && y === ty);
-          if (!inShape) {
-            queueDialogue([{
-              speaker: 'Moss', emoji: '🐸',
-              text: 'Follow the shape. Dig only within the glowing tiles.',
-            }]);
-            return;
-          }
-        } else if (gs.questStep === 'second_rain' || gs.questStep === 'plant_seed') {
+        // Bund is only actionable once the stencil is confirmed (digging mode).
+        // In positioning mode the canvas tap just moves the player — no digging.
+        if (currentUI.bundMode !== 'digging') return;
+
+        // Quest restriction: bund tool locked after bund is placed until seeds are grown
+        if (gs.questStep === 'second_rain' || gs.questStep === 'plant_seed') {
           queueDialogue([{
             speaker: 'Moss', emoji: '🐸',
             text: 'The half-moon is complete. Tend to the seeds first.',
+          }]);
+          return;
+        }
+
+        // Must click within the confirmed target tiles
+        const inTarget = currentUI.bundTargetTiles.some(({ x, y }) => x === tx && y === ty);
+        if (!inTarget) {
+          queueDialogue([{
+            speaker: 'Moss', emoji: '🐸',
+            text: 'Follow the shape. Dig only within the glowing tiles.',
           }]);
           return;
         }
@@ -667,16 +724,24 @@ export function GameScene({ onShowWatershed }: {
         if (ok) {
           track('custom_bund_placed', { tx, ty });
           RundotGameAPI.analytics.recordCustomEvent('bund_placed', { tx, ty });
-          if (gs.questStep === 'dig_bund') {
-            const dug = BUND_HIGHLIGHT.filter(
-              ({ x, y }) => getTile(gs.tiles, x, y)?.terrain === 'bund',
-            ).length;
-            const total = BUND_HIGHLIGHT.length;
-            if (dug >= total) {
+
+          const total = currentUI.bundTargetTiles.length;
+          const dug = currentUI.bundTargetTiles.filter(
+            ({ x, y }) => getTile(gs.tiles, x, y)?.terrain === 'bund',
+          ).length;
+
+          if (dug >= total) {
+            // Bund fully dug — clear stencil state
+            gs.highlightTiles = [];
+            setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
+            if (gs.questStep === 'dig_bund') {
               advanceQuest('second_rain');
-            } else {
-              setUI((p) => ({ ...p, questObjective: `Dig the half-moon bund (${dug}/${total})` }));
             }
+          } else {
+            setUI((p) => ({ ...p, questObjective: gs.questStep === 'dig_bund'
+              ? `Dig the half-moon bund (${dug}/${total})`
+              : p.questObjective,
+            }));
           }
         }
         return;
@@ -701,13 +766,23 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'shovel') {
-        if (gs.questStep === 'dig_bund' && getTile(gs.tiles, tx, ty)?.terrain === 'bund') {
-          queueDialogue([{
-            speaker: 'Moss', emoji: '🐸',
-            text: 'The earth holds. Keep digging the shape.',
-          }]);
+        // Clicking any tile within the active bund (whether already dug or not)
+        // undoes the entire bund in one action.
+        const inActiveBund = currentUI.bundTargetTiles.some(({ x, y }) => x === tx && y === ty);
+        if (inActiveBund) {
+          for (const { x, y } of currentUI.bundTargetTiles) {
+            const t = getTile(gs.tiles, x, y);
+            if (t?.terrain === 'bund') applyShovel(gs, x, y);
+          }
+          gs.highlightTiles = [];
+          setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
+          track('custom_bund_undone');
+          RundotGameAPI.analytics.recordCustomEvent('bund_undone', {
+            tiles: currentUI.bundTargetTiles.length,
+          });
           return;
         }
+
         const ok = applyShovel(gs, tx, ty);
         if (ok) {
           track('custom_shovel_used', { tx, ty });
@@ -762,10 +837,15 @@ export function GameScene({ onShowWatershed }: {
               }]);
             }
           } else {
-            queueDialogue([{
-              speaker: 'Moss', emoji: '🐸',
-              text: `A ${name} seed goes in. The soil will know what to do.`,
-            }]);
+            // Show Moss's message only the first time a seed is planted per selection.
+            // Resets when the player switches tools or changes seed type.
+            if (seedMsgShownRef.current !== currentUI.selectedSeed) {
+              seedMsgShownRef.current = currentUI.selectedSeed;
+              queueDialogue([{
+                speaker: 'Moss', emoji: '🐸',
+                text: `A ${name} seed goes in. The soil will know what to do.`,
+              }]);
+            }
           }
         } else if (result.reason) {
           queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: result.reason }]);
@@ -838,6 +918,10 @@ export function GameScene({ onShowWatershed }: {
   // -------------------------------------------------------------------------
   // Input handling
   // -------------------------------------------------------------------------
+  // Track which seed type has already shown Moss's "seed goes in" message this selection.
+  // Resets when the player switches tools or changes seed type.
+  const seedMsgShownRef = useRef<PlantType | null>(null);
+
   const keydownRef = useRef<(e: KeyboardEvent) => void>(() => {});
   const keyCooldown = useRef(false);
 
@@ -981,7 +1065,14 @@ export function GameScene({ onShowWatershed }: {
         },
       );
 
-      renderFrame(canvas, gs, gs.highlightTiles, gs.tick);
+      // Bund stencil: compute valid tiles from player position during positioning mode
+      const currentUI = uiRef.current;
+      const stencilTiles = currentUI.bundMode === 'positioning'
+        ? BUND_SHAPE_OFFSETS
+            .map(({ dx, dy }) => ({ x: gs.playerTX + dx, y: gs.playerTY + dy }))
+            .filter(({ x, y }) => x > 0 && x < MAP_W - 1 && y > 0 && y < MAP_H - 1)
+        : [];
+      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles);
       rafRef.current = requestAnimationFrame(loop);
     };
 
@@ -1222,6 +1313,68 @@ export function GameScene({ onShowWatershed }: {
         );
       })()}
 
+      {/* ── Bund stencil confirm/cancel (positioning mode, no dialogue) ──── */}
+      {ui.bundMode === 'positioning' && !ui.dialogue && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: TOOLBAR_H + safeArea.bottom + 8,
+            left: 8,
+            right: 8,
+            background: 'rgba(20,35,30,0.96)',
+            borderRadius: 12,
+            border: '1px solid rgba(80,210,190,0.45)',
+            padding: '10px 14px',
+            zIndex: 35,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#50D2BE', marginBottom: 2 }}>
+              🌙 Position bund
+            </div>
+            <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.6)' }}>
+              Move to choose location, then confirm
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button
+              onClick={cancelBund}
+              style={{
+                background: 'rgba(200,80,80,0.15)',
+                border: '1px solid rgba(200,80,80,0.45)',
+                borderRadius: 8,
+                padding: '6px 12px',
+                color: '#FF9090',
+                fontSize: 14,
+                cursor: 'pointer',
+                fontWeight: 700,
+              }}
+            >
+              ✗
+            </button>
+            <button
+              onClick={confirmBund}
+              style={{
+                background: 'rgba(80,210,190,0.2)',
+                border: '1px solid rgba(80,210,190,0.55)',
+                borderRadius: 8,
+                padding: '6px 12px',
+                color: '#50D2BE',
+                fontSize: 14,
+                cursor: 'pointer',
+                fontWeight: 700,
+              }}
+            >
+              ✓
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Seed selector (shown when seed tool active, no dialogue) ─────── */}
       {ui.activeTool === 'seed' && !ui.dialogue && (
         <div
@@ -1245,7 +1398,10 @@ export function GameScene({ onShowWatershed }: {
               return (
                 <button
                   key={p}
-                  onClick={() => setUI((prev) => ({ ...prev, selectedSeed: p }))}
+                  onClick={() => {
+                    seedMsgShownRef.current = null; // new seed type — allow one fresh message
+                    setUI((prev) => ({ ...prev, selectedSeed: p }));
+                  }}
                   style={{
                     background: selected ? '#2E6B2E' : 'rgba(255,255,255,0.07)',
                     border: `1px solid ${selected ? '#7CCA7C' : 'rgba(255,255,255,0.15)'}`,
@@ -1384,6 +1540,46 @@ export function GameScene({ onShowWatershed }: {
                   );
                   track('custom_journal_opened');
                   RundotGameAPI.analytics.recordCustomEvent('journal_opened');
+                  return;
+                }
+
+                // Leaving seed tool resets the "once per selection" message
+                if (uiRef.current.activeTool === 'seed' && def.id !== 'seed') {
+                  seedMsgShownRef.current = null;
+                }
+
+                if (def.id === 'bund') {
+                  // Cancel any in-progress positioning if switching back to bund
+                  // from another tool while in digging mode: keep digging mode.
+                  // If not currently in bund mode, start positioning.
+                  if (uiRef.current.bundMode !== 'digging') {
+                    gsRef.current.highlightTiles = [];
+                    setUI((p) => ({
+                      ...p,
+                      activeTool: 'bund',
+                      bundMode: 'positioning',
+                      bundTargetTiles: [],
+                      inspectedTile: null,
+                    }));
+                    track('custom_tool_selected', { tool: def.id });
+                    RundotGameAPI.analytics.recordCustomEvent('tool_selected', { tool: def.id });
+                    return;
+                  }
+                  // Already in digging mode — just re-select tool
+                }
+
+                // Selecting any tool other than bund while in positioning mode cancels the stencil
+                if (def.id !== 'bund' && uiRef.current.bundMode === 'positioning') {
+                  gsRef.current.highlightTiles = [];
+                  setUI((p) => ({
+                    ...p,
+                    activeTool: def.id,
+                    bundMode: null,
+                    bundTargetTiles: [],
+                    inspectedTile: null,
+                  }));
+                  track('custom_tool_selected', { tool: def.id });
+                  RundotGameAPI.analytics.recordCustomEvent('tool_selected', { tool: def.id });
                   return;
                 }
 

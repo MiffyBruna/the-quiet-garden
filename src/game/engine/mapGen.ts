@@ -130,9 +130,17 @@ export const INSPECT_HIGHLIGHTS: Array<{ x: number; y: number }> = [
   { x: 17, y: 22 },
 ];
 
-// Half-moon bund shape: 5 tiles on top row, 3 tiles centered below.
-//   13 14 15 16 17   (y=15)
-//      14 15 16      (y=16)
+// Half-moon bund shape offsets relative to a center tile.
+// Top row: 5 tiles wide; bottom row: 3 tiles centered.
+//   -2 -1  0  1  2   (dy=0)
+//      -1  0  1      (dy=1)
+export const BUND_SHAPE_OFFSETS: Array<{ dx: number; dy: number }> = [
+  { dx: -2, dy: 0 }, { dx: -1, dy: 0 }, { dx: 0, dy: 0 }, { dx: 1, dy: 0 }, { dx: 2, dy: 0 },
+  { dx: -1, dy: 1 }, { dx: 0, dy: 1 }, { dx: 1, dy: 1 },
+];
+
+// Tutorial bund highlight (pre-positioned at the tutorial center tile 15,15).
+// Kept for reference; the free-play stencil system uses BUND_SHAPE_OFFSETS instead.
 export const BUND_HIGHLIGHT: Array<{ x: number; y: number }> = [
   { x: 13, y: 15 }, { x: 14, y: 15 }, { x: 15, y: 15 }, { x: 16, y: 15 }, { x: 17, y: 15 },
   { x: 14, y: 16 }, { x: 15, y: 16 }, { x: 16, y: 16 },

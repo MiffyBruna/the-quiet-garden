@@ -190,4 +190,8 @@ export interface UIState {
   heldPlant: PlantState | null; // landscape tool: plant picked up for relocation
   previousTool: ToolType | null; // tool active before dialogue opened — restored on close
   fastDialogue: boolean;         // accessibility: skip typewriter animation
+
+  // Bund placement stencil system
+  bundMode: 'positioning' | 'digging' | null; // positioning: stencil follows player; digging: locked tiles
+  bundTargetTiles: Array<{ x: number; y: number }>; // locked tile set after stencil is confirmed
 }
