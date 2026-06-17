@@ -63,20 +63,20 @@ export function getMinimumMoisture(restoration: number, workingBundCount = 0): n
 
 /**
  * Returns a drying-speed multiplier based on restoration %.
- * At ~39% the land still dries fast; real retention only arrives around 80%.
+ * Degraded soil dries aggressively; well-restored soil retains water well.
  */
 export function getDryingMultiplier(restoration: number): number {
-  if (restoration < 10) return 2.20;
-  if (restoration < 20) return 2.00;
-  if (restoration < 30) return 1.80;
-  if (restoration < 40) return 1.60;
-  if (restoration < 50) return 1.35;
-  if (restoration < 60) return 1.10;
-  if (restoration < 70) return 0.85;
-  if (restoration < 80) return 0.60;
-  if (restoration < 90) return 0.38;
-  if (restoration < 100) return 0.22;
-  return 0.15;
+  if (restoration < 10) return 3.50;
+  if (restoration < 20) return 3.20;
+  if (restoration < 30) return 2.80;
+  if (restoration < 40) return 2.40;
+  if (restoration < 50) return 1.90;
+  if (restoration < 60) return 1.40;
+  if (restoration < 70) return 0.95;
+  if (restoration < 80) return 0.55;
+  if (restoration < 90) return 0.28;
+  if (restoration < 100) return 0.12;
+  return 0.05;
 }
 
 /** Working bunds reduce drying. 0 bunds = faster drying; 10+ bunds = strong retention. */
@@ -532,12 +532,12 @@ export function simulateWater(gs: GameState, restoration: number): void {
       // Moisture decay — combined formula:
       //   base × restoration_curve × bund_count_modifier × plant_modifier
       //   × nearby_plant_cluster × mulch_modifier × erosion_drying
-      // High erosion = cracked soil = faster drying
+      // High erosion = cracked soil = much faster drying
       const plantMod = getPlantRetentionModifier(tile.plant);
       const nearbyMod = getNearbyPlantModifier(tiles, x, y);
       const mulchMod = getMulchModifier(tile.terrain);
-      const erosionMod = 1 + (tile.erosion / 100) * 1.5;  // 0-100 erosion → 1.0-2.5× drying rate
-      const finalRate = 0.01 * restorationMult * bundMod * plantMod * nearbyMod * mulchMod * erosionMod;
+      const erosionMod = 1 + (tile.erosion / 100) * 2.0;  // 0-100 erosion → 1.0-3.0× drying rate
+      const finalRate = 0.025 * restorationMult * bundMod * plantMod * nearbyMod * mulchMod * erosionMod;
       tile.moisture = Math.max(
         moistureFloor,
         Math.min(moistureCap, tile.moisture - finalRate),
