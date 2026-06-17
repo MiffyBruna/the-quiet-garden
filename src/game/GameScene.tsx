@@ -1780,16 +1780,7 @@ export function GameScene({ onShowWatershed }: {
         <img
           src="/moss-portrait.png"
           alt=""
-          style={frogHeight < 180 ? {
-            position: 'fixed',
-            bottom: safeArea.bottom + 105,
-            left: '50%',
-            height: frogHeight,
-            width: 'auto',
-            zIndex: 42,
-            pointerEvents: 'none',
-            transform: 'translateX(-50%) scaleX(-1)',
-          } : {
+          style={{
             position: 'fixed',
             bottom: 120,
             right: 8,
