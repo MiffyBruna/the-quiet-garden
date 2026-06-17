@@ -1012,7 +1012,14 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (e.key === 'Escape') {
+        if (currentUI.bundMode === 'positioning') { cancelBund(); return; }
         if (currentUI.inspectedTile) setUI((p) => ({ ...p, inspectedTile: null }));
+        return;
+      }
+
+      // Enter confirms bund placement while in positioning mode
+      if (e.key === 'Enter' && currentUI.bundMode === 'positioning') {
+        confirmBund();
         return;
       }
 
@@ -1031,7 +1038,7 @@ export function GameScene({ onShowWatershed }: {
         setTimeout(() => { keyCooldown.current = false; }, 140);
       }
     };
-  }, [handleDialogueInput, movePlayer]);
+  }, [handleDialogueInput, movePlayer, confirmBund, cancelBund]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => keydownRef.current(e);
