@@ -124,7 +124,11 @@ function renderDialogueText(text: string): React.ReactNode {
   const parts = text.split(pattern);
   return parts.map((part, i) => {
     if (pattern.test(part)) {
-      return <b key={i}>{part}</b>;
+      return (
+        <span key={i} style={{ fontWeight: 'bold', color: '#FFD700' }}>
+          {part}
+        </span>
+      );
     }
     return part;
   });
