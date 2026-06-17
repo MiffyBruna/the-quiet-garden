@@ -93,6 +93,44 @@ function tileBaseColor(tile: Tile): string {
 }
 
 // ---------------------------------------------------------------------------
+// Dialogue text formatting with bold quest hints
+// ---------------------------------------------------------------------------
+
+function renderDialogueText(text: string): React.ReactNode {
+  // List of quest-related phrases to highlight in bold
+  const boldPhrases = [
+    'Inspect',
+    'Dig',
+    'Plant',
+    'Rain',
+    'Gentle rain',
+    'Bund',
+    'Mulch',
+    'Grama',
+    'Marigold',
+    'Sage',
+    'Milkweed',
+    'Mesquite',
+    'Water',
+    'Moisture',
+    'Restoration',
+    'Moisture floor',
+    'Fertility',
+  ];
+
+  // Create a regex that matches any of the bold phrases (case-insensitive)
+  const pattern = new RegExp(`(${boldPhrases.map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+
+  const parts = text.split(pattern);
+  return parts.map((part, i) => {
+    if (pattern.test(part)) {
+      return <b key={i}>{part}</b>;
+    }
+    return part;
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Render
 // ---------------------------------------------------------------------------
 
@@ -1487,7 +1525,7 @@ export function GameScene({ onShowWatershed }: {
                   {ui.dialogue.speaker}
                 </div>
                 <div style={{ fontSize: 13, color: '#F0FFF0', lineHeight: 1.55, fontStyle: 'italic' }}>
-                  &ldquo;{displayedText}&rdquo;
+                  &ldquo;{renderDialogueText(displayedText)}&rdquo;
                   {isTyping && <span className="dialogue-cursor" style={{ color: '#7CCA7C', marginLeft: 1 }}>▌</span>}
                 </div>
               </div>
