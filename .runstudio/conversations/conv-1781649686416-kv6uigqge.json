@@ -2034,11 +2034,24 @@
       "timestamp": 1781654442233,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "1781654444853-lvpx2vidj",
+      "role": "system",
+      "content": "Compacting project...",
+      "isShownToUser": true,
+      "timestamp": 1781654444853,
+      "type": "compaction",
+      "metadata": {
+        "compaction": {
+          "trigger": "auto"
+        }
+      }
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781654442278,
-  "tokenUsage": 247907,
+  "updatedAt": 1781654565026,
+  "tokenUsage": 0,
   "script": "ftue-remix",
   "claudeSessionId": "f38d4727-f6c3-4225-a9da-0d3b83ee7a37"
 }
