@@ -893,6 +893,15 @@ export function GameScene({ onShowWatershed }: {
       if (tool === 'inspect') {
         const tile = getTile(gs.tiles, tx, ty);
         if (!tile) return;
+
+        // During inspect_soil quest, only allow inspecting highlighted tiles
+        if (gs.questStep === 'inspect_soil') {
+          const isHighlighted = gs.highlightTiles.some((h) => h.x === tx && h.y === ty);
+          if (!isHighlighted) {
+            return;  // Prevent inspection of non-highlighted tiles during quest
+          }
+        }
+
         setUI((prev) => ({ ...prev, inspectedTile: { x: tx, y: ty, tile: { ...tile } } }));
         // Trigger inspect flash animation
         inspectFlashRef.current = { x: tx, y: ty, startTick: gs.tick };
