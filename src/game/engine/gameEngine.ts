@@ -531,11 +531,13 @@ export function simulateWater(gs: GameState, restoration: number): void {
 
       // Moisture decay — combined formula:
       //   base × restoration_curve × bund_count_modifier × plant_modifier
-      //   × nearby_plant_cluster × mulch_modifier
+      //   × nearby_plant_cluster × mulch_modifier × erosion_drying
+      // High erosion = cracked soil = faster drying
       const plantMod = getPlantRetentionModifier(tile.plant);
       const nearbyMod = getNearbyPlantModifier(tiles, x, y);
       const mulchMod = getMulchModifier(tile.terrain);
-      const finalRate = 0.01 * restorationMult * bundMod * plantMod * nearbyMod * mulchMod;
+      const erosionMod = 1 + (tile.erosion / 100) * 1.5;  // 0-100 erosion → 1.0-2.5× drying rate
+      const finalRate = 0.01 * restorationMult * bundMod * plantMod * nearbyMod * mulchMod * erosionMod;
       tile.moisture = Math.max(
         moistureFloor,
         Math.min(moistureCap, tile.moisture - finalRate),
