@@ -1132,12 +1132,47 @@ export function GameScene({ onShowWatershed }: {
       }
 
       const gs = gsRef.current;
+      const currentUI = uiRef.current;
       const camCenter = gs.cinematicCam ?? { px: gs.playerPX, py: gs.playerPY };
       const camX = Math.round(camCenter.px - canvas.width / 2 + TILE_SIZE / 2);
       const camY = Math.round(camCenter.py - canvas.height / 2 + TILE_SIZE / 2);
 
       const worldX = (clientX - rect.left) * (canvas.width / rect.width) + camX;
       const worldY = (clientY - rect.top) * (canvas.height / rect.height) + camY;
+
+      // Check if clicked on speech bubble (Moss hint)
+      const playerNearMoss =
+        Math.abs(gs.playerTX - gs.mossTX) <= 2 &&
+        Math.abs(gs.playerTY - gs.mossTY) <= 2;
+      const showMossHint = playerNearMoss && currentUI.activeTool === 'move' && !currentUI.dialogue;
+      if (showMossHint) {
+        const bubbleWorldX = gs.playerPX;
+        const bubbleWorldY = gs.playerPY - TILE_SIZE + 2; // bubble is at cy - 22 in screen coords
+        const bubbleScreenX = bubbleWorldX - camX;
+        const bubbleScreenY = bubbleWorldY - camY;
+        const screenX = (clientX - rect.left) * (canvas.width / rect.width);
+        const screenY = (clientY - rect.top) * (canvas.height / rect.height);
+        const bubbleRadius = 10;
+        const distSq = (screenX - bubbleScreenX) ** 2 + (screenY - bubbleScreenY) ** 2;
+        if (distSq <= bubbleRadius ** 2) {
+          // Clicked on speech bubble — talk to Moss
+          if (gs.questStep === 'intro') {
+            advanceQuest('inspect_soil');
+            queueDialogue([
+              ...getQuestMossDialogue('intro'),
+              ...getQuestMossDialogue('inspect_soil'),
+            ]);
+          } else {
+            const dialogues = getQuestMossDialogue(gs.questStep);
+            queueDialogue(dialogues.length > 0 ? dialogues : [{
+              speaker: 'Moss', emoji: '🐸',
+              text: 'The valley heals slowly, like memory. Each action reaches forward in time.',
+            }]);
+          }
+          track('custom_moss_talked');
+          return;
+        }
+      }
 
       const tx = Math.floor(worldX / TILE_SIZE);
       const ty = Math.floor(worldY / TILE_SIZE);
