@@ -1782,7 +1782,7 @@ export function GameScene({ onShowWatershed }: {
           alt=""
           style={{
             position: 'fixed',
-            bottom: frogHeight < 150 ? 130 : 120,
+            bottom: 120 + Math.max(0, 150 - frogHeight),
             right: 8,
             height: frogHeight,
             width: 'auto',
