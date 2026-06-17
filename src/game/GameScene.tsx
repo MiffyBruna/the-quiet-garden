@@ -308,15 +308,21 @@ function renderFrame(
         ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
       }
 
-      // Inspect flash animation — bright flash when a new tile is selected
+      // Inspect flash animation — bright flash + pulsing border when a new tile is selected
       if (inspectFlash && inspectFlash.x === tx && inspectFlash.y === ty) {
         const flashElapsed = tick - inspectFlash.startTick;
-        const flashDuration = 12; // frames
+        const flashDuration = 20; // frames — longer for better visibility
         if (flashElapsed < flashDuration) {
           const flashProgress = 1 - (flashElapsed / flashDuration);
-          const flashOpacity = flashProgress * 0.6;
-          ctx.fillStyle = `rgba(255, 255, 255, ${flashOpacity})`;
+          // Bright white flash
+          const flashOpacity = flashProgress * 0.8;
+          ctx.fillStyle = `rgba(255, 255, 200, ${flashOpacity})`;
           ctx.fillRect(sx, sy, T, T);
+          // Pulsing gold border
+          const borderOpacity = flashProgress * 0.9;
+          ctx.strokeStyle = `rgba(255, 220, 100, ${borderOpacity})`;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
         }
       }
     }
@@ -1674,7 +1680,7 @@ export function GameScene({ onShowWatershed }: {
               style={{
                 background: 'rgba(20,35,20,0.94)',
                 borderRadius: 12,
-                border: 'none',
+                border: '2px solid rgba(255, 220, 100, 0.6)',
                 padding: 14,
                 position: 'relative',
                 paddingRight: 100,
