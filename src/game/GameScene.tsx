@@ -145,6 +145,7 @@ function renderFrame(
   tick: number,
   stencilTiles: Array<{ x: number; y: number }> = [],
   showMossHint = false,
+  inspectFlash: { x: number; y: number; startTick: number } | null = null,
 ): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -306,6 +307,18 @@ function renderFrame(
         ctx.lineWidth = 2;
         ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
       }
+
+      // Inspect flash animation — bright flash when a new tile is selected
+      if (inspectFlash && inspectFlash.x === tx && inspectFlash.y === ty) {
+        const flashElapsed = tick - inspectFlash.startTick;
+        const flashDuration = 12; // frames
+        if (flashElapsed < flashDuration) {
+          const flashProgress = 1 - (flashElapsed / flashDuration);
+          const flashOpacity = flashProgress * 0.6;
+          ctx.fillStyle = `rgba(255, 255, 255, ${flashOpacity})`;
+          ctx.fillRect(sx, sy, T, T);
+        }
+      }
     }
   }
 
@@ -451,6 +464,9 @@ export function GameScene({ onShowWatershed }: {
 
   // Intro animation: track if dialogue was shown last frame
   const introDialogueWasShownRef = useRef(false);
+
+  // Inspect tile animation: track when a new tile is inspected for flash effect
+  const inspectFlashRef = useRef<{ x: number; y: number; startTick: number } | null>(null);
 
   // Keep uiRef in sync
   useEffect(() => { uiRef.current = ui; }, [ui]);
@@ -843,6 +859,8 @@ export function GameScene({ onShowWatershed }: {
         const tile = getTile(gs.tiles, tx, ty);
         if (!tile) return;
         setUI((prev) => ({ ...prev, inspectedTile: { x: tx, y: ty, tile: { ...tile } } }));
+        // Trigger inspect flash animation
+        inspectFlashRef.current = { x: tx, y: ty, startTick: gs.tick };
         track('custom_tile_inspected', { terrain: tile.terrain, moisture: Math.round(tile.moisture) });
         RundotGameAPI.analytics.recordCustomEvent('tile_inspected', { terrain: tile.terrain });
 
@@ -1433,7 +1451,7 @@ export function GameScene({ onShowWatershed }: {
         canvas.style.cursor = 'pointer';
       }
 
-      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles, showMossHint);
+      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles, showMossHint, inspectFlashRef.current);
       rafRef.current = requestAnimationFrame(loop);
     };
 
