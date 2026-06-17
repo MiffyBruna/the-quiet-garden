@@ -1776,7 +1776,7 @@ export function GameScene({ onShowWatershed }: {
       })()}
 
       {/* Moss portrait — smoothly scales with screen size */}
-      {ui.dialogue && (
+      {ui.dialogue && frogHeight > 180 && (
         <img
           src="/moss-portrait.png"
           alt=""
