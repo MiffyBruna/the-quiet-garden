@@ -20,7 +20,7 @@ import {
   triggerRain, updateGame,
   PLANT_REQUIREMENTS, calculateRestoration,
   getQuestObjective, getQuestMossDialogue,
-  MOSS_COMPLETION_DIALOGUE, MOSS_LANDSCAPE_DIALOGUE,
+  MOSS_COMPLETION_DIALOGUE, MOSS_LANDSCAPE_DIALOGUE, MOSS_FIRST_RESTORATION_DIALOGUE,
   getTile,
 } from './engine/gameEngine';
 import {
@@ -486,7 +486,17 @@ export function GameScene({ onShowWatershed }: {
     });
 
     const dialogues = getQuestMossDialogue(newStep);
-    if (dialogues.length > 0) queueDialogue(dialogues);
+
+    if (newStep === 'free_play') {
+      // Unlock restoration scoring now that the first bund has captured rain
+      gsRef.current.firstBundActivated = true;
+      track('custom_first_bund_activated');
+      RundotGameAPI.analytics.recordCustomEvent('first_bund_activated', { questStep: 'free_play' });
+      // "There. The valley held its first rain." plays before the standard free_play guidance
+      queueDialogue([...MOSS_FIRST_RESTORATION_DIALOGUE, ...dialogues]);
+    } else if (dialogues.length > 0) {
+      queueDialogue(dialogues);
+    }
   }, [queueDialogue]);
 
   // -------------------------------------------------------------------------

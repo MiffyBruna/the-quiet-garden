@@ -4426,11 +4426,325 @@
       "timestamp": 1781674989994,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1781675076262",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "# Early Restoration and Moisture Rebalance\n\n---\n\n# Restoration Gate\n\nProblem:\n\nThe restoration score currently increases before the player has completed any meaningful restoration work.\n\nThis makes the early game feel less impactful.\n\nRequired behavior:\n\nThe restoration score is locked at 0%.\n\nThe player cannot earn restoration progress until the first successful semicircular bund is completed.\n\nDefinition of successful bund:\n\n* Bund placed\n* Rain event occurs\n* Bund captures water\n* Moisture increases nearby\n\nOnly after this event may restoration begin increasing.\n\n---\n\n# First Restoration Moment\n\nWhen the first successful bund captures water:\n\nTrigger special event.\n\nRestoration:\n\n0% → 3%\n\nImmediately show:\n\n+3% Restoration\n\nMoss says:\n\n\"There.\"\n\nPause.\n\n\"The valley held its first rain.\"\n\nPause.\n\n\"It may not seem like much.\"\n\nPause.\n\n\"But this is how recovery begins.\"\n\nThe jump from 0% to 3% should feel meaningful.\n\n---\n\n# Aggressive Early Moisture Decay\n\nProblem:\n\nMoisture remains near 100% too easily.\n\nThe player does not experience the difficulty of retaining water in a degraded landscape.\n\nRequired behavior:\n\nBefore restoration reaches 70%:\n\nMoisture should decay significantly faster.\n\nThe landscape should actively struggle to hold water.\n\n---\n\n# Moisture Retention Phases\n\n## Phase 1: Degraded Landscape\n\nRestoration: 0-20%\n\nThe land barely retains water.\n\nCharacteristics:\n\n* Water disappears quickly\n* Moisture falls rapidly\n* Soil dries visibly\n* Bunds are extremely important\n\nDrying multiplier:\n\n1.50\n\nTarget feeling:\n\n\"I need to catch every drop.\"\n\n---\n\n## Phase 2: Early Recovery\n\nRestoration: 20-40%\n\nWater retention improves slightly.\n\nDrying multiplier:\n\n1.20\n\nTarget feeling:\n\n\"The land is helping a little.\"\n\n---\n\n## Phase 3: Root Establishment\n\nRestoration: 40-70%\n\nPlants begin holding moisture.\n\nDrying multiplier:\n\n1.00\n\nTarget feeling:\n\n\"The ecosystem is becoming stable.\"\n\n---\n\n## Phase 4: Resilient Landscape\n\nRestoration: 70-93%\n\nBund ponds become permanent.\n\nWater lasts much longer.\n\nDrying multiplier:\n\n0.50\n\nTarget feeling:\n\n\"The valley remembers how to hold water.\"\n\n---\n\n## Phase 5: Self-Sustaining Landscape\n\nRestoration: 93-100%\n\nWater is naturally retained.\n\nSmall ponds begin appearing.\n\nDrying multiplier:\n\n0.20\n\nTarget feeling:\n\n\"The ecosystem is helping itself.\"\n\n---\n\n# Moisture Cap Rule\n\nTo avoid unrealistic moisture values:\n\nBefore restoration reaches 30%:\n\nMaximum tile moisture = 75\n\nBefore restoration reaches 50%:\n\nMaximum tile moisture = 85\n\nBefore restoration reaches 70%:\n\nMaximum tile moisture = 95\n\nAfter restoration reaches 70%:\n\nMaximum tile moisture = 100\n\nThis prevents most of the map from sitting at 99-100% moisture during early restoration.\n\n---\n\n# Visual Drying Feedback\n\nAs moisture drops:\n\n95-100:\nDark saturated soil\n\n70-94:\nHealthy moist soil\n\n40-69:\nNormal soil\n\n20-39:\nDry soil\n\n0-19:\nCracked soil\n\nThe player should visually notice moisture loss without opening inspection panels.\n\n---\n\n# Moss Tutorial Feedback\n\nAt 10% restoration:\n\n\"The rain is still escaping.\"\n\nAt 20% restoration:\n\n\"The soil is holding a little more.\"\n\nAt 40% restoration:\n\n\"Roots are beginning to help.\"\n\nAt 70% restoration:\n\n\"The valley no longer loses every drop.\"\n\nAt 93% restoration:\n\n\"The valley remembers.\"",
+      "timestamp": 1781675076262,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781675092847-ophoii6ke",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781675092847,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781675374394-tvw2u53wc",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781675374394,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781675378763-ghd4vu8ri",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781675378763,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781675384317-bprzb4ybp",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675384317,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675389341-jqzkqpi5o",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781675389341,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781675401953-t235kb44a",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675401953,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675401953-4asn5a3b4",
+      "role": "assistant",
+      "content": "Now add `firstBundActivated: false` to `createInitialGameState`:",
+      "isShownToUser": true,
+      "timestamp": 1781675403914,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781675405781-aoysagbrh",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675405781,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675410635-ib7zy86z9",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781675410635,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781675414557-0pd8n6pi2",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675414557,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675418904-j53sbgywn",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781675418904,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781675418904-wu5ntyukn",
+      "role": "assistant",
+      "content": "Now rewrite `simulateWater` to apply the moisture cap, fix the terrain upgrade/degrade chain:",
+      "isShownToUser": true,
+      "timestamp": 1781675421490,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781675456081-5k1cskhyp",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675456081,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675463072-kgffns9n5",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781675463072,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781675472250-w46hyq9uk",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675472250,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675472251-yh05vf86i",
+      "role": "assistant",
+      "content": "Now update the milestone check array in `updateGame`:",
+      "isShownToUser": true,
+      "timestamp": 1781675474094,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781675478767-mkqspvyed",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675478767,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675482995-b0lcs2dm0",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781675482995,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781675482995-p2kct62rr",
+      "role": "assistant",
+      "content": "Now update `GameScene.tsx` — add the import and wire up `free_play` in `advanceQuest`:",
+      "isShownToUser": true,
+      "timestamp": 1781675485255,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781675486682-28c7utrac",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675486682,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675486682-swjuz75a9",
+      "role": "assistant",
+      "content": "Now update `advanceQuest` so that when `free_play` starts it sets `firstBundActivated` and queues the special dialogue first:",
+      "isShownToUser": true,
+      "timestamp": 1781675489001,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781675493725-k2ovsi4bt",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675493725,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675498187-pvwoh2nnp",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781675498187,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781675503424-vciuzvlqj",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781675503424,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781675518462-r9g1n5u8p",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781675518462,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781675520944-jkvuymx5l",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781675520944,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781675520944-4q93gax54",
+      "role": "assistant",
+      "content": "Clean pass.",
+      "isShownToUser": true,
+      "timestamp": 1781675524670,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781675527150-9tfj0hoh0",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781675527150,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781675527151-03gxj7a0t",
+      "role": "assistant",
+      "content": "All done. Here's what changed:\n\n**Restoration Gate**\n- `calculateRestoration` returns `0` until `gs.firstBundActivated` is true\n- `firstBundActivated` is set when `advanceQuest('free_play')` fires — meaning the player has successfully dug the bund AND called the second rain\n- The HUD shows `0%` through the entire tutorial, then jumps to the actual score when free play begins\n\n**First Restoration Moment**\n- When `free_play` starts, Moss says: \"There.\" → \"The valley held its first rain.\" → \"It may not seem like much.\" → \"But this is how recovery begins.\" — then continues into the standard free_play guidance. That 0%→~3% jump lands right after these lines.\n\n**Aggressive Early Moisture Decay** (phased multipliers)\n- 0–20%: `1.50×` — land barely holds water\n- 20–40%: `1.20×`\n- 40–70%: `1.00×`\n- 70–93%: `0.50×`\n- 93–100%: `0.20×`\n\n**Moisture Cap** (stops early-game tiles from fully saturating)\n- Before 30% restoration: max tile moisture = 75\n- Before 50%: max = 85\n- Before 70%: max = 95\n- 70%+: max = 100 (fully saturated soil possible)\n\n**Moisture Floor** — simplified to a smooth linear curve: 5% at 0 restoration rising to 65% at 100%.\n\n**Visual Drying Feedback** — terrain now degrades when moisture drops:\n- `grass` → `moist_soil` when moisture < 36\n- `moist_soil` → `dry_soil` when moisture < 24\n- `dry_soil` → `cracked_soil` when moisture < 14\n- Upgrades use higher thresholds (hysteresis gap prevents flickering)\n- The full upgrade path now goes `cracked → dry → moist → grass` step by step\n\n**Moss Milestone Feedback** (new messages at new thresholds)\n- 10%: \"The rain is still escaping. Every drop helps.\"\n- 20%: \"The soil is holding a little more.\"\n- 40%: \"Roots are beginning to help.\"\n- 70%: \"The valley no longer loses every drop.\"\n- 93%: \"The valley remembers.\"",
+      "isShownToUser": true,
+      "timestamp": 1781675541251,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781674990078,
-  "tokenUsage": 24695,
+  "updatedAt": 1781675541297,
+  "tokenUsage": 52658,
   "script": "ftue-remix",
   "claudeSessionId": "db135b8a-f658-4856-bb3d-db6da394d25c"
 }

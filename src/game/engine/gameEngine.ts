@@ -43,23 +43,37 @@ function nextId(): string { return `e${++_eid}`; }
 /**
  * Returns the minimum moisture floor at a given restoration %.
  * Soil can never fall below this — healthy ecosystems retain water.
- *
- * 0–70%:  28 + 5 per 10% step
- * 70–100%: 63 + 3 per 10% step
+ * Rises linearly from 5% (bare degraded land) to 65% (self-sustaining ecosystem).
  */
 export function getMinimumMoisture(restoration: number): number {
-  if (restoration <= 70) {
-    return 28 + Math.floor(restoration / 10) * 5;
-  }
-  return 63 + Math.floor((restoration - 70) / 10) * 3;
+  return Math.round(5 + (restoration / 100) * 60);
 }
 
 /**
- * Returns a drying-speed multiplier.
- * At 0% restoration the land dries fast (1.0×); at 100% it dries very slowly (0.15×).
+ * Returns a drying-speed multiplier per restoration phase.
+ * Phase 1 (0-20%): 1.50 — land barely retains water
+ * Phase 2 (20-40%): 1.20 — slight improvement
+ * Phase 3 (40-70%): 1.00 — neutral, roots helping
+ * Phase 4 (70-93%): 0.50 — resilient, bund ponds permanent
+ * Phase 5 (93-100%): 0.20 — self-sustaining
  */
 export function getDryingMultiplier(restoration: number): number {
-  return Math.max(0.15, 1.0 - (restoration / 100) * 0.85);
+  if (restoration < 20) return 1.50;
+  if (restoration < 40) return 1.20;
+  if (restoration < 70) return 1.00;
+  if (restoration < 93) return 0.50;
+  return 0.20;
+}
+
+/**
+ * Returns the maximum moisture a tile can hold at a given restoration %.
+ * Degraded land cannot become saturated — cap rises as ecosystem recovers.
+ */
+function getMoistureCap(restoration: number): number {
+  if (restoration < 30) return 75;
+  if (restoration < 50) return 85;
+  if (restoration < 70) return 95;
+  return 100;
 }
 
 // ---------------------------------------------------------------------------
@@ -104,6 +118,7 @@ export function createInitialGameState(): GameState {
     discoveredFairies: [],
     discoveredPlants: [],
 
+    firstBundActivated: false,
     restorationMilestonesSeen: [],
     completionTriggered: false,
     cinematicCam: null,
@@ -340,6 +355,7 @@ function terrainAbsorption(terrain: TerrainType): number {
 export function simulateWater(gs: GameState, restoration: number): void {
   const { tiles } = gs;
   const moistureFloor = getMinimumMoisture(restoration);
+  const moistureCap = getMoistureCap(restoration);
   const dryingMult = getDryingMultiplier(restoration);
 
   // Step 1: add rainfall to all non-rock, non-water tiles
@@ -366,7 +382,8 @@ export function simulateWater(gs: GameState, restoration: number): void {
 
       if (tile.terrain === 'bund') {
         tile.water = Math.min(100, tile.water);
-        tile.moisture = Math.min(100, tile.moisture + absorbed * 0.8);
+        // Bunds hold water efficiently; cap prevents unrealistic saturation
+        tile.moisture = Math.min(moistureCap, tile.moisture + absorbed * 0.8);
 
         // At 70%+ restoration, bunds with sustained high moisture become permanent ponds
         if (restoration >= 70 && tile.moisture >= 80 && Math.random() < 0.005) {
@@ -377,7 +394,7 @@ export function simulateWater(gs: GameState, restoration: number): void {
         tile.moisture = 100;
         tile.water = Math.min(100, tile.water + absorbed * 0.2);
       } else {
-        tile.moisture = Math.min(100, tile.moisture + absorbed * 0.4);
+        tile.moisture = Math.min(moistureCap, tile.moisture + absorbed * 0.4);
         tile.water = 0;
       }
 
@@ -404,7 +421,7 @@ export function simulateWater(gs: GameState, restoration: number): void {
     }
   }
 
-  // Step 3: update terrain based on moisture, apply floor + decay
+  // Step 3: update terrain based on moisture, apply floor + cap + decay
   for (let y = 1; y < MAP_H - 1; y++) {
     for (let x = 1; x < MAP_W - 1; x++) {
       const tile = getTile(tiles, x, y);
@@ -416,8 +433,12 @@ export function simulateWater(gs: GameState, restoration: number): void {
         continue;
       }
 
-      // Moisture decay — slower as ecosystem matures
-      tile.moisture = Math.max(moistureFloor, tile.moisture - 0.01 * dryingMult);
+      // Moisture decay — faster in degraded landscape, slower as ecosystem matures
+      // Apply floor (ecosystem minimum) and cap (degraded land can't fully saturate)
+      tile.moisture = Math.max(
+        moistureFloor,
+        Math.min(moistureCap, tile.moisture - 0.01 * dryingMult),
+      );
 
       // Moisture improves fertility and reduces erosion slowly
       if (tile.moisture > 30) {
@@ -425,12 +446,19 @@ export function simulateWater(gs: GameState, restoration: number): void {
         tile.erosion = Math.max(0, tile.erosion - 0.005);
       }
 
-      // Update terrain visual from moisture
-      if (tile.terrain === 'cracked_soil' && tile.moisture > 40) {
-        tile.terrain = 'moist_soil';
-      }
-      if (tile.terrain === 'moist_soil' && tile.fertility > 40 && tile.moisture > 50) {
-        tile.terrain = 'grass';
+      // Terrain transitions — stepped upgrade path with degradation (hysteresis prevents flapping)
+      // Only for natural tiles (not bund, mulch, water, rock — those are player-placed or fixed)
+      // 'water' is already handled above via continue, so only bund/mulch/rock need exclusion here
+      if (!tile.plant && tile.terrain !== 'bund' && tile.terrain !== 'mulch' && tile.terrain !== 'rock') {
+        // Upgrades (require more moisture to prevent instant bounce-back)
+        if (tile.terrain === 'cracked_soil' && tile.moisture > 28) tile.terrain = 'dry_soil';
+        if (tile.terrain === 'dry_soil' && tile.moisture > 45) tile.terrain = 'moist_soil';
+        if (tile.terrain === 'moist_soil' && tile.fertility > 40 && tile.moisture > 58) tile.terrain = 'grass';
+
+        // Degradation (lower thresholds than upgrades — hysteresis gap prevents flapping)
+        if (tile.terrain === 'grass' && tile.moisture < 36) tile.terrain = 'moist_soil';
+        if (tile.terrain === 'moist_soil' && tile.moisture < 24) tile.terrain = 'dry_soil';
+        if (tile.terrain === 'dry_soil' && tile.moisture < 14) tile.terrain = 'cracked_soil';
       }
 
       // Water surface evaporates
@@ -743,6 +771,9 @@ export function updateWildlife(gs: GameState, dt: number): void {
 // ---------------------------------------------------------------------------
 
 export function calculateRestoration(gs: GameState): number {
+  // Locked at 0 until the first bund has captured rain water
+  if (!gs.firstBundActivated) return 0;
+
   let totalMoisture = 0;
   let totalFertility = 0;
   let totalErosionRisk = 0;
@@ -837,11 +868,20 @@ export const MOSS_DIALOGUES: Record<QuestStep, DialogueLine[]> = {
 
 /** Milestone dialogue — Moss comments as the ecosystem heals */
 export const MOSS_MILESTONE_DIALOGUES: Record<number, DialogueLine> = {
-  20: { speaker: 'Moss', emoji: '🐸', text: 'The soil is beginning to remember.' },
-  40: { speaker: 'Moss', emoji: '🐸', text: 'Roots are helping the valley hold water now.' },
-  60: { speaker: 'Moss', emoji: '🐸', text: 'The land no longer loses every drop.' },
-  80: { speaker: 'Moss', emoji: '🐸', text: 'The valley is starting to sustain itself.' },
+  10: { speaker: 'Moss', emoji: '🐸', text: 'The rain is still escaping. Every drop helps.' },
+  20: { speaker: 'Moss', emoji: '🐸', text: 'The soil is holding a little more.' },
+  40: { speaker: 'Moss', emoji: '🐸', text: 'Roots are beginning to help.' },
+  70: { speaker: 'Moss', emoji: '🐸', text: 'The valley no longer loses every drop.' },
+  93: { speaker: 'Moss', emoji: '🐸', text: 'The valley remembers.' },
 };
+
+/** First restoration moment — fires when free_play begins (first bund activation) */
+export const MOSS_FIRST_RESTORATION_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Moss', emoji: '🐸', text: 'There.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'The valley held its first rain.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'It may not seem like much.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'But this is how recovery begins.' },
+];
 
 /** The 100% completion sequence */
 export const MOSS_COMPLETION_DIALOGUE: DialogueLine[] = [
@@ -932,7 +972,7 @@ export function updateGame(
 
     // Check ecological milestones (only in free_play)
     if (onMilestone && gs.questStep === 'free_play') {
-      for (const pct of [20, 40, 60, 80] as const) {
+      for (const pct of [10, 20, 40, 70, 93] as const) {
         if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
           gs.restorationMilestonesSeen.push(pct);
           const line = MOSS_MILESTONE_DIALOGUES[pct];

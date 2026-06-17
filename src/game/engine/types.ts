@@ -161,7 +161,8 @@ export interface GameState {
   discoveredPlants: string[];
 
   // Ecological progression tracking
-  restorationMilestonesSeen: number[]; // milestones (20,40,60,80) already announced by Moss
+  firstBundActivated: boolean;          // true once a bund has captured rain — unlocks restoration score
+  restorationMilestonesSeen: number[]; // milestones (10,20,40,70,93) already announced by Moss
   completionTriggered: boolean;         // true once 100% restoration event fires
 
   // Cinematic camera (null = follow player, set during completion tour)
