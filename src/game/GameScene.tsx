@@ -225,9 +225,19 @@ function renderFrame(
         ctx.font = `${T - 6}px serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        // Sway for mature/blooming plants
+        // Sway for mature/blooming plants; droop down when wilted
         const sway = tile.plant.stage >= 3 ? Math.sin(tick * 0.04 + tx * 1.3) * 1.5 : 0;
-        ctx.fillText(emoji, sx + T / 2 + sway, sy + T / 2);
+        const droop = tile.plant.isWilted ? 2 : 0;
+        if (tile.plant.isWilted) ctx.globalAlpha = 0.60;
+        ctx.fillText(emoji, sx + T / 2 + sway, sy + T / 2 + droop);
+        ctx.globalAlpha = 1.0;
+        // Water-stress droplet indicator (shows when noticeably stressed)
+        if (tile.plant.waterStress >= 40) {
+          ctx.font = '7px serif';
+          ctx.textAlign = 'right';
+          ctx.fillText('💧', sx + T - 1, sy + 8);
+          ctx.textAlign = 'center';
+        }
       }
 
       // Objective highlight (pulsing yellow border)
@@ -1062,6 +1072,14 @@ export function GameScene({ onShowWatershed }: {
         () => {
           // 100% restoration completion
           triggerCompletionEvent();
+        },
+        () => {
+          // First plant wilt — show Moss tutorial once
+          queueDialogue([
+            { speaker: 'Moss', emoji: '🐸', text: 'This one is thirsty.' },
+            { speaker: 'Moss', emoji: '🐸', text: 'The land is still learning to hold rain.' },
+            { speaker: 'Moss', emoji: '🐸', text: 'Try rain, mulch, or a bund nearby.' },
+          ]);
         },
       );
 

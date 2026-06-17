@@ -5586,11 +5586,403 @@
       "metadata": {
         "toolName": "Read"
       }
+    },
+    {
+      "id": "1781725095813-ctcnlmmwv",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781725095813,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781725101251-knmu671ss",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725101251,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725107985-ndsu3wq4h",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725107985,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725111771-l46etptbu",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781725111771,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781725111772-7ksoxtq10",
+      "role": "assistant",
+      "content": "Now update the moisture physics in the engine — new drying curve, moisture floor, and add the modifier functions:",
+      "isShownToUser": true,
+      "timestamp": 1781725114192,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725136984-m4xaki16c",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725136984,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725136985-hg1esif0q",
+      "role": "assistant",
+      "content": "Now update `createInitialGameState` to include the two new fields:",
+      "isShownToUser": true,
+      "timestamp": 1781725139131,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725141426-lbb15k0b4",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725141426,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725141426-d6ho11z75",
+      "role": "assistant",
+      "content": "Now update `applyPlantSeed` to initialize the new fields:",
+      "isShownToUser": true,
+      "timestamp": 1781725143735,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725146310-krd2gwj7u",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725146310,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725146310-28kk5jhqa",
+      "role": "assistant",
+      "content": "Now update `simulateWater` to use the combined decay formula and pass `workingBundCount`:",
+      "isShownToUser": true,
+      "timestamp": 1781725148557,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725152680-2891vnlyt",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725152680,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725152680-2msj8zd73",
+      "role": "assistant",
+      "content": "Now replace the moisture decay line in Step 3 of `simulateWater` to use the combined formula:",
+      "isShownToUser": true,
+      "timestamp": 1781725154927,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725159689-9d9w1gbe5",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725159689,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725170010-1kshhe3ik",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781725170010,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781725170010-sldw4cvqj",
+      "role": "assistant",
+      "content": "Now rewrite `growPlants` to handle stress, wilting, and death:",
+      "isShownToUser": true,
+      "timestamp": 1781725172354,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725185027-7w4c9fz2b",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725185027,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725188775-31ivj2sab",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781725188775,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781725188775-fwixov2rv",
+      "role": "assistant",
+      "content": "Now rewrite `spawnFairies` — milestone-based, with distance check:",
+      "isShownToUser": true,
+      "timestamp": 1781725191646,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725225410-79bg3p0pu",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725225410,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725225411-beypahyik",
+      "role": "assistant",
+      "content": "Now update `MOSS_MILESTONE_DIALOGUES` and the milestone check to cover every 5%:",
+      "isShownToUser": true,
+      "timestamp": 1781725228275,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725242856-t3lyhc00z",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725242856,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725242856-p92m5turh",
+      "role": "assistant",
+      "content": "Now update `updateGame` to pass `restoration` to `growPlants`/`spawnFairies`, fire the wilt callback, and expand the milestone check to every 5%:",
+      "isShownToUser": true,
+      "timestamp": 1781725246222,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725249451-c1husrje9",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725249451,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725255111-3k47kqgyy",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725255111,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725255111-5ger655ca",
+      "role": "assistant",
+      "content": "Now expand the milestone check in `updateGame` to fire at every 5%:",
+      "isShownToUser": true,
+      "timestamp": 1781725257459,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725263187-agt5xjtex",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725263187,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725270031-bjcdtv6gh",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781725270031,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781725270032-dwuohtvtk",
+      "role": "assistant",
+      "content": "Now wire the first-wilt callback in GameScene and render wilted plants visually:",
+      "isShownToUser": true,
+      "timestamp": 1781725271964,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725277997-gmv8fq607",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725277997,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725277997-phnxg49qn",
+      "role": "assistant",
+      "content": "Now update the plant rendering in `renderFrame` to show wilted state visually:",
+      "isShownToUser": true,
+      "timestamp": 1781725280285,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781725289397-r69nmb1qc",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725289397,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725293089-jeqtsr5uq",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781725293089,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781725295497-ru7230ob8",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781725295497,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781725302684-k238ahyb0",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781725302684,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781725304585-g561e5gza",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781725304585,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781725311497-32ujanui0",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781725311497,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781725311498-o1cwnl2bt",
+      "role": "assistant",
+      "content": "Clean. Here's everything that changed:\n\n---\n\n**Fairy placement — milestone-based, no stacking**\n11 specific fairies now unlock at fixed restoration thresholds (5%, 15%, 25% … 93%, 100%), each tied to a meaningful ecological moment (first rain held, first bund, first mature grama, first bloom, first pond, etc.). Before spawning, the code searches outward from the preferred location and rejects any tile within 3 tiles of an existing fairy. Only one new fairy spawns per 3-second check, so they spread out naturally over time.\n\n**Moisture physics — combined decay formula**\nEvery tile's drying rate is now:\n`0.01 × restoration_curve × bund_count_modifier × per-tile_plant_modifier × nearby_plant_cluster_modifier × mulch_modifier`\n\n- At 39% restoration, the land still dries fast (1.60× multiplier, and with <5 bunds, a further 1.00× bund mod)\n- 5+ working bunds drop the bund modifier to 0.85 — real improvement\n- Mulch cuts drying by 25% on that tile\n- A patch of 5+ mature plants around a tile cuts drying by 20%\n- Seeds contribute nothing; only mature/blooming plants help\n\n**Moisture floor** now requires both restoration AND working bund count. Before 5 bunds, the floor can't exceed 28 — so even if restoration creeps up, the land can still dry badly without infrastructure.\n\n**Working bund count** is computed live each physics tick: bund tiles holding moisture ≥ 25 count as \"working\". Falls naturally as bunds dry out between rains.\n\n**Plant wilting & death**\n- Stress climbs at +4/tick when moisture is below 80% of the plant's minimum\n- Stress falls at −7/tick when moisture is adequate\n- Stress ≥ 50 → wilted (growth pauses, plant droops and fades to 60% opacity, 💧 indicator appears)\n- Stress ≥ 100 AND restoration < 70% → plant dies and is removed\n- At 70%+ restoration, plants can wilt but no longer die from drought — Moss comments at the 70% milestone: *\"The roots are deep enough now.\"*\n- First-ever wilt triggers a one-time Moss tutorial: *\"This one is thirsty. The land is still learning to hold rain. Try rain, mulch, or a bund nearby.\"*\n\n**Moss milestones** now fire at every 5% interval (5, 10, 15 … 90, 93, 95) with unique contextual lines. They queue one at a time so lines don't pile up.",
+      "isShownToUser": true,
+      "timestamp": 1781725329656,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781724975029,
-  "tokenUsage": 0,
+  "updatedAt": 1781725329701,
+  "tokenUsage": 24372,
   "script": "ftue-remix",
   "claudeSessionId": "2e925f4a-8399-498b-9cac-8ac011ed557e"
 }

@@ -41,40 +41,98 @@ function nextId(): string { return `e${++_eid}`; }
 // ---------------------------------------------------------------------------
 
 /**
- * Returns the minimum moisture floor at a given restoration %.
- * Degraded land dries to near-zero; a recovered ecosystem never fully dries out.
+ * Returns the minimum moisture floor.
+ * Before 5 working bunds, the floor stays low — the land hasn't earned retention.
+ * After 5+ bunds, the floor rises with restoration.
  */
-export function getMinimumMoisture(restoration: number): number {
-  if (restoration < 10) return 8;
-  if (restoration < 20) return 12;
-  if (restoration < 30) return 18;
-  if (restoration < 40) return 24;
-  if (restoration < 50) return 30;
-  if (restoration < 60) return 38;
-  if (restoration < 70) return 46;
-  if (restoration < 80) return 55;
-  if (restoration < 90) return 64;
-  if (restoration < 100) return 70;
-  return 75;
+export function getMinimumMoisture(restoration: number, workingBundCount = 0): number {
+  if (workingBundCount < 1) return 6;
+  if (workingBundCount < 5) return Math.min(28, 8 + restoration * 0.5);
+  if (restoration < 10) return 12;
+  if (restoration < 20) return 16;
+  if (restoration < 30) return 22;
+  if (restoration < 40) return 28;
+  if (restoration < 50) return 35;
+  if (restoration < 60) return 43;
+  if (restoration < 70) return 50;
+  if (restoration < 80) return 60;
+  if (restoration < 90) return 68;
+  if (restoration < 100) return 72;
+  return 76;
 }
 
 /**
- * Returns a drying-speed multiplier.
- * Degraded land (0%) dries 2× faster than baseline; a mature ecosystem (100%) holds water
- * with only 15% of the loss rate. Players feel the shift most between 30% and 80%.
+ * Returns a drying-speed multiplier based on restoration %.
+ * At ~39% the land still dries fast; real retention only arrives around 80%.
  */
 export function getDryingMultiplier(restoration: number): number {
-  if (restoration < 10) return 2.00;
-  if (restoration < 20) return 1.80;
-  if (restoration < 30) return 1.60;
-  if (restoration < 40) return 1.40;
-  if (restoration < 50) return 1.20;
-  if (restoration < 60) return 1.00;
-  if (restoration < 70) return 0.80;
+  if (restoration < 10) return 2.20;
+  if (restoration < 20) return 2.00;
+  if (restoration < 30) return 1.80;
+  if (restoration < 40) return 1.60;
+  if (restoration < 50) return 1.35;
+  if (restoration < 60) return 1.10;
+  if (restoration < 70) return 0.85;
   if (restoration < 80) return 0.60;
-  if (restoration < 90) return 0.40;
-  if (restoration < 100) return 0.25;
+  if (restoration < 90) return 0.38;
+  if (restoration < 100) return 0.22;
   return 0.15;
+}
+
+/** Working bunds reduce drying. 0 bunds = faster drying; 10+ bunds = strong retention. */
+function getBundRetentionModifier(workingBundCount: number): number {
+  if (workingBundCount <= 0) return 1.30;
+  if (workingBundCount === 1) return 1.15;
+  if (workingBundCount <= 4) return 1.00;
+  if (workingBundCount <= 7) return 0.85;
+  if (workingBundCount <= 10) return 0.70;
+  return 0.60;
+}
+
+/** Plants slow drying — only established ones (mature/blooming) help meaningfully. */
+function getPlantRetentionModifier(plant: import('./types').PlantState | undefined): number {
+  if (!plant) return 1.00;
+  switch (plant.stage) {
+    case 0: return 1.00; // seed — no help yet
+    case 1: return 0.97; // sprout
+    case 2: return 0.92; // young
+    case 3: return 0.85; // mature
+    case 4: return 0.80; // blooming
+    default: return 1.00;
+  }
+}
+
+/** Nearby mature plant clusters further reduce drying (root network effect). */
+function getNearbyPlantModifier(tiles: Tile[][], x: number, y: number): number {
+  let maturePlants = 0;
+  for (let dy = -2; dy <= 2; dy++) {
+    for (let dx = -2; dx <= 2; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const t = getTile(tiles, x + dx, y + dy);
+      if (t?.plant && t.plant.stage >= 3) maturePlants++;
+    }
+  }
+  if (maturePlants >= 5) return 0.80;
+  if (maturePlants >= 3) return 0.90;
+  if (maturePlants >= 1) return 0.96;
+  return 1.00;
+}
+
+/** Mulch strongly reduces evaporation. */
+function getMulchModifier(terrain: import('./types').TerrainType): number {
+  return terrain === 'mulch' ? 0.75 : 1.00;
+}
+
+/** Count bund tiles currently holding moisture ≥ 25 (proxy for "bunds that have caught water"). */
+function countWorkingBunds(gs: GameState): number {
+  let count = 0;
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      const t = getTile(gs.tiles, x, y);
+      if (t?.terrain === 'bund' && t.moisture >= 25) count++;
+    }
+  }
+  return count;
 }
 
 /**
@@ -135,6 +193,8 @@ export function createInitialGameState(): GameState {
     firstBundActivated: false,
     restorationMilestonesSeen: [],
     completionTriggered: false,
+    workingBundCount: 0,
+    firstWiltSeen: false,
     cinematicCam: null,
   };
 }
@@ -263,7 +323,7 @@ export function applyPlantSeed(
   }
 
   setTile(gs.tiles, tx, ty, {
-    plant: { type: plantType, stage: 0, age: 0 },
+    plant: { type: plantType, stage: 0, age: 0, waterStress: 0, isWilted: false },
     isModified: true,
   });
 
@@ -368,9 +428,12 @@ function terrainAbsorption(terrain: TerrainType): number {
 
 export function simulateWater(gs: GameState, restoration: number): void {
   const { tiles } = gs;
-  const moistureFloor = getMinimumMoisture(restoration);
+  // Update working bund count each physics tick — proxy for "bunds that hold water"
+  gs.workingBundCount = countWorkingBunds(gs);
+  const moistureFloor = getMinimumMoisture(restoration, gs.workingBundCount);
   const moistureCap = getMoistureCap(restoration);
-  const dryingMult = getDryingMultiplier(restoration);
+  const restorationMult = getDryingMultiplier(restoration);
+  const bundMod = getBundRetentionModifier(gs.workingBundCount);
 
   // Step 1: add rainfall to all non-rock, non-water tiles
   if (gs.isRaining) {
@@ -447,11 +510,16 @@ export function simulateWater(gs: GameState, restoration: number): void {
         continue;
       }
 
-      // Moisture decay — faster in degraded landscape, slower as ecosystem matures
-      // Apply floor (ecosystem minimum) and cap (degraded land can't fully saturate)
+      // Moisture decay — combined formula:
+      //   base × restoration_curve × bund_count_modifier × plant_modifier
+      //   × nearby_plant_cluster × mulch_modifier
+      const plantMod = getPlantRetentionModifier(tile.plant);
+      const nearbyMod = getNearbyPlantModifier(tiles, x, y);
+      const mulchMod = getMulchModifier(tile.terrain);
+      const finalRate = 0.01 * restorationMult * bundMod * plantMod * nearbyMod * mulchMod;
       tile.moisture = Math.max(
         moistureFloor,
-        Math.min(moistureCap, tile.moisture - 0.01 * dryingMult),
+        Math.min(moistureCap, tile.moisture - finalRate),
       );
 
       // Moisture improves fertility and reduces erosion slowly
@@ -514,19 +582,53 @@ function tryExpandWaterFeatures(gs: GameState): void {
 
 const GROWTH_TICKS_PER_STAGE = 300; // ticks at 60fps ≈ 5 seconds per stage
 
-export function growPlants(gs: GameState): void {
+/**
+ * Grows plants each tick, tracking water stress and wilting.
+ * Returns true if this was the first-ever wilt event (triggers Moss dialogue once).
+ */
+export function growPlants(gs: GameState, restoration: number): boolean {
+  let firstWiltThisTick = false;
+  const canDieFromDrought = restoration < 70;
+
   for (let y = 1; y < MAP_H - 1; y++) {
     for (let x = 1; x < MAP_W - 1; x++) {
       const tile = getTile(gs.tiles, x, y);
       if (!tile?.plant) continue;
 
       const plant = tile.plant;
-      if (plant.stage >= 4) continue;
-
       const req = PLANT_REQUIREMENTS[plant.type];
       if (!req) continue;
 
-      if (tile.moisture < req.moisture * 0.7) continue;  // growth pauses
+      // --- Water stress tracking ---
+      if (tile.moisture < req.moisture * 0.8) {
+        plant.waterStress = Math.min(100, plant.waterStress + 4);
+      } else {
+        plant.waterStress = Math.max(0, plant.waterStress - 7);
+      }
+
+      // Wilt at stress ≥ 50
+      if (plant.waterStress >= 50 && !plant.isWilted) {
+        plant.isWilted = true;
+        if (!gs.firstWiltSeen) {
+          gs.firstWiltSeen = true;
+          firstWiltThisTick = true;
+        }
+      }
+      // Recover below stress 30
+      if (plant.waterStress < 30 && plant.isWilted) {
+        plant.isWilted = false;
+      }
+
+      // Death from drought — only before 70% restoration
+      if (plant.waterStress >= 100 && canDieFromDrought) {
+        setTile(gs.tiles, x, y, { plant: undefined });
+        continue;
+      }
+
+      // Growth pauses when wilted or conditions unmet
+      if (plant.isWilted) continue;
+      if (plant.stage >= 4) continue;
+      if (tile.moisture < req.moisture * 0.7) continue;
       if (tile.fertility < req.fertility * 0.7) continue;
 
       plant.age++;
@@ -536,6 +638,7 @@ export function growPlants(gs: GameState): void {
       }
     }
   }
+  return firstWiltThisTick;
 }
 
 // ---------------------------------------------------------------------------
@@ -683,68 +786,149 @@ export function spawnWildlife(gs: GameState): void {
 }
 
 // ---------------------------------------------------------------------------
-// Fairy spawning
+// Fairy spawning — milestone-based, spaced across the map
 // ---------------------------------------------------------------------------
 
-interface FairyCondition {
+interface FairyMilestone {
+  id: string;
+  percent: number;
   type: FairyEntity['type'];
   wisdom: string;
-  check: (gs: GameState) => boolean;
+  /** Return the preferred [tx, ty] to spawn near */
+  preferredTile: (gs: GameState) => [number, number];
 }
 
-const FAIRY_CONDITIONS: FairyCondition[] = [
+const FAIRY_MILESTONES: FairyMilestone[] = [
   {
-    type: 'grama',
+    id: 'tutorial_fairy', percent: 5, type: 'grama',
+    wisdom: '"The valley has held its first rain. The memory is faint — but it is there."',
+    preferredTile: (gs) => [gs.mossTX + 1, gs.mossTY],
+  },
+  {
+    id: 'rain_fairy', percent: 15, type: 'marigold',
+    wisdom: '"Every bund is a small promise. The land is beginning to listen."',
+    preferredTile: (gs) => {
+      // Near first bund tile
+      for (let y = 1; y < MAP_H - 1; y++)
+        for (let x = 1; x < MAP_W - 1; x++)
+          if (getTile(gs.tiles, x, y)?.terrain === 'bund') return [x + 1, y];
+      return [15, 16];
+    },
+  },
+  {
+    id: 'soil_fairy', percent: 25, type: 'sage',
+    wisdom: '"Soil remembers fertility. It just needs time and care to recall it."',
+    preferredTile: () => [10, 18],
+  },
+  {
+    id: 'root_fairy', percent: 35, type: 'grama',
     wisdom: '"The grass holds the hill together. Small roots hold small worlds."',
-    check: (gs) => gs.discoveredPlants.includes('blue_grama'),
+    preferredTile: (gs) => {
+      for (let y = 1; y < MAP_H - 1; y++)
+        for (let x = 1; x < MAP_W - 1; x++) {
+          const t = getTile(gs.tiles, x, y);
+          if (t?.plant?.type === 'blue_grama' && t.plant.stage >= 3) return [x, y - 1];
+        }
+      return [14, 17];
+    },
   },
   {
-    type: 'marigold',
+    id: 'flower_fairy', percent: 45, type: 'marigold',
     wisdom: '"Every yellow petal is a landing strip for something smaller than your smallest thought."',
-    check: (gs) => gs.discoveredPlants.includes('desert_marigold'),
+    preferredTile: (gs) => {
+      for (let y = 1; y < MAP_H - 1; y++)
+        for (let x = 1; x < MAP_W - 1; x++) {
+          const t = getTile(gs.tiles, x, y);
+          if (t?.plant?.type === 'desert_marigold' && t.plant.stage >= 4) return [x + 1, y];
+        }
+      return [20, 14];
+    },
   },
   {
-    type: 'lupine',
+    id: 'bee_fairy', percent: 55, type: 'lupine',
+    wisdom: '"Pollinators do not ask for much. Just a flower that stays open."',
+    preferredTile: () => [8, 12],
+  },
+  {
+    id: 'butterfly_fairy', percent: 65, type: 'milkweed',
     wisdom: '"Lupine gives back to soil what years of neglect took away. Patience is a kind of generosity."',
-    check: (gs) => gs.discoveredPlants.includes('lupine'),
+    preferredTile: (gs) => {
+      for (let y = 1; y < MAP_H - 1; y++)
+        for (let x = 1; x < MAP_W - 1; x++) {
+          const t = getTile(gs.tiles, x, y);
+          if (t?.plant?.type === 'milkweed' && t.plant.stage >= 3) return [x, y - 1];
+        }
+      return [22, 18];
+    },
   },
   {
-    type: 'sage',
-    wisdom: '"Sage remembers drought. It does not fear it. There is wisdom in choosing what endures."',
-    check: (gs) => gs.discoveredPlants.includes('sage'),
+    id: 'pond_fairy', percent: 75, type: 'sage',
+    wisdom: '"Frogs return when the water stays. They are the valley\'s memory of what it once was."',
+    preferredTile: (gs) => {
+      for (let y = 1; y < MAP_H - 1; y++)
+        for (let x = 1; x < MAP_W - 1; x++)
+          if (getTile(gs.tiles, x, y)?.terrain === 'water') return [x + 1, y];
+      return [16, 16];
+    },
   },
   {
-    type: 'milkweed',
+    id: 'bird_fairy', percent: 85, type: 'milkweed',
+    wisdom: '"Finches follow diversity. Many plants mean many songs."',
+    preferredTile: () => [6, 20],
+  },
+  {
+    id: 'valley_memory_fairy', percent: 93, type: 'grama',
+    wisdom: '"The rain is no longer a visitor. It belongs here now."',
+    preferredTile: () => [16, 10],
+  },
+  {
+    id: 'watershed_fairy', percent: 100, type: 'marigold',
     wisdom: '"Without milkweed there are no monarchs. You gave the migration a place to pause."',
-    check: (gs) => gs.discoveredPlants.includes('milkweed'),
+    preferredTile: () => [15, 15],
   },
 ];
 
-export function spawnFairies(gs: GameState): void {
-  for (const cond of FAIRY_CONDITIONS) {
-    if (gs.discoveredFairies.includes(cond.type)) continue;
-    if (!cond.check(gs)) continue;
-
-    // Find a blooming plant tile to appear near
-    let fx = 15, fy = 18;
-    for (let y = 1; y < MAP_H - 1; y++) {
-      for (let x = 1; x < MAP_W - 1; x++) {
-        const tile = getTile(gs.tiles, x, y);
-        if (tile?.plant?.stage === 4) { fx = x; fy = y; }
-      }
+/** Find a valid spawn tile near preferX/preferY — not rock, not too close to another fairy. */
+function findFairySafeTile(gs: GameState, preferX: number, preferY: number): [number, number] {
+  for (let radius = 0; radius <= 6; radius++) {
+    for (let angle = 0; angle < 16; angle++) {
+      const dx = Math.round(Math.cos((angle / 16) * 2 * Math.PI) * radius);
+      const dy = Math.round(Math.sin((angle / 16) * 2 * Math.PI) * radius);
+      const nx = Math.max(1, Math.min(MAP_W - 2, preferX + dx));
+      const ny = Math.max(1, Math.min(MAP_H - 2, preferY + dy));
+      const tile = getTile(gs.tiles, nx, ny);
+      if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') continue;
+      // Minimum 3 tiles away from every existing fairy
+      const tooClose = gs.fairies.some((f) => {
+        const fx = Math.round(f.px / TILE_SIZE);
+        const fy = Math.round(f.py / TILE_SIZE);
+        return Math.abs(fx - nx) < 3 && Math.abs(fy - ny) < 3;
+      });
+      if (!tooClose) return [nx, ny];
     }
+  }
+  return [preferX, preferY];
+}
+
+export function spawnFairies(gs: GameState, restoration: number): void {
+  for (const milestone of FAIRY_MILESTONES) {
+    if (gs.discoveredFairies.includes(milestone.id)) continue;
+    if (restoration < milestone.percent) continue;
+
+    const [prefX, prefY] = milestone.preferredTile(gs);
+    const [fx, fy] = findFairySafeTile(gs, prefX, prefY);
 
     const fairy: FairyEntity = {
       id: nextId(),
-      type: cond.type,
+      type: milestone.type,
       px: fx * TILE_SIZE + TILE_SIZE / 2,
       py: fy * TILE_SIZE - 4,
       glowPhase: Math.random() * Math.PI * 2,
-      wisdom: cond.wisdom,
+      wisdom: milestone.wisdom,
     };
     gs.fairies.push(fairy);
-    gs.discoveredFairies.push(cond.type);
-    break;
+    gs.discoveredFairies.push(milestone.id);
+    break; // spawn one per call to spread them out over time
   }
 }
 
@@ -880,13 +1064,28 @@ export const MOSS_DIALOGUES: Record<QuestStep, DialogueLine[]> = {
   ],
 };
 
-/** Milestone dialogue — Moss comments as the ecosystem heals */
+/** Milestone dialogue — Moss speaks at every 5% interval plus key tipping points. */
 export const MOSS_MILESTONE_DIALOGUES: Record<number, DialogueLine> = {
-  10: { speaker: 'Moss', emoji: '🐸', text: 'The rain is still escaping. Every drop helps.' },
-  20: { speaker: 'Moss', emoji: '🐸', text: 'The soil is holding a little more.' },
-  40: { speaker: 'Moss', emoji: '🐸', text: 'Roots are beginning to help.' },
-  70: { speaker: 'Moss', emoji: '🐸', text: 'The valley no longer loses every drop.' },
-  93: { speaker: 'Moss', emoji: '🐸', text: 'The valley remembers.' },
+   5:  { speaker: 'Moss', emoji: '🐸', text: 'A small beginning. The valley has held its first drop.' },
+  10:  { speaker: 'Moss', emoji: '🐸', text: 'The rain is still escaping. Every drop counts.' },
+  15:  { speaker: 'Moss', emoji: '🐸', text: 'The bunds are catching a little more each time.' },
+  20:  { speaker: 'Moss', emoji: '🐸', text: 'The soil is holding a little more.' },
+  25:  { speaker: 'Moss', emoji: '🐸', text: 'Fertility is slowly returning. The land is waking up.' },
+  30:  { speaker: 'Moss', emoji: '🐸', text: 'Patience. The valley has been dry for a long time.' },
+  35:  { speaker: 'Moss', emoji: '🐸', text: 'More bunds, more plants. The picture is taking shape.' },
+  40:  { speaker: 'Moss', emoji: '🐸', text: 'Roots are beginning to help.' },
+  45:  { speaker: 'Moss', emoji: '🐸', text: 'The flowers are attracting visitors. The web is forming.' },
+  50:  { speaker: 'Moss', emoji: '🐸', text: 'Halfway. The land is beginning to trust the rain.' },
+  55:  { speaker: 'Moss', emoji: '🐸', text: 'Each rain stays a little longer now.' },
+  60:  { speaker: 'Moss', emoji: '🐸', text: 'The land no longer loses every drop it is given.' },
+  65:  { speaker: 'Moss', emoji: '🐸', text: 'Plant diversity is building the foundation of a real ecosystem.' },
+  70:  { speaker: 'Moss', emoji: '🐸', text: 'The roots are deep enough now. The valley will not forget them so easily.' },
+  75:  { speaker: 'Moss', emoji: '🐸', text: 'Water is staying. That changes everything.' },
+  80:  { speaker: 'Moss', emoji: '🐸', text: 'The valley is starting to sustain itself.' },
+  85:  { speaker: 'Moss', emoji: '🐸', text: 'Wildlife is gathering. The web of life is becoming dense.' },
+  90:  { speaker: 'Moss', emoji: '🐸', text: 'Almost there. Can you hear it? The valley is finding its rhythm.' },
+  93:  { speaker: 'Moss', emoji: '🐸', text: 'The valley is making ponds of its own now. The rain no longer visits. It lives here.' },
+  95:  { speaker: 'Moss', emoji: '🐸', text: 'The soil has learned to hold water. The ecosystem is nearly whole.' },
 };
 
 /** First restoration moment — fires when free_play begins (first bund activation) */
@@ -931,6 +1130,7 @@ export function updateGame(
   onUIChange?: (restoration: number, avgMoisture: number, wildlifeCount: number, questStep: QuestStep) => void,
   onMilestone?: (milestone: number, line: DialogueLine) => void,
   onCompletion?: () => void,
+  onFirstWilt?: () => void,
 ): void {
   gs.tick++;
 
@@ -968,10 +1168,12 @@ export function updateGame(
   // Plant growth at ~2Hz
   if (now - gs.lastGrowthTick >= 500) {
     gs.lastGrowthTick = now;
-    growPlants(gs);
+    const restoration = calculateRestoration(gs);
+    const firstWilt = growPlants(gs, restoration);
+    if (firstWilt && onFirstWilt) onFirstWilt();
     if (gs.tick % 180 === 0) {
       spawnWildlife(gs);
-      spawnFairies(gs);
+      spawnFairies(gs, restoration);
     }
   }
 
@@ -984,13 +1186,15 @@ export function updateGame(
     const avgMoisture = getAvgMoisture(gs);
     onUIChange(restoration, avgMoisture, gs.discoveredWildlife.length, gs.questStep);
 
-    // Check ecological milestones (only in free_play)
+    // Check ecological milestones — every 5% plus tipping points (only in free_play)
     if (onMilestone && gs.questStep === 'free_play') {
-      for (const pct of [10, 20, 40, 70, 93] as const) {
+      const milestonePoints = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 93, 95] as const;
+      for (const pct of milestonePoints) {
         if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
           gs.restorationMilestonesSeen.push(pct);
           const line = MOSS_MILESTONE_DIALOGUES[pct];
           if (line) onMilestone(pct, line);
+          break; // Queue one at a time so lines don't pile up
         }
       }
     }

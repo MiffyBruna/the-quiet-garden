@@ -30,7 +30,9 @@ export type PlantStage = 0 | 1 | 2 | 3 | 4; // seed → sprout → young → mat
 export interface PlantState {
   type: PlantType;
   stage: PlantStage;
-  age: number; // ticks at current stage
+  age: number;          // ticks at current stage
+  waterStress: number;  // 0–100; climbs when moisture < plant minimum, drops when above
+  isWilted: boolean;    // true when waterStress ≥ 50; growth pauses
 }
 
 // ---------------------------------------------------------------------------
@@ -162,8 +164,10 @@ export interface GameState {
 
   // Ecological progression tracking
   firstBundActivated: boolean;          // true once a bund has captured rain — unlocks restoration score
-  restorationMilestonesSeen: number[]; // milestones (10,20,40,70,93) already announced by Moss
+  restorationMilestonesSeen: number[]; // milestones already announced by Moss (every 5%)
   completionTriggered: boolean;         // true once 100% restoration event fires
+  workingBundCount: number;             // bunds currently holding moisture ≥ 25 — affects drying speed
+  firstWiltSeen: boolean;               // whether first-time plant-wilt dialogue has fired
 
   // Cinematic camera (null = follow player, set during completion tour)
   cinematicCam: { px: number; py: number } | null;
