@@ -24,7 +24,7 @@ import {
   getTile,
 } from './engine/gameEngine';
 import {
-  INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS, SEED_HIGHLIGHT,
+  INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS,
 } from './engine/mapGen';
 
 // Module-scope lifecycle telemetry (registered once per page load)
@@ -526,10 +526,15 @@ export function GameScene({ onShowWatershed }: {
       case 'second_rain':
         newTools = [...new Set([...newTools, 'rain' as ToolType])];
         break;
-      case 'plant_seed':
-        highlights.push(...SEED_HIGHLIGHT);
+      case 'plant_seed': {
+        // Seed spots are always inside the cup of wherever the bund was dug:
+        // one tile each side of the bund center, two rows below it.
+        const bcx = gsRef.current.bundCenterTX;
+        const bcy = gsRef.current.bundCenterTY;
+        highlights.push({ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 });
         newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType, 'shovel' as ToolType])];
         break;
+      }
       case 'free_play':
         newTools = ['move', 'inspect', 'bund', 'mulch', 'seed', 'rain', 'talk', 'journal', 'shovel'];
         break;
@@ -603,6 +608,9 @@ export function GameScene({ onShowWatershed }: {
       }]);
     }
 
+    // Remember where the bund was placed so seed spots stay relative to it
+    gs.bundCenterTX = gs.playerTX;
+    gs.bundCenterTY = gs.playerTY;
     gs.highlightTiles = validTiles;
     setUI((p) => ({
       ...p,
@@ -888,8 +896,13 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'seed') {
+        // Seed spots always relative to wherever the bund was confirmed
+        const seedSpots = [
+          { x: gs.bundCenterTX - 1, y: gs.bundCenterTY + 2 },
+          { x: gs.bundCenterTX + 1, y: gs.bundCenterTY + 2 },
+        ];
         if (gs.questStep === 'plant_seed') {
-          const inSpot = SEED_HIGHLIGHT.some(({ x, y }) => x === tx && y === ty);
+          const inSpot = seedSpots.some(({ x, y }) => x === tx && y === ty);
           if (!inSpot) {
             queueDialogue([{
               speaker: 'Moss', emoji: '🐸',
@@ -904,16 +917,16 @@ export function GameScene({ onShowWatershed }: {
           track('custom_seed_planted', { plant: currentUI.selectedSeed });
           RundotGameAPI.analytics.recordCustomEvent('seed_planted', { plant: currentUI.selectedSeed });
           if (gs.questStep === 'plant_seed') {
-            const bothPlanted = SEED_HIGHLIGHT.every(
+            const bothPlanted = seedSpots.every(
               ({ x, y }) => getTile(gs.tiles, x, y)?.plant != null,
             );
             if (bothPlanted) {
               advanceQuest('free_play');
             } else {
-              const count = SEED_HIGHLIGHT.filter(
+              const count = seedSpots.filter(
                 ({ x, y }) => getTile(gs.tiles, x, y)?.plant != null,
               ).length;
-              setUI((p) => ({ ...p, questObjective: `Plant Blue Grama Grass (${count}/${SEED_HIGHLIGHT.length})` }));
+              setUI((p) => ({ ...p, questObjective: `Plant Blue Grama Grass (${count}/${seedSpots.length})` }));
               queueDialogue([{
                 speaker: 'Moss', emoji: '🐸',
                 text: `A ${name} seed goes in. Now plant one more in the other glowing spot.`,

@@ -163,6 +163,8 @@ export interface GameState {
   discoveredPlants: string[];
 
   // Ecological progression tracking
+  bundCenterTX: number;                  // player TX when bund stencil was confirmed — seeds placed relative to this
+  bundCenterTY: number;
   firstBundActivated: boolean;          // true once a bund has captured rain — unlocks restoration score
   restorationMilestonesSeen: number[]; // milestones already announced by Moss (every 5%)
   completionTriggered: boolean;         // true once 100% restoration event fires

@@ -190,6 +190,8 @@ export function createInitialGameState(): GameState {
     discoveredFairies: [],
     discoveredPlants: [],
 
+    bundCenterTX: 15,
+    bundCenterTY: 15,
     firstBundActivated: false,
     restorationMilestonesSeen: [],
     completionTriggered: false,
