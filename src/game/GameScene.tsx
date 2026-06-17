@@ -1328,9 +1328,9 @@ export function GameScene({ onShowWatershed }: {
         const returnDuration = 140; // return home — reflective walk
         const totalDuration = meetDuration + walkDuration + circleDuration + returnDuration;
 
-        // Rock location on right side of map
-        const rockCX = 27;
-        const rockCY = 18;
+        // Rock location — the gray rock on the right side
+        const rockCX = 26;
+        const rockCY = 20;
 
         if (elapsed < meetDuration) {
           // Phase 1: Walk toward each other to meet
