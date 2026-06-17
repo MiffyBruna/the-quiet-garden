@@ -1711,6 +1711,8 @@ export function GameScene({ onShowWatershed }: {
             {/* Dialogue panel */}
             <div
               style={{
+                position: 'relative',
+                overflow: 'visible',
                 background: 'rgba(20,35,20,0.94)',
                 borderRadius: 12,
                 border: '5px solid rgba(255, 220, 100, 0.6)',
@@ -1755,26 +1757,23 @@ export function GameScene({ onShowWatershed }: {
                   {isTyping ? 'tap to skip ▸' : 'tap to continue ▸'}
                 </div>
               </div>
-            </div>
 
-              {/* Moss portrait peeking from above the dialogue */}
+              {/* Moss portrait overlapping top-right corner */}
               <img
                 src="/moss-portrait.png"
                 alt="Moss"
                 style={{
                   position: 'absolute',
-                  bottom: '100%',
-                  right: '2rem',
-                  transform: 'translateY(40%) scaleX(-1)',
+                  right: 0,
+                  top: 0,
+                  transform: 'translateY(-55%) scaleX(-1)',
+                  height: 350,
                   width: 'auto',
-                  height: 300,
-                  objectFit: 'contain',
-                  objectPosition: 'bottom center',
-                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.8))',
-                  zIndex: 50,
+                  zIndex: 2,
                   pointerEvents: 'none',
                 }}
               />
+            </div>
             </div>
           </div>
         );
