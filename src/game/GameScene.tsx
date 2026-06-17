@@ -714,6 +714,27 @@ export function GameScene({ onShowWatershed }: {
   }, []);
 
   // -------------------------------------------------------------------------
+  // Helper: move Moss to a nearby free adjacent tile
+  // -------------------------------------------------------------------------
+  const moveMossAway = (fromTX: number, fromTY: number): void => {
+    const gs = gsRef.current;
+    const candidates = [
+      { x: fromTX - 1, y: fromTY }, { x: fromTX + 1, y: fromTY },
+      { x: fromTX, y: fromTY - 1 }, { x: fromTX, y: fromTY + 1 },
+      { x: fromTX - 1, y: fromTY - 1 }, { x: fromTX + 1, y: fromTY - 1 },
+      { x: fromTX - 1, y: fromTY + 1 }, { x: fromTX + 1, y: fromTY + 1 },
+    ].filter(({ x, y }) => {
+      if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
+      const t = getTile(gs.tiles, x, y);
+      return t && t.terrain !== 'rock' && t.terrain !== 'water';
+    });
+    if (candidates[0]) {
+      gs.mossTX = candidates[0].x;
+      gs.mossTY = candidates[0].y;
+    }
+  };
+
+  // -------------------------------------------------------------------------
   // Tool use on a tile
   // -------------------------------------------------------------------------
   const useTool = useCallback(
@@ -910,6 +931,10 @@ export function GameScene({ onShowWatershed }: {
             }]);
             return;
           }
+        }
+        // Move Moss away if she's blocking the seed spot
+        if (tx === gs.mossTX && ty === gs.mossTY) {
+          moveMossAway(tx, ty);
         }
         const result = applyPlantSeed(gs, tx, ty, currentUI.selectedSeed);
         if (result.planted) {
