@@ -1694,23 +1694,24 @@ export function GameScene({ onShowWatershed }: {
               right: 8,
               zIndex: 42,
               overflow: 'visible',
+              position: 'relative',
             }}
           >
-            {/* Moss portrait peeking from above */}
+            {/* Moss portrait anchored to top-right of bubble */}
             <img
               src="/moss-portrait.png"
               alt="Moss"
               style={{
                 position: 'absolute',
-                top: -150,
-                left: '55%',
-                transform: 'translateX(-50%) scaleX(-1)',
-                width: 250,
-                height: 250,
+                top: -210,
+                right: 32,
+                transform: 'scaleX(-1)',
+                width: 280,
+                height: 280,
                 objectFit: 'contain',
                 objectPosition: 'bottom center',
                 filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.8))',
-                zIndex: 43,
+                zIndex: 45,
                 pointerEvents: 'none',
               }}
             />
@@ -1723,11 +1724,11 @@ export function GameScene({ onShowWatershed }: {
                 border: '5px solid rgba(255, 220, 100, 0.6)',
                 padding: 14,
                 position: 'relative',
-                paddingRight: 100,
+                paddingRight: 14,
               }}
               onClick={handleDialogueInput}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, maxWidth: '70%' }}>
                 <span style={{ fontSize: 30, flexShrink: 0, lineHeight: 1.1 }}>{ui.dialogue.emoji}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700, marginBottom: 4 }}>
