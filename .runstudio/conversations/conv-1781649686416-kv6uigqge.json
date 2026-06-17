@@ -12371,11 +12371,24 @@
       "timestamp": 1781736798146,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "1781736801776-m8bb3h3xg",
+      "role": "system",
+      "content": "Compacting project...",
+      "isShownToUser": true,
+      "timestamp": 1781736801776,
+      "type": "compaction",
+      "metadata": {
+        "compaction": {
+          "trigger": "auto"
+        }
+      }
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781736798208,
-  "tokenUsage": 101154,
+  "updatedAt": 1781736873805,
+  "tokenUsage": 0,
   "script": "ftue-remix",
   "claudeSessionId": "14bf229e-8288-4b41-8292-f2e589faa48f"
 }
