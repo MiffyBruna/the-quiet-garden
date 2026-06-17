@@ -155,8 +155,8 @@ export function applyMulch(gs: GameState, tx: number, ty: number): boolean {
 
   setTile(gs.tiles, tx, ty, {
     terrain: 'mulch',
-    moisture: Math.min(100, tile.moisture + 10),
-    fertility: Math.min(100, tile.fertility + 5),
+    moisture: Math.min(100, tile.moisture + 20), // enough to meet early plant requirements
+    fertility: Math.min(100, tile.fertility + 8),
     erosion: Math.max(0, tile.erosion - 20),
     isModified: true,
   });
