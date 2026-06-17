@@ -390,8 +390,8 @@ export const PLANT_REQUIREMENTS: Record<PlantType, {
   },
   mesquite: {
     name: 'Mesquite',
-    emoji: ['🌑', '🌱', '🪴', '🌳', '🌲'],
-    moisture: 30,
+    emoji: ['🌑', '🌱', '🪴', '🪾', '🌳'],
+    moisture: 50,
     fertility: 25,
     role: 'Desert canopy tree',
     attractsWildlife: ['bee', 'hawk', 'rabbit'],
