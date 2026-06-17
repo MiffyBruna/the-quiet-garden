@@ -1284,8 +1284,15 @@ export function GameScene({ onShowWatershed }: {
           100% { border-color: rgba(255,220,40,0.0); box-shadow: none; }
         }
         .quest-objective {
-          animation: questFlicker 2.4s ease-out forwards;
+          animation: questFlicker 2.4s ease-in-out infinite;
           border: 1px solid rgba(255,220,40,0);
+        }
+        @keyframes toolPulse {
+          0%, 100% { box-shadow: 0 0 0 rgba(124,202,124,0.5); }
+          50% { box-shadow: 0 0 8px rgba(124,202,124,0.8); }
+        }
+        .tool-active {
+          animation: toolPulse 1.8s ease-in-out infinite;
         }
         @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
         .dialogue-cursor { animation: blink 0.65s step-end infinite; }
@@ -1644,6 +1651,7 @@ export function GameScene({ onShowWatershed }: {
             <button
               key={def.id}
               disabled={rainBlocked}
+              className={active ? 'tool-active' : ''}
               onClick={() => {
                 if (rainBlocked) return;
 
