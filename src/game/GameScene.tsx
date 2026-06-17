@@ -610,8 +610,10 @@ export function GameScene({ onShowWatershed }: {
       gsRef.current.firstBundActivated = true;
       track('custom_first_bund_activated');
       RundotGameAPI.analytics.recordCustomEvent('first_bund_activated', { questStep: 'free_play' });
-      // "There. The valley held its first rain." plays before the standard free_play guidance
-      queueDialogue([...MOSS_FIRST_RESTORATION_DIALOGUE, ...dialogues]);
+      // Delay the dialogue to prevent it from stacking with other queued messages
+      setTimeout(() => {
+        queueDialogue([...MOSS_FIRST_RESTORATION_DIALOGUE, ...dialogues]);
+      }, 100);
     } else if (dialogues.length > 0) {
       queueDialogue(dialogues);
     }

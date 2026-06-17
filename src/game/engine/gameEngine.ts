@@ -812,12 +812,12 @@ interface FairyMilestone {
 
 const FAIRY_MILESTONES: FairyMilestone[] = [
   {
-    id: 'tutorial_fairy', percent: 5, type: 'grama',
+    id: 'tutorial_fairy', percent: 15, type: 'grama',
     wisdom: '"The valley has held its first rain. The memory is faint — but it is there."',
     preferredTile: (gs) => [gs.mossTX + 1, gs.mossTY],
   },
   {
-    id: 'rain_fairy', percent: 15, type: 'marigold',
+    id: 'rain_fairy', percent: 25, type: 'marigold',
     wisdom: '"Every bund is a small promise. The land is beginning to listen."',
     preferredTile: (gs) => {
       // Near first bund tile
@@ -828,12 +828,12 @@ const FAIRY_MILESTONES: FairyMilestone[] = [
     },
   },
   {
-    id: 'soil_fairy', percent: 25, type: 'sage',
+    id: 'soil_fairy', percent: 35, type: 'sage',
     wisdom: '"Soil remembers fertility. It just needs time and care to recall it."',
     preferredTile: () => [10, 18],
   },
   {
-    id: 'root_fairy', percent: 35, type: 'grama',
+    id: 'root_fairy', percent: 45, type: 'grama',
     wisdom: '"The grass holds the hill together. Small roots hold small worlds."',
     preferredTile: (gs) => {
       for (let y = 1; y < MAP_H - 1; y++)
@@ -845,7 +845,7 @@ const FAIRY_MILESTONES: FairyMilestone[] = [
     },
   },
   {
-    id: 'flower_fairy', percent: 45, type: 'marigold',
+    id: 'flower_fairy', percent: 55, type: 'marigold',
     wisdom: '"Every yellow petal is a landing strip for something smaller than your smallest thought."',
     preferredTile: (gs) => {
       for (let y = 1; y < MAP_H - 1; y++)
@@ -857,12 +857,12 @@ const FAIRY_MILESTONES: FairyMilestone[] = [
     },
   },
   {
-    id: 'bee_fairy', percent: 55, type: 'lupine',
+    id: 'bee_fairy', percent: 65, type: 'lupine',
     wisdom: '"Pollinators do not ask for much. Just a flower that stays open."',
     preferredTile: () => [8, 12],
   },
   {
-    id: 'butterfly_fairy', percent: 65, type: 'milkweed',
+    id: 'butterfly_fairy', percent: 75, type: 'milkweed',
     wisdom: '"Lupine gives back to soil what years of neglect took away. Patience is a kind of generosity."',
     preferredTile: (gs) => {
       for (let y = 1; y < MAP_H - 1; y++)
@@ -874,7 +874,7 @@ const FAIRY_MILESTONES: FairyMilestone[] = [
     },
   },
   {
-    id: 'pond_fairy', percent: 75, type: 'sage',
+    id: 'pond_fairy', percent: 85, type: 'sage',
     wisdom: '"Frogs return when the water stays. They are the valley\'s memory of what it once was."',
     preferredTile: (gs) => {
       for (let y = 1; y < MAP_H - 1; y++)
@@ -884,12 +884,12 @@ const FAIRY_MILESTONES: FairyMilestone[] = [
     },
   },
   {
-    id: 'bird_fairy', percent: 85, type: 'milkweed',
+    id: 'bird_fairy', percent: 93, type: 'milkweed',
     wisdom: '"Finches follow diversity. Many plants mean many songs."',
     preferredTile: () => [6, 20],
   },
   {
-    id: 'valley_memory_fairy', percent: 93, type: 'grama',
+    id: 'valley_memory_fairy', percent: 95, type: 'grama',
     wisdom: '"The rain is no longer a visitor. It belongs here now."',
     preferredTile: () => [16, 10],
   },
@@ -986,45 +986,47 @@ export function calculateRestoration(gs: GameState): number {
 
   let totalMoisture = 0;
   let totalFertility = 0;
-  let totalErosionRisk = 0;
-  let tileCount = 0;
+  let soilTileCount = 0; // Only count actual soil tiles
   const plantTypes = new Set<string>();
-  let bloomCount = 0;
 
   for (let y = 0; y < MAP_H; y++) {
     for (let x = 0; x < MAP_W; x++) {
       const tile = getTile(gs.tiles, x, y);
-      if (!tile || tile.terrain === 'rock') continue;
-      tileCount++;
+      if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') continue;
+
+      // Only count tiles that are actual soil (cracked, moist, bund, mulch, grass)
+      const isSoilTile = ['cracked_soil', 'moist_soil', 'bund', 'mulch', 'grass'].includes(tile.terrain);
+      if (!isSoilTile) continue;
+
+      soilTileCount++;
       totalMoisture += tile.moisture;
       totalFertility += tile.fertility;
-      totalErosionRisk += tile.erosion;
+
       if (tile.plant) {
         plantTypes.add(tile.plant.type);
-        if (tile.plant.stage >= 4) bloomCount++;
       }
     }
   }
 
-  if (tileCount === 0) return 0;
+  if (soilTileCount === 0) return 0;
 
-  const avgMoisture = totalMoisture / tileCount;   // 0–100
-  const avgFertility = totalFertility / tileCount; // 0–100
-  const avgErosion = totalErosionRisk / tileCount; // 0–100
+  // Average values across actual soil tiles
+  const avgMoisture = totalMoisture / soilTileCount;   // 0–100
+  const avgFertility = totalFertility / soilTileCount; // 0–100
 
-  // Starting baselines: moisture ~8, fertility ~12, erosion ~82
+  // Starting baselines: moisture ~8, fertility ~12
+  // Scale up to 100 as these improve
   const moistureScore = Math.min(100, Math.max(0, (avgMoisture - 8) / 52 * 100));
   const fertilityScore = Math.min(100, Math.max(0, (avgFertility - 12) / 48 * 100));
-  const erosionScore = Math.min(100, Math.max(0, (82 - avgErosion) / 62 * 100));
   const plantScore = Math.min(100, plantTypes.size * 20);
   const wildlifeScore = Math.min(100, gs.discoveredWildlife.length * 10);
 
+  // Weighted: soil health (moisture + fertility) is 50%, biodiversity (plants + wildlife) is 50%
   const score = (
     moistureScore  * 0.25 +
-    fertilityScore * 0.20 +
-    erosionScore   * 0.20 +
-    plantScore     * 0.20 +
-    wildlifeScore  * 0.15
+    fertilityScore * 0.25 +
+    plantScore     * 0.25 +
+    wildlifeScore  * 0.25
   );
 
   return Math.round(Math.min(100, score));
