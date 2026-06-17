@@ -38,23 +38,57 @@ RundotGameAPI.lifecycles.onQuit(() => RundotGameAPI.analytics.recordCustomEvent(
 // Colour helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Tile color system:
+ *  - Fertility sets the base soil hue (pale tan = infertile → dark brown = rich)
+ *  - Moisture darkens the result (dry = lighter, wet = visibly darker)
+ *  - Blue is ONLY for permanent water terrain, never for "moist soil"
+ */
 function tileBaseColor(tile: Tile): string {
-  const m = tile.moisture / 100;
+  const f = tile.fertility / 100;  // 0–1
+  const m = tile.moisture / 100;   // 0–1
+
   switch (tile.terrain) {
-    case 'cracked_soil': {
-      const r = Math.round(196 - m * 80);
-      const g = Math.round(147 - m * 60);
-      const b = Math.round(90 - m * 30);
+    case 'water': return '#4A90C4';   // permanent pond / pool — stays blue
+    case 'rock':  return '#8A8680';
+
+    case 'bund': {
+      // Earth berm — slightly enriched by water; moisture darkens it
+      const dark = m * 0.30;
+      const r = Math.round(158 * (1 - dark));
+      const g = Math.round(123 * (1 - dark));
+      const b = Math.round(85  * (1 - dark));
       return `rgb(${r},${g},${b})`;
     }
-    case 'dry_soil':   return `rgb(${Math.round(184-m*60)},${Math.round(134-m*50)},${Math.round(78-m*25)})`;
-    case 'mulch':      return '#7D5A3C';
-    case 'bund':       return '#9E7B55';
-    case 'moist_soil': return `rgb(${Math.round(130-m*60)},${Math.round(100-m*45)},${Math.round(60-m*20)})`;
-    case 'grass':      return `rgb(${Math.round(80+m*20)},${Math.round(160+m*30)},${Math.round(70+m*20)})`;
-    case 'rock':       return '#8A8680';
-    case 'water':      return '#4A90C4';  // deep pond blue
-    default:           return '#B8864E';
+
+    case 'mulch': {
+      // Organic matter — darker with fertility, subtly dampened by moisture
+      const rBase = Math.round(120 - f * 35);  // 120 → 85
+      const gBase = Math.round(85  - f * 27);  //  85 → 58
+      const bBase = Math.round(52  - f * 17);  //  52 → 35
+      const dark = m * 0.20;
+      return `rgb(${Math.round(rBase*(1-dark))},${Math.round(gBase*(1-dark))},${Math.round(bBase*(1-dark))})`;
+    }
+
+    case 'grass': {
+      // Dry / infertile grass is pale olive; rich grass is deep emerald
+      const rBase = Math.round(105 - f * 50);  // 105 → 55
+      const gBase = Math.round(138 + f * 32);  // 138 → 170
+      const bBase = Math.round(48  + f * 14);  //  48 → 62
+      const dark = m * 0.22;
+      return `rgb(${Math.max(0,Math.round(rBase*(1-dark)))},${Math.max(0,Math.round(gBase*(1-dark)))},${Math.max(0,Math.round(bBase*(1-dark)))})`;
+    }
+
+    default: {
+      // All natural soil types (cracked_soil, dry_soil, moist_soil):
+      // fertility is the primary signal — pale sandy tan at low fertility,
+      // warm rich brown at high fertility.  Moisture darkens the result.
+      const rBase = Math.round(196 - f * 108);  // 196 (pale tan) → 88 (dark brown)
+      const gBase = Math.round(150 - f *  88);  // 150             → 62
+      const bBase = Math.round(90  - f *  52);  //  90             → 38
+      const dark = m * 0.35;
+      return `rgb(${Math.round(rBase*(1-dark))},${Math.round(gBase*(1-dark))},${Math.round(bBase*(1-dark))})`;
+    }
   }
 }
 
@@ -175,15 +209,11 @@ function renderFrame(
           }
         }
 
-        // Water overlay — only on non-bund, non-plant tiles with significant water
-        // Threshold > 10 prevents transient rain-pass tinting the whole map
-        if (tile.water > 10 && tile.terrain !== 'bund' && !tile.plant) {
-          ctx.fillStyle = `rgba(80,140,220,${Math.min(0.45, tile.water / 140)})`;
+        // Wet sheen — transient water during rain darkens soil slightly.
+        // No blue tint: blue is reserved exclusively for permanent water terrain.
+        if (tile.water > 15 && tile.terrain !== 'bund' && !tile.plant) {
+          ctx.fillStyle = `rgba(0,0,0,${Math.min(0.14, tile.water / 280)})`;
           ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
-          if (tick % 12 < 6) {
-            ctx.fillStyle = 'rgba(180,220,255,0.10)';
-            ctx.fillRect(sx + 2, sy + 2, T - 4, 2);
-          }
         }
       }
 

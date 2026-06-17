@@ -42,36 +42,50 @@ function nextId(): string { return `e${++_eid}`; }
 
 /**
  * Returns the minimum moisture floor at a given restoration %.
- * Soil can never fall below this — healthy ecosystems retain water.
- * Rises linearly from 5% (bare degraded land) to 65% (self-sustaining ecosystem).
+ * Degraded land dries to near-zero; a recovered ecosystem never fully dries out.
  */
 export function getMinimumMoisture(restoration: number): number {
-  return Math.round(5 + (restoration / 100) * 60);
+  if (restoration < 10) return 8;
+  if (restoration < 20) return 12;
+  if (restoration < 30) return 18;
+  if (restoration < 40) return 24;
+  if (restoration < 50) return 30;
+  if (restoration < 60) return 38;
+  if (restoration < 70) return 46;
+  if (restoration < 80) return 55;
+  if (restoration < 90) return 64;
+  if (restoration < 100) return 70;
+  return 75;
 }
 
 /**
- * Returns a drying-speed multiplier per restoration phase.
- * Phase 1 (0-20%): 1.50 — land barely retains water
- * Phase 2 (20-40%): 1.20 — slight improvement
- * Phase 3 (40-70%): 1.00 — neutral, roots helping
- * Phase 4 (70-93%): 0.50 — resilient, bund ponds permanent
- * Phase 5 (93-100%): 0.20 — self-sustaining
+ * Returns a drying-speed multiplier.
+ * Degraded land (0%) dries 2× faster than baseline; a mature ecosystem (100%) holds water
+ * with only 15% of the loss rate. Players feel the shift most between 30% and 80%.
  */
 export function getDryingMultiplier(restoration: number): number {
-  if (restoration < 20) return 1.50;
-  if (restoration < 40) return 1.20;
-  if (restoration < 70) return 1.00;
-  if (restoration < 93) return 0.50;
-  return 0.20;
+  if (restoration < 10) return 2.00;
+  if (restoration < 20) return 1.80;
+  if (restoration < 30) return 1.60;
+  if (restoration < 40) return 1.40;
+  if (restoration < 50) return 1.20;
+  if (restoration < 60) return 1.00;
+  if (restoration < 70) return 0.80;
+  if (restoration < 80) return 0.60;
+  if (restoration < 90) return 0.40;
+  if (restoration < 100) return 0.25;
+  return 0.15;
 }
 
 /**
- * Returns the maximum moisture a tile can hold at a given restoration %.
- * Degraded land cannot become saturated — cap rises as ecosystem recovers.
+ * Returns the maximum moisture ordinary soil can reach.
+ * Degraded land cannot become saturated — cap rises as roots, mulch, and organic matter improve.
+ * Bunds and permanent water tiles are exempt (they are designed to hold water).
  */
 function getMoistureCap(restoration: number): number {
-  if (restoration < 30) return 75;
-  if (restoration < 50) return 85;
+  if (restoration < 20) return 55;
+  if (restoration < 40) return 70;
+  if (restoration < 60) return 85;
   if (restoration < 70) return 95;
   return 100;
 }
@@ -382,8 +396,8 @@ export function simulateWater(gs: GameState, restoration: number): void {
 
       if (tile.terrain === 'bund') {
         tile.water = Math.min(100, tile.water);
-        // Bunds hold water efficiently; cap prevents unrealistic saturation
-        tile.moisture = Math.min(moistureCap, tile.moisture + absorbed * 0.8);
+        // Bunds are designed to hold water — exempt from normal soil moisture cap
+        tile.moisture = Math.min(100, tile.moisture + absorbed * 0.8);
 
         // At 70%+ restoration, bunds with sustained high moisture become permanent ponds
         if (restoration >= 70 && tile.moisture >= 80 && Math.random() < 0.005) {

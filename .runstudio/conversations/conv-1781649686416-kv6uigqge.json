@@ -4820,11 +4820,170 @@
       "timestamp": 1781675709219,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1781676463240",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "# Soil Color and Moisture Simulation Revision\n\nThe current soil and moisture simulation does not yet communicate ecological recovery clearly.\n\nProblems:\n\n1. Soil blocks do not visually represent their fertility rate.\n2. Moisture stays too high for too long, even when restoration is only around 30%.\n3. The landscape feels like it already has strong water retention before enough restoration has happened.\n4. The player does not clearly see the difference between degraded soil and restored soil.\n\nRevise the simulation so the land behaves like a degraded dryland at low restoration and only gains strong water retention as restoration increases.\n\n---\n\n# 1. Separate Fertility Color From Moisture Overlay\n\nSoil fertility and moisture should be visually represented separately.\n\n## Fertility Base Color\n\nThe base soil tile color should represent fertility.\n\nLow fertility:\n\n* pale beige\n* dusty tan\n* cracked\n* dry-looking\n\nMedium fertility:\n\n* warmer brown\n* less cracked\n* softer texture\n\nHigh fertility:\n\n* rich dark brown\n* organic-looking\n* healthy soil texture\n\nUse fertility to determine the base soil color.\n\nSuggested fertility color bands:\n\n0-20 fertility:\n\n* very pale tan\n* cracked texture\n\n21-40 fertility:\n\n* dusty beige-brown\n* lightly cracked\n\n41-60 fertility:\n\n* medium warm brown\n* smoother soil\n\n61-80 fertility:\n\n* rich brown\n* small organic flecks\n\n81-100 fertility:\n\n* dark living soil\n* soft texture\n* small bits of leaf matter\n\n---\n\n# 2. Moisture Overlay\n\nMoisture should be shown as an overlay on top of the fertility color.\n\nLow moisture:\n\n* dry matte appearance\n* no shine\n\nMedium moisture:\n\n* slightly darker overlay\n* softer edges\n\nHigh moisture:\n\n* visibly darker soil\n* subtle wet shine\n\nVery high moisture:\n\n* small puddle effect\n* blue tint only in basins or pond areas\n\nImportant:\n\nDo not make every wet tile blue.\n\nBlue tiles should mean actual standing water, pond, basin pool, or stream.\n\nNormal moist soil should be darker brown, not blue.\n\n---\n\n# 3. Moisture Should Decay Based on Restoration Percentage\n\nThe landscape should lose moisture quickly when restoration is low.\n\nAs restoration increases, moisture should decay more slowly.\n\nThis represents:\n\n* better soil structure\n* more organic matter\n* more roots\n* more shade\n* less runoff\n* stronger infiltration\n* more water retention\n\nAt low restoration, rain should not stay long.\n\nAt high restoration, water should linger.\n\n---\n\n# 4. Moisture Decay Curve\n\nUse restoration percentage to determine drying speed.\n\nDrying speed should be high when restoration is low and low when restoration is high.\n\nSuggested curve:\n\n0% restoration:\n\n* moisture decay per tick = very fast\n* drying multiplier = 2.00\n\n10% restoration:\n\n* drying multiplier = 1.80\n\n20% restoration:\n\n* drying multiplier = 1.60\n\n30% restoration:\n\n* drying multiplier = 1.40\n\n40% restoration:\n\n* drying multiplier = 1.20\n\n50% restoration:\n\n* drying multiplier = 1.00\n\n60% restoration:\n\n* drying multiplier = 0.80\n\n70% restoration:\n\n* drying multiplier = 0.60\n\n80% restoration:\n\n* drying multiplier = 0.40\n\n90% restoration:\n\n* drying multiplier = 0.25\n\n100% restoration:\n\n* drying multiplier = 0.15\n\nMeaning:\n\nAt 30% restoration, moisture should still drop noticeably.\n\nAt 50% restoration, moisture should last a moderate amount of time.\n\nAt 80% restoration, the ecosystem should finally have decent water retention.\n\nAt 100% restoration, moisture should remain stable and healthy.\n\n---\n\n# 5. Moisture Floor Should Also Depend on Restoration\n\nThere should be a minimum average moisture that improves as the ecosystem recovers.\n\nThis prevents the landscape from becoming completely dead again after progress.\n\nSuggested moisture floor:\n\n0% restoration: 8\n\n10% restoration: 12\n\n20% restoration: 18\n\n30% restoration: 24\n\n40% restoration: 30\n\n50% restoration: 38\n\n60% restoration: 46\n\n70% restoration: 55\n\n80% restoration: 64\n\n90% restoration: 70\n\n100% restoration: 75\n\nImportant:\n\nThis is the minimum long-term moisture floor.\n\nThe player should still see temporary wetness rise after rain and then decay down toward this floor.\n\n---\n\n# 6. Moisture Cap Based on Restoration\n\nAt low restoration, the whole landscape should not sit at 99-100% moisture.\n\nCap general soil moisture based on restoration.\n\nSuggested cap:\n\n0-20% restoration:\n\n* max normal soil moisture = 55\n\n20-40% restoration:\n\n* max normal soil moisture = 70\n\n40-60% restoration:\n\n* max normal soil moisture = 85\n\n60-70% restoration:\n\n* max normal soil moisture = 95\n\n70-100% restoration:\n\n* max normal soil moisture = 100\n\nException:\n\nBunds, ponds, and stream tiles may hold higher water values.\n\nBut ordinary soil should not remain near 100% early in the game.\n\n---\n\n# 7. Bund and Pond Behavior\n\nBefore 70% restoration:\n\nBunds catch water temporarily.\n\nWater should visibly collect during rain but slowly drain or evaporate.\n\nAfter 70% restoration:\n\nBunds can retain permanent water.\n\nSome bund tiles may become blue permanent water tiles.\n\nAfter 93% restoration:\n\nLow elevation wet spots may naturally become small water tiles or seasonal ponds.\n\nThis should communicate that the ecosystem is now self-sustaining.\n\n---\n\n# 8. Example Gameplay Feeling\n\nAt 0-30% restoration:\n\n* Rain falls\n* Soil darkens briefly\n* Water mostly runs away\n* Moisture drops quickly\n* Player feels the need to build bunds and mulch\n\nAt 40-60% restoration:\n\n* Moisture lasts longer\n* Plants help stabilize soil\n* Some areas stay damp between rain events\n* Player sees early recovery\n\nAt 70-80% restoration:\n\n* Bunds hold water permanently\n* Moisture retention feels reliable\n* Plants grow more easily\n* The valley feels alive\n\nAt 93-100% restoration:\n\n* Small water tiles appear naturally\n* Soil stays rich and dark\n* Wildlife gathers\n* The valley clearly feels restored\n\n---\n\n# 9. Pseudo-code\n\n```ts id=\"uph8es\"\nfunction getDryingMultiplier(restoration) {\n  if (restoration < 10) return 2.00;\n  if (restoration < 20) return 1.80;\n  if (restoration < 30) return 1.60;\n  if (restoration < 40) return 1.40;\n  if (restoration < 50) return 1.20;\n  if (restoration < 60) return 1.00;\n  if (restoration < 70) return 0.80;\n  if (restoration < 80) return 0.60;\n  if (restoration < 90) return 0.40;\n  if (restoration < 100) return 0.25;\n  return 0.15;\n}\n\nfunction getMoistureFloor(restoration) {\n  if (restoration < 10) return 8;\n  if (restoration < 20) return 12;\n  if (restoration < 30) return 18;\n  if (restoration < 40) return 24;\n  if (restoration < 50) return 30;\n  if (restoration < 60) return 38;\n  if (restoration < 70) return 46;\n  if (restoration < 80) return 55;\n  if (restoration < 90) return 64;\n  if (restoration < 100) return 70;\n  return 75;\n}\n\nfunction getNormalSoilMoistureCap(restoration) {\n  if (restoration < 20) return 55;\n  if (restoration < 40) return 70;\n  if (restoration < 60) return 85;\n  if (restoration < 70) return 95;\n  return 100;\n}\n\nfunction updateTileMoisture(tile, restoration) {\n  const dryingMultiplier = getDryingMultiplier(restoration);\n  const moistureFloor = getMoistureFloor(restoration);\n  const moistureCap = getNormalSoilMoistureCap(restoration);\n\n  const isPermanentWater =\n    tile.terrainType === \"pond\" ||\n    tile.terrainType === \"stream\" ||\n    tile.terrainType === \"permanent_water\";\n\n  if (!isPermanentWater) {\n    tile.moisture -= baseDryingRate * dryingMultiplier;\n    tile.moisture = Math.max(tile.moisture, moistureFloor);\n\n    if (!isBundTile(tile)) {\n      tile.moisture = Math.min(tile.moisture, moistureCap);\n    }\n  }\n}\n```\n\n---\n\n# 10. Visual Update Function\n\n```ts id=\"5b9r3e\"\nfunction getSoilBaseColor(fertility) {\n  if (fertility <= 20) return \"pale cracked tan\";\n  if (fertility <= 40) return \"dusty beige brown\";\n  if (fertility <= 60) return \"medium warm brown\";\n  if (fertility <= 80) return \"rich brown with organic flecks\";\n  return \"dark living soil\";\n}\n\nfunction getMoistureOverlay(moisture) {\n  if (moisture <= 20) return \"dry matte\";\n  if (moisture <= 40) return \"slightly darker\";\n  if (moisture <= 70) return \"moist darker soil\";\n  if (moisture <= 90) return \"wet dark soil\";\n  return \"very wet soil with subtle shine\";\n}\n```\n\n---\n\n# 11. Design Goal\n\nThe player should visually understand:\n\n* Fertility changes the base soil color.\n* Moisture temporarily darkens the soil.\n* Water retention improves only as restoration improves.\n* At 30% restoration, the land should still dry out fast.\n* Around 80% restoration, the land should finally hold moisture well.\n* At 100%, the valley should look and behave restored.\n\nThe simulation should teach:\n\nA degraded landscape cannot hold water well.\n\nRestoration improves water retention gradually.\n\nThe land should not feel healed until the player has actually restored it.",
+      "timestamp": 1781676463240,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781676643287-kwg7z9xie",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781676643287,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781676646811-kkdrmika8",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781676646811,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781676664911-12lthclne",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781676664911,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781676668106-igpp66y8y",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781676668106,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781676673008-bgxa9b22d",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781676673008,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781676676233-u8vcy5cvn",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781676676233,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781676676234-ux333n997",
+      "role": "assistant",
+      "content": "Now rewrite `tileBaseColor` in `GameScene.tsx`:",
+      "isShownToUser": true,
+      "timestamp": 1781676678827,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781676697342-mtn0m7quz",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781676697342,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781676700477-ey5m9wixp",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781676700477,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781676708039-gwc3i09kt",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781676708039,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781676712098-5us0mdeva",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781676712098,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781676714071-idmbup5ov",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781676714071,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781676719869-0u8mrhln8",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781676719869,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781676719870-f1a6ozbu1",
+      "role": "assistant",
+      "content": "All changes in. Here's what changed and why each part matters:\n\n---\n\n**Moisture decay curve** (`getDryingMultiplier`) — 10-step granular curve matching the spec exactly:\n- 0% → 2.00×, 30% → 1.60×, 50% → 1.00×, 80% → 0.40×, 100% → 0.15×\n- Players will feel a real difference between 30% and 80% — early game is noticeably dry and hostile\n\n**Moisture floor** (`getMinimumMoisture`) — steps from 8 (bare degraded) to 75 (healed):\n- At 0%: soil can drop to 8% — nearly dust\n- At 80%: never drops below 55% — the valley remembers water\n\n**Moisture cap** (`getMoistureCap`) — prevents early-game supersaturation:\n- 0–20%: max 55 (degraded land can't hold rain)\n- 20–40%: max 70\n- 60–70%: max 95\n- 70%+: max 100\n- **Bunds are exempt** — they're specifically built to hold water\n\n---\n\n**Soil color** (`tileBaseColor`) — completely reworked:\n- **Fertility is the base hue**: infertile = pale sandy tan `rgb(196,150,90)`, rich = dark warm brown `rgb(88,62,38)`\n- **Moisture darkens the result** by up to 35% — wet soil looks visibly darker, no blue\n- Grass: pale olive when infertile/dry, deep emerald when fertile/moist\n- Mulch: dark organic with subtle fertility tinting\n- **Blue is strictly reserved for `water` terrain** — ponds and pools only\n\n**Water overlay** — replaced the blue shimmer on wet tiles with a subtle dark dampness sheen (max 14% opacity black). Rain now makes soil look damper/darker, not watery.",
+      "isShownToUser": true,
+      "timestamp": 1781676731104,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781675709634,
-  "tokenUsage": 59047,
+  "updatedAt": 1781676731150,
+  "tokenUsage": 74936,
   "script": "ftue-remix",
   "claudeSessionId": "db135b8a-f658-4856-bb3d-db6da394d25c"
 }
