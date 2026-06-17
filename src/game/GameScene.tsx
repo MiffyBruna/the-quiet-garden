@@ -915,7 +915,7 @@ export function GameScene({ onShowWatershed }: {
         <div
           style={{
             position: 'absolute',
-            bottom: TOOLBAR_H + safeArea.bottom + 8,
+            bottom: safeArea.bottom + 8,
             left: 8,
             right: 8,
             background: 'rgba(20,35,20,0.94)',
@@ -991,7 +991,8 @@ export function GameScene({ onShowWatershed }: {
         </div>
       )}
 
-      {/* ── Tool Belt ────────────────────────────────────────────────────── */}
+      {/* ── Tool Belt — hidden while any dialogue is on screen ──────────── */}
+      {!ui.dialogue && (
       <div
         style={{
           position: 'absolute',
@@ -1009,8 +1010,8 @@ export function GameScene({ onShowWatershed }: {
           zIndex: 20,
         }}
       >
-        {TOOL_DEFS.map((def) => {
-          const unlocked = ui.unlockedTools.includes(def.id);
+        {TOOL_DEFS.filter((def) => ui.unlockedTools.includes(def.id)).map((def) => {
+          const unlocked = true; // already filtered to unlocked tools only
           // Rain is additionally blocked while raining / cooling down
           const rainBlocked = def.id === 'rain' && ui.rainCooling;
           const active = ui.activeTool === def.id;
@@ -1109,6 +1110,7 @@ export function GameScene({ onShowWatershed }: {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
