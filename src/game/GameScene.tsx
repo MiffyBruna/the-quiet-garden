@@ -1711,8 +1711,6 @@ export function GameScene({ onShowWatershed }: {
             {/* Dialogue panel */}
             <div
               style={{
-                position: 'relative',
-                overflow: 'visible',
                 background: 'rgba(20,35,20,0.94)',
                 borderRadius: 12,
                 border: '5px solid rgba(255, 220, 100, 0.6)',
@@ -1757,27 +1755,29 @@ export function GameScene({ onShowWatershed }: {
                   {isTyping ? 'tap to skip ▸' : 'tap to continue ▸'}
                 </div>
               </div>
-
-              {/* Moss portrait overlapping top-right corner */}
-              <img
-                src="/moss-portrait.png"
-                alt="Moss"
-                style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: 0,
-                  transform: 'translateY(-55%) scaleX(-1)',
-                  height: 350,
-                  width: 'auto',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                }}
-              />
             </div>
             </div>
           </div>
         );
       })()}
+
+      {/* Moss portrait — sibling to dialogue, anchored to bottom-right of screen */}
+      {ui.dialogue && (
+        <img
+          src="/moss-portrait.png"
+          alt=""
+          style={{
+            position: 'fixed',
+            bottom: 120,
+            right: 8,
+            height: 350,
+            width: 'auto',
+            zIndex: 43,
+            pointerEvents: 'none',
+            transform: 'scaleX(-1)',
+          }}
+        />
+      )}
 
       {/* ── Bund stencil confirm/cancel (positioning mode, no dialogue) ──── */}
       {ui.bundMode === 'positioning' && !ui.dialogue && (
