@@ -102,6 +102,7 @@ function renderFrame(
   highlights: Array<{ x: number; y: number }>,
   tick: number,
   stencilTiles: Array<{ x: number; y: number }> = [],
+  showMossHint = false,
 ): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -332,6 +333,17 @@ function renderFrame(
     ctx.fillStyle = '#5C3D2E';
     ctx.fillRect(cx - 5, cy + 7 + walkBob, 4, 4);
     ctx.fillRect(cx + 1, cy + 7 - walkBob + 2, 4, 4);
+
+    // Moss proximity hint — speech bubble floats above player
+    if (showMossHint) {
+      const bubblePulse = 0.80 + 0.20 * Math.sin(tick * 0.10);
+      ctx.globalAlpha = bubblePulse;
+      ctx.font = '14px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💬', cx, cy - 22);
+      ctx.globalAlpha = 1.0;
+    }
   }
 
   // --- Rain ---
@@ -648,6 +660,7 @@ export function GameScene({ onShowWatershed }: {
     if (nx < 1 || nx >= MAP_W - 1 || ny < 1 || ny >= MAP_H - 1) return;
     const tile = getTile(gs.tiles, nx, ny);
     if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') return;
+    if (nx === gs.mossTX && ny === gs.mossTY) return; // can't step on Moss
 
     gs.playerTX = nx;
     gs.playerTY = ny;
@@ -673,10 +686,32 @@ export function GameScene({ onShowWatershed }: {
       if (tool === 'move') {
         const tile = getTile(gs.tiles, tx, ty);
         if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') return;
-        gs.playerDestTX = tx;
-        gs.playerDestTY = ty;
-        gs.playerTX = tx;
-        gs.playerTY = ty;
+
+        let destX = tx, destY = ty;
+
+        // Magnetic redirect: clicking Moss's tile routes to the nearest free adjacent tile
+        if (tx === gs.mossTX && ty === gs.mossTY) {
+          const candidates = [
+            { x: tx - 1, y: ty }, { x: tx + 1, y: ty },
+            { x: tx, y: ty - 1 }, { x: tx, y: ty + 1 },
+            { x: tx - 1, y: ty - 1 }, { x: tx + 1, y: ty - 1 },
+            { x: tx - 1, y: ty + 1 }, { x: tx + 1, y: ty + 1 },
+          ].filter(({ x, y }) => {
+            if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
+            const t = getTile(gs.tiles, x, y);
+            return t && t.terrain !== 'rock' && t.terrain !== 'water';
+          });
+          // Prefer candidate with the smallest X distance from player (horizontal bias)
+          candidates.sort((a, b) => Math.abs(a.x - gs.playerTX) - Math.abs(b.x - gs.playerTX));
+          if (!candidates[0]) return;
+          destX = candidates[0].x;
+          destY = candidates[0].y;
+        }
+
+        gs.playerDestTX = destX;
+        gs.playerDestTY = destY;
+        gs.playerTX = destX;
+        gs.playerTY = destY;
         return;
       }
 
@@ -688,9 +723,14 @@ export function GameScene({ onShowWatershed }: {
         RundotGameAPI.analytics.recordCustomEvent('tile_inspected', { terrain: tile.terrain });
 
         if (gs.questStep === 'inspect_soil') {
-          gs.inspectedCount++;
-          if (gs.inspectedCount >= 3) {
-            advanceQuest('first_rain');
+          // Only count if this specific highlighted tile was clicked; remove it on inspection
+          const wasHighlighted = gs.highlightTiles.some((h) => h.x === tx && h.y === ty);
+          if (wasHighlighted) {
+            gs.highlightTiles = gs.highlightTiles.filter((h) => !(h.x === tx && h.y === ty));
+            gs.inspectedCount++;
+            if (gs.inspectedCount >= 3) {
+              advanceQuest('first_rain');
+            }
           }
         }
         return;
@@ -1090,7 +1130,28 @@ export function GameScene({ onShowWatershed }: {
             .map(({ dx, dy }) => ({ x: gs.playerTX + dx, y: gs.playerTY + dy }))
             .filter(({ x, y }) => x > 0 && x < MAP_W - 1 && y > 0 && y < MAP_H - 1)
         : [];
-      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles);
+
+      // Moss proximity hint
+      const playerNearMoss =
+        Math.abs(gs.playerTX - gs.mossTX) <= 2 &&
+        Math.abs(gs.playerTY - gs.mossTY) <= 2;
+      const showMossHint =
+        playerNearMoss && currentUI.activeTool === 'move' && !currentUI.dialogue;
+
+      // Imperative cursor — keeps React style clean and lets the loop override for Moss
+      if (currentUI.dialogue) {
+        canvas.style.cursor = 'default';
+      } else if (currentUI.activeTool === 'landscape' && currentUI.heldPlant) {
+        canvas.style.cursor = 'grabbing';
+      } else if (showMossHint) {
+        canvas.style.cursor = 'pointer';
+      } else if (currentUI.activeTool === 'move') {
+        canvas.style.cursor = 'crosshair';
+      } else {
+        canvas.style.cursor = 'pointer';
+      }
+
+      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles, showMossHint);
       rafRef.current = requestAnimationFrame(loop);
     };
 
@@ -1203,11 +1264,6 @@ export function GameScene({ onShowWatershed }: {
           left: 0,
           width: '100%',
           height: '100%',
-          cursor: ui.dialogue
-            ? 'default'
-            : ui.activeTool === 'landscape' && ui.heldPlant
-              ? 'grabbing'
-              : ui.activeTool === 'move' ? 'crosshair' : 'pointer',
           touchAction: 'none',
         }}
         onClick={handleCanvasClick}
