@@ -1650,7 +1650,7 @@ export function GameScene({ onShowWatershed }: {
                 objectPosition: 'bottom center',
                 filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.7))',
                 transform: 'scaleX(-1)',
-                zIndex: 39,
+                zIndex: -1,
               }}
             />
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
