@@ -1694,7 +1694,6 @@ export function GameScene({ onShowWatershed }: {
               right: 8,
               zIndex: 42,
               overflow: 'visible',
-              position: 'relative',
             }}
           >
             {/* Moss portrait anchored to top-right of bubble */}
