@@ -187,4 +187,6 @@ export interface UIState {
   wildlifeCount: number;
   rainCooling: boolean; // true while rain is active + cooldown — disables rain button
   heldPlant: PlantState | null; // landscape tool: plant picked up for relocation
+  previousTool: ToolType | null; // tool active before dialogue opened — restored on close
+  fastDialogue: boolean;         // accessibility: skip typewriter animation
 }

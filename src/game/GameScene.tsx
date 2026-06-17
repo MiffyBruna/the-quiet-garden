@@ -317,6 +317,8 @@ const INITIAL_UI: UIState = {
   wildlifeCount: 0,
   rainCooling: false,
   heldPlant: null,
+  previousTool: null,
+  fastDialogue: false,
 };
 
 export function GameScene({ onShowWatershed }: {
@@ -330,8 +332,51 @@ export function GameScene({ onShowWatershed }: {
   const uiRef = useRef<UIState>(INITIAL_UI);
   const safeArea = getSafeArea();
 
+  // Typewriter animation state
+  const [displayedText, setDisplayedText] = useState('');
+  const typewriterRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isTypingRef = useRef(false);
+
   // Keep uiRef in sync
   useEffect(() => { uiRef.current = ui; }, [ui]);
+
+  // Typewriter effect — animate dialogue text unless fast mode is on
+  useEffect(() => {
+    if (typewriterRef.current) {
+      clearInterval(typewriterRef.current);
+      typewriterRef.current = null;
+    }
+    isTypingRef.current = false;
+
+    if (!ui.dialogue) {
+      setDisplayedText('');
+      return;
+    }
+
+    const text = ui.dialogue.text;
+
+    if (ui.fastDialogue) {
+      setDisplayedText(text);
+      return;
+    }
+
+    setDisplayedText('');
+    isTypingRef.current = true;
+    let i = 0;
+    typewriterRef.current = setInterval(() => {
+      i++;
+      setDisplayedText(text.slice(0, i));
+      if (i >= text.length) {
+        clearInterval(typewriterRef.current!);
+        typewriterRef.current = null;
+        isTypingRef.current = false;
+      }
+    }, 28);
+
+    return () => {
+      if (typewriterRef.current) clearInterval(typewriterRef.current);
+    };
+  }, [ui.dialogue, ui.fastDialogue]);
 
   // -------------------------------------------------------------------------
   // Dialogue queue management
@@ -341,18 +386,52 @@ export function GameScene({ onShowWatershed }: {
     setUI((prev) => {
       const [first, ...rest] = lines;
       if (!first) return prev;
-      return { ...prev, dialogue: first, dialogueQueue: rest };
+      // Save the active tool only when transitioning from no-dialogue → dialogue
+      const previousTool = prev.dialogue === null ? prev.activeTool : prev.previousTool;
+      return { ...prev, dialogue: first, dialogueQueue: rest, previousTool };
     });
   }, []);
 
   const advanceDialogue = useCallback(() => {
     setUI((prev) => {
-      if (prev.dialogueQueue.length === 0) return { ...prev, dialogue: null, dialogueQueue: [] };
+      if (prev.dialogueQueue.length === 0) {
+        // Dialogue closing — restore the tool that was active before dialogue started
+        const restoredTool = (prev.previousTool && prev.unlockedTools.includes(prev.previousTool))
+          ? prev.previousTool
+          : prev.activeTool;
+        return { ...prev, dialogue: null, dialogueQueue: [], activeTool: restoredTool, previousTool: null };
+      }
       const [next, ...rest] = prev.dialogueQueue;
-      if (!next) return { ...prev, dialogue: null, dialogueQueue: [] };
+      if (!next) {
+        const restoredTool = (prev.previousTool && prev.unlockedTools.includes(prev.previousTool))
+          ? prev.previousTool
+          : prev.activeTool;
+        return { ...prev, dialogue: null, dialogueQueue: [], activeTool: restoredTool, previousTool: null };
+      }
       return { ...prev, dialogue: next, dialogueQueue: rest };
     });
   }, []);
+
+  // Complete typewriter instantly (jump to full text without advancing the line)
+  const completeTyping = useCallback(() => {
+    if (typewriterRef.current) {
+      clearInterval(typewriterRef.current);
+      typewriterRef.current = null;
+    }
+    isTypingRef.current = false;
+    if (uiRef.current.dialogue) {
+      setDisplayedText(uiRef.current.dialogue.text);
+    }
+  }, []);
+
+  // Called by any dialogue-advance input (key, click): skip animation first, then next line
+  const handleDialogueInput = useCallback(() => {
+    if (isTypingRef.current) {
+      completeTyping();
+    } else {
+      advanceDialogue();
+    }
+  }, [completeTyping, advanceDialogue]);
 
   // -------------------------------------------------------------------------
   // Quest step transitions
@@ -393,13 +472,18 @@ export function GameScene({ onShowWatershed }: {
 
     gsRef.current.highlightTiles = highlights;
 
-    setUI((prev) => ({
-      ...prev,
-      questStep: newStep,
-      questObjective: objective,
-      unlockedTools: newTools,
-      activeTool: newStep === 'inspect_soil' ? 'inspect' : prev.activeTool,
-    }));
+    setUI((prev) => {
+      const newActiveTool = newStep === 'inspect_soil' ? 'inspect' : prev.activeTool;
+      return {
+        ...prev,
+        questStep: newStep,
+        questObjective: objective,
+        unlockedTools: newTools,
+        activeTool: newActiveTool,
+        // Keep previousTool in sync so dialogue-close restore doesn't override quest intent
+        previousTool: prev.previousTool !== null ? newActiveTool : null,
+      };
+    });
 
     const dialogues = getQuestMossDialogue(newStep);
     if (dialogues.length > 0) queueDialogue(dialogues);
@@ -722,11 +806,11 @@ export function GameScene({ onShowWatershed }: {
       if (keyCooldown.current) return;
       const currentUI = uiRef.current;
 
-      // While dialogue is active: only advance it — block everything else
+      // While dialogue is active: any printable key, enter, space, or escape advances it
       if (currentUI.dialogue) {
-        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
-          advanceDialogue();
-        }
+        const isAdvanceKey = (e.key.length === 1 || e.key === 'Enter' || e.key === 'Escape')
+          && !e.ctrlKey && !e.metaKey;
+        if (isAdvanceKey) handleDialogueInput();
         return;
       }
 
@@ -734,6 +818,9 @@ export function GameScene({ onShowWatershed }: {
         if (currentUI.inspectedTile) setUI((p) => ({ ...p, inspectedTile: null }));
         return;
       }
+
+      // Inspect mode: movement disabled — player must switch back to Move first
+      if (currentUI.activeTool === 'inspect') return;
 
       const mvMap: Record<string, [number, number]> = {
         ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
@@ -747,7 +834,7 @@ export function GameScene({ onShowWatershed }: {
         setTimeout(() => { keyCooldown.current = false; }, 140);
       }
     };
-  }, [advanceDialogue, movePlayer]);
+  }, [handleDialogueInput, movePlayer]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => keydownRef.current(e);
@@ -760,8 +847,11 @@ export function GameScene({ onShowWatershed }: {
   // -------------------------------------------------------------------------
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-      // World is locked while dialogue is showing
-      if (uiRef.current.dialogue !== null) return;
+      // When dialogue is showing: canvas tap advances it (same as tapping the dialogue box)
+      if (uiRef.current.dialogue !== null) {
+        handleDialogueInput();
+        return;
+      }
 
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -790,7 +880,7 @@ export function GameScene({ onShowWatershed }: {
 
       useTool(tx, ty);
     },
-    [useTool],
+    [useTool, handleDialogueInput],
   );
 
   // -------------------------------------------------------------------------
@@ -897,6 +987,8 @@ export function GameScene({ onShowWatershed }: {
           animation: questFlicker 2.4s ease-out forwards;
           border: 1px solid rgba(255,220,40,0);
         }
+        @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+        .dialogue-cursor { animation: blink 0.65s step-end infinite; }
       `}</style>
 
       {/* ── Top HUD ──────────────────────────────────────────────────────── */}
@@ -1033,37 +1125,62 @@ export function GameScene({ onShowWatershed }: {
       )}
 
       {/* ── Dialogue Box ─────────────────────────────────────────────────── */}
-      {ui.dialogue && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: safeArea.bottom + 8,
-            left: 8,
-            right: 8,
-            background: 'rgba(20,35,20,0.94)',
-            borderRadius: 12,
-            border: '1px solid rgba(124,202,124,0.4)',
-            padding: 14,
-            zIndex: 40,
-          }}
-          onClick={advanceDialogue}
-        >
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <span style={{ fontSize: 30, flexShrink: 0, lineHeight: 1.1 }}>{ui.dialogue.emoji}</span>
-            <div>
-              <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700, marginBottom: 4 }}>
-                {ui.dialogue.speaker}
+      {ui.dialogue && (() => {
+        const isTyping = displayedText !== ui.dialogue.text;
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: safeArea.bottom + 8,
+              left: 8,
+              right: 8,
+              background: 'rgba(20,35,20,0.94)',
+              borderRadius: 12,
+              border: '1px solid rgba(124,202,124,0.4)',
+              padding: 14,
+              zIndex: 40,
+            }}
+            onClick={handleDialogueInput}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <span style={{ fontSize: 30, flexShrink: 0, lineHeight: 1.1 }}>{ui.dialogue.emoji}</span>
+              <div>
+                <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700, marginBottom: 4 }}>
+                  {ui.dialogue.speaker}
+                </div>
+                <div style={{ fontSize: 13, color: '#F0FFF0', lineHeight: 1.55, fontStyle: 'italic' }}>
+                  &ldquo;{displayedText}&rdquo;
+                  {isTyping && <span className="dialogue-cursor" style={{ color: '#7CCA7C', marginLeft: 1 }}>▌</span>}
+                </div>
               </div>
-              <div style={{ fontSize: 13, color: '#F0FFF0', lineHeight: 1.55, fontStyle: 'italic' }}>
-                &ldquo;{ui.dialogue.text}&rdquo;
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+              <button
+                onClick={(evt) => {
+                  evt.stopPropagation();
+                  setUI((p) => ({ ...p, fastDialogue: !p.fastDialogue }));
+                  track('custom_fast_dialogue_toggled', { enabled: !ui.fastDialogue });
+                  RundotGameAPI.analytics.recordCustomEvent('fast_dialogue_toggled', { enabled: !ui.fastDialogue });
+                }}
+                style={{
+                  background: ui.fastDialogue ? 'rgba(124,202,124,0.2)' : 'transparent',
+                  border: `1px solid ${ui.fastDialogue ? 'rgba(124,202,124,0.5)' : 'rgba(255,255,255,0.15)'}`,
+                  borderRadius: 6,
+                  padding: '2px 7px',
+                  color: ui.fastDialogue ? '#7CCA7C' : 'rgba(240,255,240,0.4)',
+                  fontSize: 9,
+                  cursor: 'pointer',
+                }}
+              >
+                {ui.fastDialogue ? '⚡ Fast' : '⏤ Normal'}
+              </button>
+              <div style={{ fontSize: 9, color: 'rgba(240,255,240,0.45)' }}>
+                {isTyping ? 'tap to skip ▸' : 'tap to continue ▸'}
               </div>
             </div>
           </div>
-          <div style={{ textAlign: 'right', fontSize: 9, color: 'rgba(240,255,240,0.45)', marginTop: 6 }}>
-            tap to continue ▸
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── Seed selector (shown when seed tool active, no dialogue) ─────── */}
       {ui.activeTool === 'seed' && !ui.dialogue && (

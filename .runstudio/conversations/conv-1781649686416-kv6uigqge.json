@@ -4043,11 +4043,394 @@
           "trigger": "auto"
         }
       }
+    },
+    {
+      "id": "user-1781674610019",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "# Input and Dialogue Controls Revision\n\n---\n\n# Inspect Mode Movement Restriction\n\nProblem:\n\nWhen the Inspect Tool is active, the player can still move using keyboard movement controls.\n\nThis often causes accidental movement while trying to inspect tiles.\n\nRequired behavior:\n\nWhen the Inspect Tool is selected:\n\n* Mouse/touch interaction is used for inspection\n* Tile hover highlighting is enabled\n* Tile information can be viewed\n* WASD movement remains disabled\n* Arrow key movement remains disabled\n\nThe player should be focused on inspecting the environment.\n\nTo move again:\n\nThe player must switch back to the Move Tool.\n\nExample:\n\nCurrent Tool = Inspect\n\nAllowed:\n\n* Inspect tile\n* Hover tile\n* View tile information\n\nDisabled:\n\n* WASD movement\n* Arrow key movement\n* Character movement\n\n---\n\n# Dialogue Advance Controls\n\nProblem:\n\nThe player must click Continue to advance dialogue.\n\nThis feels slow and repetitive.\n\nRequired behavior:\n\nWhen a dialogue box is open:\n\nThe player may advance dialogue using:\n\n* Spacebar\n* Enter\n* Any letter key\n* Any number key\n* Mouse click\n* Controller confirm button\n\nThis should feel similar to RPG dialogue systems.\n\nThe player should not need to precisely click the Continue button every time.\n\nPseudo-code:\n\n```ts\nif (dialogueOpen) {\n\n    anyKeyPressed() => advanceDialogue()\n\n}\n```\n\n---\n\n# Dialogue Priority Rules\n\nWhen dialogue is active:\n\nAllowed:\n\n* Advance dialogue\n* Skip completed dialogue\n* Close dialogue if appropriate\n\nDisabled:\n\n* Movement\n* Tool use\n* Digging\n* Planting\n* Mulching\n* Inspecting\n* Rain activation\n* Landscape editing\n\nDialogue should always have input priority.\n\n---\n\n# Dialogue Completion\n\nWhen the final dialogue line is reached:\n\n* Dialogue box closes\n* Previous tool state is restored\n* Controls are returned to the player\n\nExample:\n\nPlayer was using Inspect Tool.\n\nDialogue opens.\n\nInspect mode is paused.\n\nDialogue finishes.\n\nInspect mode becomes active again automatically.\n\nThe player returns exactly to the state they were in before the conversation.\n\n---\n\n# Accessibility Option\n\nAdd setting:\n\n\"Fast Dialogue Mode\"\n\nWhen enabled:\n\n* Any key advances dialogue instantly\n* Dialogue text appears immediately\n* No typing animation delay\n\nThis should help players who prefer faster reading.",
+      "timestamp": 1781674610019,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674617725-bd6t387ti",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781674617725,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781674809618-vqf9oexhz",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781674809618,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781674820483-quuh3soy7",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674820483,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674824967-rgox3xq29",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674824967,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674831653-7emqifqch",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674831653,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674835922-xa0vlop4e",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674835922,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674835922-1060e3y0y",
+      "role": "assistant",
+      "content": "Now I'll update `GameScene.tsx`. I'll work through all the changes systematically.",
+      "isShownToUser": true,
+      "timestamp": 1781674838577,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674842550-bmxmy1gid",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674842550,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674842550-14strvaat",
+      "role": "assistant",
+      "content": "Now add the typewriter state/refs after the existing state declarations:",
+      "isShownToUser": true,
+      "timestamp": 1781674845653,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674853337-me80gqqb7",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674853337,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674857887-ui1rueqm5",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674857887,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674857887-h6lh1629w",
+      "role": "assistant",
+      "content": "Now update `queueDialogue` to save `previousTool`, and `advanceDialogue` to restore it:",
+      "isShownToUser": true,
+      "timestamp": 1781674861565,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674870169-5s4tp6bfu",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674870169,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674874539-mjemybc7e",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674874539,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674874539-8bl128j14",
+      "role": "assistant",
+      "content": "Now add `completeTyping` and `handleDialogueInput` right after `advanceDialogue`:",
+      "isShownToUser": true,
+      "timestamp": 1781674876127,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674880519-gcmuhdas0",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674880519,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674884877-43v7qgjlx",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674884877,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674884878-m4uynyd4v",
+      "role": "assistant",
+      "content": "Now update `advanceQuest` to sync `previousTool` when it intentionally changes the active tool:",
+      "isShownToUser": true,
+      "timestamp": 1781674887551,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674890832-44jnlps5v",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674890832,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674896074-u92154twj",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674896074,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674896074-ta1s0d9fn",
+      "role": "assistant",
+      "content": "Now update the keyboard handler — expand dialogue key check to any character key, and block movement when inspect is active. I also need to add `handleDialogueInput` to the effect dependencies:",
+      "isShownToUser": true,
+      "timestamp": 1781674898975,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674909500-nk8ddplox",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674909500,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674913975-1kmbqbjin",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674913975,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674913975-k8oj5x01h",
+      "role": "assistant",
+      "content": "Now update `handleCanvasClick` to advance dialogue instead of returning early, and add `handleDialogueInput` to its deps:",
+      "isShownToUser": true,
+      "timestamp": 1781674916150,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674918815-pjj32bzw2",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674918815,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674921700-cczlm1w42",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674921700,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674927148-2g9xom5bv",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674927148,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674927148-wee5r0fjz",
+      "role": "assistant",
+      "content": "Now update the dialogue box render — use `displayedText`, add the fast mode toggle, blinking cursor, and the \"tap to skip/continue\" hint. First add the cursor animation to the `<style>` block:",
+      "isShownToUser": true,
+      "timestamp": 1781674930053,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674937646-uwdqaekir",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674937646,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674937647-70zmjnh5u",
+      "role": "assistant",
+      "content": "Now update the dialogue box component itself:",
+      "isShownToUser": true,
+      "timestamp": 1781674939387,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674954299-t13kp8gw8",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781674954299,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781674967273-en1w6j62j",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674967273,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674969451-fc2jyaxk7",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781674969451,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781674978021-w7x90d3ty",
+      "role": "assistant",
+      "content": "Clean pass. All changes compile without errors.",
+      "isShownToUser": true,
+      "timestamp": 1781674978552,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781674981190-9yyl57y0h",
+      "role": "assistant",
+      "content": "Using tool: TodoWrite",
+      "isShownToUser": true,
+      "timestamp": 1781674981190,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "TodoWrite"
+      }
+    },
+    {
+      "id": "1781674981191-p16h62uay",
+      "role": "assistant",
+      "content": "Everything's in. Here's what changed:\n\n**Inspect Mode Movement Lock**\n- Keyboard handler now checks `activeTool === 'inspect'` and returns before processing WASD/Arrow movement. To move again, switch back to the Move tool.\n\n**Dialogue Advance Controls (RPG-style)**\n- Any single character key, Enter, or Escape advances dialogue when it's open\n- Tapping anywhere on the canvas (not just the dialogue box) also advances it\n- The dialogue box click still works too\n\n**Two-stage dialogue advance**\n- If Moss's text is still typing out, first press/tap skips to the full text instantly (shows \"tap to skip ▸\")\n- Second press/tap advances to the next line (shows \"tap to continue ▸\")\n- A green blinking cursor `▌` shows while text is being typed\n\n**Tool State Restore**\n- `queueDialogue` saves the current tool as `previousTool` when dialogue opens\n- `advanceDialogue` restores it when the last line closes\n- Quest transitions (like intro → Inspect mode) update `previousTool` in sync so the restore lands on the right tool\n\n**Fast Dialogue Mode**\n- Small `⏤ Normal` / `⚡ Fast` toggle button in the dialogue box footer (tap it, it won't advance the line)\n- Fast mode skips the typewriter animation entirely — text appears all at once",
+      "isShownToUser": true,
+      "timestamp": 1781674989994,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781674155352,
-  "tokenUsage": 0,
+  "updatedAt": 1781674990078,
+  "tokenUsage": 24695,
   "script": "ftue-remix",
   "claudeSessionId": "db135b8a-f658-4856-bb3d-db6da394d25c"
 }
