@@ -628,6 +628,14 @@ export function GameScene({ onShowWatershed }: {
       }]);
     }
 
+    // First-time bund digging dialogue
+    if (gs.questStep === 'dig_bund' && !gs.bundPlaced) {
+      queueDialogue([{
+        speaker: 'Moss', emoji: '🐸',
+        text: 'Now dig each space until you fill out the template.',
+      }]);
+    }
+
     RundotGameAPI.analytics.recordCustomEvent('bund_stencil_confirmed', {
       cx: gs.playerTX, cy: gs.playerTY, tiles: validTiles.length,
     });
