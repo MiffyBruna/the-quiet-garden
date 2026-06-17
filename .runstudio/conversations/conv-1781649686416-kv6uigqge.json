@@ -4030,11 +4030,24 @@
       "timestamp": 1781674060062,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "1781674063057-bymjxx6gy",
+      "role": "system",
+      "content": "Compacting project...",
+      "isShownToUser": true,
+      "timestamp": 1781674063057,
+      "type": "compaction",
+      "metadata": {
+        "compaction": {
+          "trigger": "auto"
+        }
+      }
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781674060289,
-  "tokenUsage": 104645,
+  "updatedAt": 1781674155352,
+  "tokenUsage": 0,
   "script": "ftue-remix",
   "claudeSessionId": "db135b8a-f658-4856-bb3d-db6da394d25c"
 }
