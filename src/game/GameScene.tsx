@@ -467,9 +467,9 @@ export function GameScene({ onShowWatershed }: {
   // Calculate frog height based on screen size
   useEffect(() => {
     const calculateFrogHeight = () => {
-      // Scale based on the smaller of width/height, more aggressive scaling
+      // Scale based on the smaller of width/height, but keep visible minimum
       const minDim = Math.min(window.innerWidth, window.innerHeight);
-      const h = Math.min(280, Math.max(150, minDim * 0.35));
+      const h = Math.min(280, Math.max(180, minDim * 0.3));
       setFrogHeight(Math.round(h));
     };
     calculateFrogHeight();
