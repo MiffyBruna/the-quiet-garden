@@ -1688,14 +1688,26 @@ export function GameScene({ onShowWatershed }: {
         return (
           <div
             style={{
-              position: 'relative',
-              bottom: safeArea.bottom + 8,
-              left: 8,
-              right: 8,
+              position: 'fixed',
+              bottom: safeArea.bottom,
+              left: 0,
+              right: 0,
               zIndex: 42,
               overflow: 'visible',
+              display: 'flex',
+              justifyContent: 'center',
+              paddingLeft: 8,
+              paddingRight: 8,
+              boxSizing: 'border-box',
             }}
           >
+            <div
+              style={{
+                position: 'relative',
+                width: '100%',
+                overflow: 'visible',
+              }}
+            >
             {/* Dialogue panel */}
             <div
               style={{
@@ -1745,24 +1757,25 @@ export function GameScene({ onShowWatershed }: {
               </div>
             </div>
 
-            {/* Moss portrait peeking from above the dialogue */}
-            <img
-              src="/moss-portrait.png"
-              alt="Moss"
-              style={{
-                position: 'absolute',
-                bottom: '100%',
-                right: 0,
-                transform: 'translateY(40%) scaleX(-1)',
-                width: 'auto',
-                height: 300,
-                objectFit: 'contain',
-                objectPosition: 'bottom center',
-                filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.8))',
-                zIndex: 50,
-                pointerEvents: 'none',
-              }}
-            />
+              {/* Moss portrait peeking from above the dialogue */}
+              <img
+                src="/moss-portrait.png"
+                alt="Moss"
+                style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  right: '2rem',
+                  transform: 'translateY(40%) scaleX(-1)',
+                  width: 'auto',
+                  height: 300,
+                  objectFit: 'contain',
+                  objectPosition: 'bottom center',
+                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.8))',
+                  zIndex: 50,
+                  pointerEvents: 'none',
+                }}
+              />
+            </div>
           </div>
         );
       })()}
