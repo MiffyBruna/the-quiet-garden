@@ -252,8 +252,14 @@ export function applyShovel(gs: GameState, tx: number, ty: number): boolean {
   }
 
   // Revert human-placed bund or mulch back to dry soil
+  // Clear collected water and reset moisture when removing structures
   if (tile.terrain === 'bund' || tile.terrain === 'mulch') {
-    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+    setTile(gs.tiles, tx, ty, {
+      terrain: 'dry_soil',
+      water: 0,  // Clear any collected water
+      moisture: Math.max(8, tile.moisture * 0.6),  // Reduce moisture when reverting
+      isModified: true
+    });
     return true;
   }
 
