@@ -1630,9 +1630,9 @@ export function GameScene({ onShowWatershed }: {
               right: 8,
               background: 'rgba(20,35,20,0.94)',
               borderRadius: 12,
-              border: '1px solid rgba(124,202,124,0.4)',
+              border: 'none',
               padding: 14,
-              zIndex: 40,
+              zIndex: 42,
             }}
             onClick={handleDialogueInput}
           >
