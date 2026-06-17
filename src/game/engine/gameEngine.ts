@@ -48,11 +48,7 @@ function nextId(): string { return `e${++_eid}`; }
 export function getMinimumMoisture(restoration: number, workingBundCount = 0): number {
   if (workingBundCount < 1) return 0;  // No retention at start
   if (workingBundCount < 5) return Math.min(20, 6 + restoration * 0.4);
-  if (restoration < 10) return 10;
-  if (restoration < 20) return 14;
-  if (restoration < 30) return 20;
-  if (restoration < 40) return 26;
-  if (restoration < 50) return 33;
+  if (restoration < 50) return 10;
   if (restoration < 60) return 41;
   if (restoration < 70) return 48;
   if (restoration < 80) return 58;
