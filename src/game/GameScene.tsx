@@ -1680,7 +1680,7 @@ export function GameScene({ onShowWatershed }: {
               style={{
                 background: 'rgba(20,35,20,0.94)',
                 borderRadius: 12,
-                border: '2px solid rgba(255, 220, 100, 0.6)',
+                border: '5px solid rgba(255, 220, 100, 0.6)',
                 padding: 14,
                 position: 'relative',
                 paddingRight: 100,
