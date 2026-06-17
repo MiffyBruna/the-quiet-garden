@@ -1711,9 +1711,9 @@ export function GameScene({ onShowWatershed }: {
             {/* Dialogue panel */}
             <div
               style={{
-                background: 'rgba(20,35,20,0.94)',
+                background: 'rgb(95, 65, 45)',
                 borderRadius: 12,
-                border: '5px solid rgba(255, 220, 100, 0.6)',
+                border: '5px solid rgb(255, 220, 100)',
                 padding: 14,
                 paddingRight: 14,
               }}
