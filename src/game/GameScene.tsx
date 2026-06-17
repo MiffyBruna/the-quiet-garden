@@ -1628,65 +1628,76 @@ export function GameScene({ onShowWatershed }: {
               bottom: safeArea.bottom + 8,
               left: 8,
               right: 8,
-              background: 'rgba(20,35,20,0.94)',
-              borderRadius: 12,
-              border: 'none',
-              padding: 14,
               zIndex: 42,
+              overflow: 'visible',
             }}
-            onClick={handleDialogueInput}
           >
-            {/* Moss portrait popping from top of speech bubble */}
+            {/* Moss portrait peeking in from the right side */}
             <img
               src="/moss-portrait.png"
               alt="Moss"
               style={{
                 position: 'absolute',
-                top: -95,
-                right: 20,
-                width: 180,
-                height: 180,
+                bottom: 0,
+                right: -60,
+                width: 220,
+                height: 220,
                 objectFit: 'contain',
-                objectPosition: 'bottom center',
+                objectPosition: 'bottom right',
                 filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.7))',
                 transform: 'scaleX(-1)',
-                zIndex: -1,
+                zIndex: 43,
+                pointerEvents: 'none',
               }}
             />
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-              <span style={{ fontSize: 30, flexShrink: 0, lineHeight: 1.1 }}>{ui.dialogue.emoji}</span>
-              <div>
-                <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700, marginBottom: 4 }}>
-                  {ui.dialogue.speaker}
-                </div>
-                <div style={{ fontSize: 13, color: '#F0FFF0', lineHeight: 1.55, fontStyle: 'italic' }}>
-                  &ldquo;{renderDialogueText(displayedText)}&rdquo;
-                  {isTyping && <span className="dialogue-cursor" style={{ color: '#7CCA7C', marginLeft: 1 }}>▌</span>}
+
+            {/* Dialogue panel */}
+            <div
+              style={{
+                background: 'rgba(20,35,20,0.94)',
+                borderRadius: 12,
+                border: 'none',
+                padding: 14,
+                position: 'relative',
+                paddingRight: 100,
+              }}
+              onClick={handleDialogueInput}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <span style={{ fontSize: 30, flexShrink: 0, lineHeight: 1.1 }}>{ui.dialogue.emoji}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700, marginBottom: 4 }}>
+                    {ui.dialogue.speaker}
+                  </div>
+                  <div style={{ fontSize: 13, color: '#F0FFF0', lineHeight: 1.55, fontStyle: 'italic' }}>
+                    &ldquo;{renderDialogueText(displayedText)}&rdquo;
+                    {isTyping && <span className="dialogue-cursor" style={{ color: '#7CCA7C', marginLeft: 1 }}>▌</span>}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
-              <button
-                onClick={(evt) => {
-                  evt.stopPropagation();
-                  setUI((p) => ({ ...p, fastDialogue: !p.fastDialogue }));
-                  track('custom_fast_dialogue_toggled', { enabled: !ui.fastDialogue });
-                  RundotGameAPI.analytics.recordCustomEvent('fast_dialogue_toggled', { enabled: !ui.fastDialogue });
-                }}
-                style={{
-                  background: ui.fastDialogue ? 'rgba(124,202,124,0.2)' : 'transparent',
-                  border: `1px solid ${ui.fastDialogue ? 'rgba(124,202,124,0.5)' : 'rgba(255,255,255,0.15)'}`,
-                  borderRadius: 6,
-                  padding: '2px 7px',
-                  color: ui.fastDialogue ? '#7CCA7C' : 'rgba(240,255,240,0.4)',
-                  fontSize: 9,
-                  cursor: 'pointer',
-                }}
-              >
-                {ui.fastDialogue ? '⚡ Fast' : '⏤ Normal'}
-              </button>
-              <div style={{ fontSize: 9, color: 'rgba(240,255,240,0.45)' }}>
-                {isTyping ? 'tap to skip ▸' : 'tap to continue ▸'}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+                <button
+                  onClick={(evt) => {
+                    evt.stopPropagation();
+                    setUI((p) => ({ ...p, fastDialogue: !p.fastDialogue }));
+                    track('custom_fast_dialogue_toggled', { enabled: !ui.fastDialogue });
+                    RundotGameAPI.analytics.recordCustomEvent('fast_dialogue_toggled', { enabled: !ui.fastDialogue });
+                  }}
+                  style={{
+                    background: ui.fastDialogue ? 'rgba(124,202,124,0.2)' : 'transparent',
+                    border: `1px solid ${ui.fastDialogue ? 'rgba(124,202,124,0.5)' : 'rgba(255,255,255,0.15)'}`,
+                    borderRadius: 6,
+                    padding: '2px 7px',
+                    color: ui.fastDialogue ? '#7CCA7C' : 'rgba(240,255,240,0.4)',
+                    fontSize: 9,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {ui.fastDialogue ? '⚡ Fast' : '⏤ Normal'}
+                </button>
+                <div style={{ fontSize: 9, color: 'rgba(240,255,240,0.45)' }}>
+                  {isTyping ? 'tap to skip ▸' : 'tap to continue ▸'}
+                </div>
               </div>
             </div>
           </div>
