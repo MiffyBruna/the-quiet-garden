@@ -1781,7 +1781,7 @@ export function GameScene({ onShowWatershed }: {
           alt=""
           style={frogHeight < 180 ? {
             position: 'fixed',
-            bottom: safeArea.bottom + 130,
+            bottom: safeArea.bottom + 105,
             left: '50%',
             height: frogHeight,
             width: 'auto',
