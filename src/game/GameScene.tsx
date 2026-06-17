@@ -1319,65 +1319,79 @@ export function GameScene({ onShowWatershed }: {
       // Update both player and Moss positions during intro animation
       if (gs.introAnimationState) {
         const elapsed = gs.tick - gs.introAnimationState.startTick;
-        const walkDuration = 80; // walk toward each other
-        const circleDuration = 100; // walk around rock together
-        const returnDuration = 80; // return to original positions
-        const totalDuration = walkDuration + circleDuration + returnDuration;
+        const meetDuration = 60; // meet in middle
+        const walkDuration = 80; // walk to rock together
+        const circleDuration = 120; // circle around rock smoothly
+        const returnDuration = 100; // return home
+        const totalDuration = meetDuration + walkDuration + circleDuration + returnDuration;
 
-        if (elapsed < walkDuration) {
-          // Phase 1: Walking toward each other
-          const progress = elapsed / walkDuration;
+        // Rock location on right side of map
+        const rockCX = 27;
+        const rockCY = 18;
+
+        if (elapsed < meetDuration) {
+          // Phase 1: Walk toward each other to meet
+          const progress = elapsed / meetDuration;
+          const midX = (gs.introAnimationState.originalTX + gs.introAnimationState.targetTX) / 2;
+          const midY = (gs.introAnimationState.originalTY + gs.introAnimationState.targetTY) / 2;
+
           gs.mossTX = Math.round(
-            gs.introAnimationState.originalTX +
-            (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * progress * 0.4
+            gs.introAnimationState.originalTX + (midX - gs.introAnimationState.originalTX) * progress
           );
           gs.mossTY = Math.round(
-            gs.introAnimationState.originalTY +
-            (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * progress * 0.4
+            gs.introAnimationState.originalTY + (midY - gs.introAnimationState.originalTY) * progress
           );
           gs.playerDestTX = Math.round(
-            gs.introAnimationState.playerOriginalTX +
-            (gs.introAnimationState.originalTX - gs.introAnimationState.playerOriginalTX) * progress * 0.4
+            gs.introAnimationState.playerOriginalTX + (midX - gs.introAnimationState.playerOriginalTX) * progress
           );
           gs.playerDestTY = Math.round(
-            gs.introAnimationState.playerOriginalTY +
-            (gs.introAnimationState.originalTY - gs.introAnimationState.playerOriginalTY) * progress * 0.4
+            gs.introAnimationState.playerOriginalTY + (midY - gs.introAnimationState.playerOriginalTY) * progress
           );
-        } else if (elapsed < walkDuration + circleDuration) {
-          // Phase 2: Circle around the rock at Moss's original position
-          const circleProgress = (elapsed - walkDuration) / circleDuration;
-          const angle = circleProgress * Math.PI * 2; // full circle
-          const radius = 2; // circle around rock is 2 tiles
-          const rockCX = gs.introAnimationState.originalTX;
-          const rockCY = gs.introAnimationState.originalTY;
+        } else if (elapsed < meetDuration + walkDuration) {
+          // Phase 2: Walk together toward the rock on the right
+          const progress = (elapsed - meetDuration) / walkDuration;
+          const midX = (gs.introAnimationState.originalTX + gs.introAnimationState.targetTX) / 2;
+          const midY = (gs.introAnimationState.originalTY + gs.introAnimationState.targetTY) / 2;
 
-          // Both walk around the rock together
+          gs.mossTX = Math.round(
+            midX + (rockCX - midX) * progress
+          );
+          gs.mossTY = Math.round(
+            midY + (rockCY - midY) * progress
+          );
+          gs.playerDestTX = Math.round(
+            midX + (rockCX + 2 - midX) * progress
+          );
+          gs.playerDestTY = Math.round(
+            midY + (rockCY - midY) * progress
+          );
+        } else if (elapsed < meetDuration + walkDuration + circleDuration) {
+          // Phase 3: Circle smoothly around the rock
+          const circleProgress = (elapsed - meetDuration - walkDuration) / circleDuration;
+          const angle = circleProgress * Math.PI * 2;
+          const radius = 2.5;
+
           gs.mossTX = Math.round(rockCX + radius * Math.cos(angle));
           gs.mossTY = Math.round(rockCY + radius * Math.sin(angle));
-          gs.playerDestTX = Math.round(rockCX + radius * Math.cos(angle + Math.PI)); // opposite side
+          gs.playerDestTX = Math.round(rockCX + radius * Math.cos(angle + Math.PI));
           gs.playerDestTY = Math.round(rockCY + radius * Math.sin(angle + Math.PI));
         } else if (elapsed < totalDuration) {
-          // Phase 3: Return to original positions
-          const returnProgress = (elapsed - walkDuration - circleDuration) / returnDuration;
+          // Phase 4: Return to original positions
+          const returnProgress = (elapsed - meetDuration - walkDuration - circleDuration) / returnDuration;
+          const rockAtX = rockCX;
+          const rockAtY = rockCY;
 
-          // Moss returns to home
-          const mossEndX = gs.introAnimationState.originalTX + (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * 0.4;
-          const mossEndY = gs.introAnimationState.originalTY + (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * 0.4;
           gs.mossTX = Math.round(
-            mossEndX + (gs.introAnimationState.originalTX - mossEndX) * returnProgress
+            rockAtX + (gs.introAnimationState.originalTX - rockAtX) * returnProgress
           );
           gs.mossTY = Math.round(
-            mossEndY + (gs.introAnimationState.originalTY - mossEndY) * returnProgress
+            rockAtY + (gs.introAnimationState.originalTY - rockAtY) * returnProgress
           );
-
-          // Player returns home
-          const playerEndX = gs.introAnimationState.playerOriginalTX + (gs.introAnimationState.originalTX - gs.introAnimationState.playerOriginalTX) * 0.4;
-          const playerEndY = gs.introAnimationState.playerOriginalTY + (gs.introAnimationState.originalTY - gs.introAnimationState.playerOriginalTY) * 0.4;
           gs.playerDestTX = Math.round(
-            playerEndX + (gs.introAnimationState.playerOriginalTX - playerEndX) * returnProgress
+            rockAtX + 2 + (gs.introAnimationState.playerOriginalTX - rockAtX - 2) * returnProgress
           );
           gs.playerDestTY = Math.round(
-            playerEndY + (gs.introAnimationState.playerOriginalTY - playerEndY) * returnProgress
+            rockAtY + (gs.introAnimationState.playerOriginalTY - rockAtY) * returnProgress
           );
         } else {
           // Animation complete
@@ -1619,18 +1633,20 @@ export function GameScene({ onShowWatershed }: {
             }}
             onClick={handleDialogueInput}
           >
-            {/* Moss portrait in top-right */}
+            {/* Moss portrait peeking from top-right corner */}
             <img
               src="/moss-portrait.png"
               alt="Moss"
               style={{
                 position: 'absolute',
-                top: -28,
-                right: 8,
-                width: 104,
-                height: 104,
+                top: -50,
+                right: -25,
+                width: 120,
+                height: 120,
                 objectFit: 'contain',
-                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
+                objectPosition: 'top right',
+                filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.7))',
+                transform: 'scaleX(-1)',
                 zIndex: 41,
               }}
             />
