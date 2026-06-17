@@ -1768,12 +1768,13 @@ export function GameScene({ onShowWatershed }: {
           style={{
             position: 'fixed',
             bottom: 120,
-            right: 8,
-            height: 280,
+            left: '50%',
+            maxHeight: '30vh',
+            minHeight: 180,
             width: 'auto',
             zIndex: 42,
             pointerEvents: 'none',
-            transform: 'scaleX(-1)',
+            transform: 'translateX(-50%) scaleX(-1)',
           }}
         />
       )}
