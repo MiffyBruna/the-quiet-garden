@@ -1688,7 +1688,7 @@ export function GameScene({ onShowWatershed }: {
         return (
           <div
             style={{
-              position: 'absolute',
+              position: 'relative',
               bottom: safeArea.bottom + 8,
               left: 8,
               right: 8,
@@ -1696,25 +1696,6 @@ export function GameScene({ onShowWatershed }: {
               overflow: 'visible',
             }}
           >
-            {/* Moss portrait anchored to top-right of bubble */}
-            <img
-              src="/moss-portrait.png"
-              alt="Moss"
-              style={{
-                position: 'absolute',
-                top: -210,
-                right: 32,
-                transform: 'scaleX(-1)',
-                width: 280,
-                height: 280,
-                objectFit: 'contain',
-                objectPosition: 'bottom center',
-                filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.8))',
-                zIndex: 45,
-                pointerEvents: 'none',
-              }}
-            />
-
             {/* Dialogue panel */}
             <div
               style={{
@@ -1722,7 +1703,6 @@ export function GameScene({ onShowWatershed }: {
                 borderRadius: 12,
                 border: '5px solid rgba(255, 220, 100, 0.6)',
                 padding: 14,
-                position: 'relative',
                 paddingRight: 14,
               }}
               onClick={handleDialogueInput}
@@ -1764,6 +1744,25 @@ export function GameScene({ onShowWatershed }: {
                 </div>
               </div>
             </div>
+
+            {/* Moss portrait peeking from above the dialogue */}
+            <img
+              src="/moss-portrait.png"
+              alt="Moss"
+              style={{
+                position: 'absolute',
+                bottom: '100%',
+                right: 0,
+                transform: 'translateY(40%) scaleX(-1)',
+                width: 'auto',
+                height: 300,
+                objectFit: 'contain',
+                objectPosition: 'bottom center',
+                filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.8))',
+                zIndex: 50,
+                pointerEvents: 'none',
+              }}
+            />
           </div>
         );
       })()}
