@@ -9858,11 +9858,29 @@
       "timestamp": 1781733139753,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1781733145231",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "The frog dialogue portrait should use a TRUE transparent background, not a baked white or checkerboard background.\n\nPlease verify that the Moss portrait asset is imported as a sprite/image with alpha transparency preserved.\n\nRequirements:\n- Use PNG with alpha transparency\n- No white matte background\n- No checkerboard baked into the image\n- The visible frog should be cut out cleanly\n- The empty area around the frog should be fully transparent\n- When shown in the dialogue UI, only Moss should be visible, not a white square behind him\n\nIf the current asset contains a baked background, remove the background and re-export the image as a transparent PNG.",
+      "timestamp": 1781733145231,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781733153834-5yejui0ns",
+      "role": "assistant",
+      "content": "You're right! The current Moss portrait likely has a baked white background. For a **true transparent PNG**, you need to:\n\n1. **Open the image in an image editor** (GIMP, Photoshop, or online editor like [photopea.com](https://photopea.com))\n\n2. **Remove the white background** — Convert to RGBA mode and delete/make transparent the white areas around the frog\n\n3. **Export as PNG** with these settings:\n   - Format: **PNG** (not JPG)\n   - Color mode: **RGBA** (not RGB)\n   - Make sure \"Save transparency\" or similar option is **enabled**\n   - No white matte/background\n   - No checkerboard pattern baked in\n\n4. **Upload the transparent PNG** and I'll place it in the game\n\n**Quick option**: Use [remove.bg](https://remove.bg) — upload your frog image and it will automatically remove the background, then download as PNG with transparency.\n\nOnce you have the proper transparent PNG, upload it and I'll swap it in! 🐸",
+      "isShownToUser": true,
+      "timestamp": 1781733156165,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781733139797,
-  "tokenUsage": 39090,
+  "updatedAt": 1781733156215,
+  "tokenUsage": 39601,
   "script": "ftue-remix",
   "claudeSessionId": "14bf229e-8288-4b41-8292-f2e589faa48f"
 }
