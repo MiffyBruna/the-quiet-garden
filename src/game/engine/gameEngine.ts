@@ -48,13 +48,9 @@ function nextId(): string { return `e${++_eid}`; }
 export function getMinimumMoisture(restoration: number, workingBundCount = 0): number {
   if (workingBundCount < 1) return 0;  // No retention at start
   if (workingBundCount < 5) return Math.min(20, 6 + restoration * 0.4);
-  if (restoration < 50) return 10;
-  if (restoration < 60) return 41;
-  if (restoration < 70) return 48;
-  if (restoration < 80) return 58;
-  if (restoration < 90) return 66;
-  if (restoration < 100) return 70;
-  return 74;
+  if (restoration < 30) return 6;
+  if (restoration < 90) return 20;
+  return 30;
 }
 
 /**
@@ -129,6 +125,30 @@ function countWorkingBunds(gs: GameState): number {
     }
   }
   return count;
+}
+
+/** Calculate water retention multiplier based on mulched/bundt tile coverage. */
+function getWaterRetentionModifier(tiles: import('./types').Tile[][]): number {
+  let mulchBundCount = 0;
+  let totalSoilCount = 0;
+
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      const tile = getTile(tiles, x, y);
+      if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') continue;
+
+      totalSoilCount++;
+      if (tile.terrain === 'mulch' || tile.terrain === 'bund') {
+        mulchBundCount++;
+      }
+    }
+  }
+
+  if (totalSoilCount === 0) return 1.0;
+
+  // Coverage from 0% (1.0× drying) to 100% (0.6× drying)
+  const coverage = mulchBundCount / totalSoilCount;
+  return 1.0 - (coverage * 0.4);
 }
 
 /**
@@ -514,6 +534,7 @@ export function simulateWater(gs: GameState, restoration: number): void {
   }
 
   // Step 3: update terrain based on moisture, apply floor + cap + decay
+  const waterRetentionMod = getWaterRetentionModifier(tiles);
   for (let y = 1; y < MAP_H - 1; y++) {
     for (let x = 1; x < MAP_W - 1; x++) {
       const tile = getTile(tiles, x, y);
@@ -527,13 +548,14 @@ export function simulateWater(gs: GameState, restoration: number): void {
 
       // Moisture decay — combined formula:
       //   base × restoration_curve × bund_count_modifier × plant_modifier
-      //   × nearby_plant_cluster × mulch_modifier × erosion_drying
+      //   × nearby_plant_cluster × mulch_modifier × erosion_drying × water_retention
       // High erosion = cracked soil = much faster drying
+      // High mulch/bund coverage = better water retention
       const plantMod = getPlantRetentionModifier(tile.plant);
       const nearbyMod = getNearbyPlantModifier(tiles, x, y);
       const mulchMod = getMulchModifier(tile.terrain);
       const erosionMod = 1 + (tile.erosion / 100) * 2.0;  // 0-100 erosion → 1.0-3.0× drying rate
-      const finalRate = 0.025 * restorationMult * bundMod * plantMod * nearbyMod * mulchMod * erosionMod;
+      const finalRate = 0.025 * restorationMult * bundMod * plantMod * nearbyMod * mulchMod * erosionMod * waterRetentionMod;
       tile.moisture = Math.max(
         moistureFloor,
         Math.min(moistureCap, tile.moisture - finalRate),
