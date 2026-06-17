@@ -1703,7 +1703,7 @@ export function GameScene({ onShowWatershed }: {
               style={{
                 position: 'absolute',
                 top: -140,
-                right: 40,
+                right: -120,
                 transform: 'scaleX(-1)',
                 width: 220,
                 height: 220,
