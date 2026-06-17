@@ -174,4 +174,5 @@ export interface UIState {
   showWatershed: boolean;
   avgMoisture: number;
   wildlifeCount: number;
+  rainCooling: boolean; // true while rain is active + cooldown — disables rain button
 }

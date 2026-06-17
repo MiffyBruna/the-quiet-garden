@@ -292,6 +292,7 @@ const INITIAL_UI: UIState = {
   showWatershed: false,
   avgMoisture: 8,
   wildlifeCount: 0,
+  rainCooling: false,
 };
 
 export function GameScene({ onShowWatershed }: {
@@ -438,11 +439,21 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'bund') {
+        // During the dig_bund quest, only allow digging on the highlighted half-moon tiles
+        if (gs.questStep === 'dig_bund') {
+          const inShape = BUND_HIGHLIGHT.some(({ x, y }) => x === tx && y === ty);
+          if (!inShape) {
+            queueDialogue([{
+              speaker: 'Moss', emoji: '🐸',
+              text: 'Follow the shape. Dig only within the glowing tiles.',
+            }]);
+            return;
+          }
+        }
         const ok = applyBund(gs, tx, ty);
         if (ok) {
           track('custom_bund_placed', { tx, ty });
           if (gs.questStep === 'dig_bund') {
-            // Count how many of the 8 highlighted half-moon tiles have been dug
             const dug = BUND_HIGHLIGHT.filter(
               ({ x, y }) => getTile(gs.tiles, x, y)?.terrain === 'bund',
             ).length;
@@ -482,15 +493,44 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'seed') {
+        // During the plant_seed quest, only allow planting on the two highlighted spots
+        if (gs.questStep === 'plant_seed') {
+          const inSpot = SEED_HIGHLIGHT.some(({ x, y }) => x === tx && y === ty);
+          if (!inSpot) {
+            queueDialogue([{
+              speaker: 'Moss', emoji: '🐸',
+              text: 'Plant in the two glowing spots inside the cup. The moisture is best there.',
+            }]);
+            return;
+          }
+        }
         const result = applyPlantSeed(gs, tx, ty, currentUI.selectedSeed);
         if (result.planted) {
           const name = PLANT_REQUIREMENTS[currentUI.selectedSeed]?.name ?? currentUI.selectedSeed;
           track('custom_seed_planted', { plant: currentUI.selectedSeed });
-          queueDialogue([{
-            speaker: 'Moss', emoji: '🐸',
-            text: `A ${name} seed goes in. The soil will know what to do.`,
-          }]);
-          if (gs.questStep === 'plant_seed') advanceQuest('free_play');
+          if (gs.questStep === 'plant_seed') {
+            // Require BOTH highlighted spots to be planted before advancing
+            const bothPlanted = SEED_HIGHLIGHT.every(
+              ({ x, y }) => getTile(gs.tiles, x, y)?.plant != null,
+            );
+            if (bothPlanted) {
+              advanceQuest('free_play');
+            } else {
+              const count = SEED_HIGHLIGHT.filter(
+                ({ x, y }) => getTile(gs.tiles, x, y)?.plant != null,
+              ).length;
+              setUI((p) => ({ ...p, questObjective: `Plant Blue Grama Grass (${count}/${SEED_HIGHLIGHT.length})` }));
+              queueDialogue([{
+                speaker: 'Moss', emoji: '🐸',
+                text: `A ${name} seed goes in. Now plant one more in the other glowing spot.`,
+              }]);
+            }
+          } else {
+            queueDialogue([{
+              speaker: 'Moss', emoji: '🐸',
+              text: `A ${name} seed goes in. The soil will know what to do.`,
+            }]);
+          }
         } else if (result.reason) {
           queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: result.reason }]);
         }
@@ -963,22 +1003,23 @@ export function GameScene({ onShowWatershed }: {
       >
         {TOOL_DEFS.map((def) => {
           const unlocked = ui.unlockedTools.includes(def.id);
+          // Rain is additionally blocked while raining / cooling down
+          const rainBlocked = def.id === 'rain' && ui.rainCooling;
           const active = ui.activeTool === def.id;
           return (
             <button
               key={def.id}
-              disabled={!unlocked}
+              disabled={!unlocked || rainBlocked}
               onClick={() => {
-                if (!unlocked) return;
+                if (!unlocked || rainBlocked) return;
 
                 if (def.id === 'rain') {
                   // Handle rain directly — avoid the async activeTool read bug
                   const gs = gsRef.current;
-                  if (gs.isRaining) {
-                    queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'The rain is already falling. Let it do its work.' }]);
-                    return;
-                  }
                   triggerRain(gs);
+                  // Disable rain for the duration of rain (5s) + 10s cooldown = 15s total
+                  setUI((p) => ({ ...p, rainCooling: true }));
+                  setTimeout(() => setUI((p) => ({ ...p, rainCooling: false })), 15000);
                   track('custom_rain_called', { rains: gs.rainsCount });
                   if (gs.questStep === 'first_rain') {
                     setTimeout(() => {
