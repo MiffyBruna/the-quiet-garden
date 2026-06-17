@@ -928,15 +928,60 @@ export function GameScene({ onShowWatershed }: {
               disabled={!unlocked}
               onClick={() => {
                 if (!unlocked) return;
+
                 if (def.id === 'rain') {
-                  useTool(0, 0); // rain doesn't need a tile
+                  // Handle rain directly — avoid the async activeTool read bug
+                  const gs = gsRef.current;
+                  if (gs.isRaining) {
+                    queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'The rain is already falling. Let it do its work.' }]);
+                    return;
+                  }
+                  triggerRain(gs);
+                  track('custom_rain_called', { rains: gs.rainsCount });
+                  if (gs.questStep === 'first_rain') {
+                    setTimeout(() => {
+                      queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'The rain came. But the valley could not hold it.' }]);
+                      advanceQuest('dig_bund');
+                    }, 6000);
+                  } else if (gs.questStep === 'second_rain') {
+                    setTimeout(() => {
+                      queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'Do not chase the rain. Invite it to stay.' }]);
+                      advanceQuest('plant_seed');
+                    }, 6000);
+                  } else {
+                    const restoration = calculateRestoration(gs);
+                    if (restoration > 0) {
+                      setTimeout(() => {
+                        queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: `Moisture rises. The valley remembers a little more. ${restoration}% restored.` }]);
+                      }, 4000);
+                    }
+                  }
                   return;
                 }
+
                 if (def.id === 'talk') {
-                  setUI((p) => ({ ...p, activeTool: 'talk' }));
-                  useTool(gsRef.current.mossTX, gsRef.current.mossTY);
+                  // Handle talk directly — avoid the async activeTool read bug
+                  const gs = gsRef.current;
+                  if (gs.questStep === 'intro') {
+                    // Advance quest first (unlocks inspect tool, sets highlights),
+                    // then override dialogue queue with intro lines followed by
+                    // the inspect instruction, so the player hears both in order.
+                    advanceQuest('inspect_soil');
+                    queueDialogue([
+                      ...getQuestMossDialogue('intro'),
+                      ...getQuestMossDialogue('inspect_soil'),
+                    ]);
+                  } else {
+                    const dialogues = getQuestMossDialogue(gs.questStep);
+                    queueDialogue(dialogues.length > 0 ? dialogues : [{
+                      speaker: 'Moss', emoji: '🐸',
+                      text: 'The valley heals slowly, like memory. Each action reaches forward in time.',
+                    }]);
+                  }
+                  track('custom_moss_talked');
                   return;
                 }
+
                 if (def.id === 'journal') {
                   const gss = gsRef.current;
                   onShowWatershed(
@@ -947,6 +992,7 @@ export function GameScene({ onShowWatershed }: {
                   );
                   return;
                 }
+
                 setUI((p) => ({ ...p, activeTool: def.id, inspectedTile: null }));
                 track('custom_tool_selected', { tool: def.id });
               }}
