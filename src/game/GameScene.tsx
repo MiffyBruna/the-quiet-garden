@@ -306,6 +306,17 @@ function renderFrame(
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('Moss', sx + T / 2, sy + 2);
+
+    // Speech bubble above Moss when player is nearby
+    if (showMossHint) {
+      const bubblePulse = 0.80 + 0.20 * Math.sin(tick * 0.10);
+      ctx.globalAlpha = bubblePulse;
+      ctx.font = '14px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💬', sx + T / 2, sy - 22);
+      ctx.globalAlpha = 1.0;
+    }
   }
 
   // --- Draw player (hidden during cinematic) ---
@@ -337,17 +348,6 @@ function renderFrame(
     ctx.fillStyle = '#5C3D2E';
     ctx.fillRect(cx - 5, cy + 7 + walkBob, 4, 4);
     ctx.fillRect(cx + 1, cy + 7 - walkBob + 2, 4, 4);
-
-    // Moss proximity hint — speech bubble floats above player
-    if (showMossHint) {
-      const bubblePulse = 0.80 + 0.20 * Math.sin(tick * 0.10);
-      ctx.globalAlpha = bubblePulse;
-      ctx.font = '14px serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('💬', cx, cy - 22);
-      ctx.globalAlpha = 1.0;
-    }
   }
 
   // --- Rain ---
@@ -1140,20 +1140,21 @@ export function GameScene({ onShowWatershed }: {
       const worldX = (clientX - rect.left) * (canvas.width / rect.width) + camX;
       const worldY = (clientY - rect.top) * (canvas.height / rect.height) + camY;
 
-      // Check if clicked on speech bubble (Moss hint)
+      // Check if clicked on speech bubble above Moss
       const playerNearMoss =
         Math.abs(gs.playerTX - gs.mossTX) <= 2 &&
         Math.abs(gs.playerTY - gs.mossTY) <= 2;
       const showMossHint = playerNearMoss && currentUI.activeTool === 'move' && !currentUI.dialogue;
       if (showMossHint) {
-        const bubbleWorldX = gs.playerPX;
-        const bubbleWorldY = gs.playerPY - TILE_SIZE + 2; // bubble is at cy - 22 in screen coords
-        const bubbleScreenX = bubbleWorldX - camX;
-        const bubbleScreenY = bubbleWorldY - camY;
+        // Moss's bubble is at (mossTX * TILE_SIZE + TILE_SIZE/2, mossTY * TILE_SIZE - TILE_SIZE + 2)
+        const mossBubbleWorldX = gs.mossTX * TILE_SIZE + TILE_SIZE / 2;
+        const mossBubbleWorldY = gs.mossTY * TILE_SIZE - TILE_SIZE + 2;
+        const mossBubbleScreenX = mossBubbleWorldX - camX;
+        const mossBubbleScreenY = mossBubbleWorldY - camY;
         const screenX = (clientX - rect.left) * (canvas.width / rect.width);
         const screenY = (clientY - rect.top) * (canvas.height / rect.height);
         const bubbleRadius = 10;
-        const distSq = (screenX - bubbleScreenX) ** 2 + (screenY - bubbleScreenY) ** 2;
+        const distSq = (screenX - mossBubbleScreenX) ** 2 + (screenY - mossBubbleScreenY) ** 2;
         if (distSq <= bubbleRadius ** 2) {
           // Clicked on speech bubble — talk to Moss
           if (gs.questStep === 'intro') {
