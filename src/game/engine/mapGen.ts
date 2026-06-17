@@ -138,7 +138,9 @@ export const BUND_HIGHLIGHT: Array<{ x: number; y: number }> = [
   { x: 14, y: 16 }, { x: 15, y: 16 }, { x: 16, y: 16 },
 ];
 
+// Seed placement inside the bund cup — the 3 tiles directly below the bottom bund row
 export const SEED_HIGHLIGHT: Array<{ x: number; y: number }> = [
   { x: 14, y: 17 },
-  { x: 15, y: 18 },
+  { x: 15, y: 17 },
+  { x: 16, y: 17 },
 ];

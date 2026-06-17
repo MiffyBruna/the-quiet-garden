@@ -142,8 +142,8 @@ function renderFrame(
         }
       }
 
-      // Water overlay
-      if (tile.water > 1) {
+      // Water overlay — skip bund tiles (they use the puddle ellipse above instead)
+      if (tile.water > 1 && tile.terrain !== 'bund') {
         ctx.fillStyle = `rgba(80,140,220,${Math.min(0.55, tile.water / 120)})`;
         ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
         // Shimmer
@@ -468,17 +468,17 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'shovel') {
+        // During the dig_bund quest, bund tiles are permanent — you commit to the shape
+        if (gs.questStep === 'dig_bund' && getTile(gs.tiles, tx, ty)?.terrain === 'bund') {
+          queueDialogue([{
+            speaker: 'Moss', emoji: '🐸',
+            text: 'The earth holds. Keep digging the shape.',
+          }]);
+          return;
+        }
         const ok = applyShovel(gs, tx, ty);
         if (ok) {
           track('custom_shovel_used', { tx, ty });
-          // If player shovels a bund tile during dig_bund quest, update the counter
-          if (gs.questStep === 'dig_bund') {
-            const dug = BUND_HIGHLIGHT.filter(
-              ({ x, y }) => getTile(gs.tiles, x, y)?.terrain === 'bund',
-            ).length;
-            const total = BUND_HIGHLIGHT.length;
-            setUI((p) => ({ ...p, questObjective: `Dig the half-moon bund (${dug}/${total})` }));
-          }
         }
         return;
       }
