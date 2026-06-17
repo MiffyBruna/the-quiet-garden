@@ -1519,7 +1519,7 @@ export function GameScene({ onShowWatershed }: {
         >
           <div style={{ fontSize: 10, color: '#7CCA7C', marginBottom: 6, fontWeight: 700 }}>Select seed</div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {(['blue_grama', 'desert_marigold', 'lupine', 'sage', 'milkweed'] as PlantType[]).map((p) => {
+            {(['blue_grama', 'desert_marigold', 'lupine', 'sage', 'milkweed', 'mesquite'] as PlantType[]).map((p) => {
               const req = PLANT_REQUIREMENTS[p];
               const selected = ui.selectedSeed === p;
               return (

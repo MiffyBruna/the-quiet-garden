@@ -346,6 +346,7 @@ export const PLANT_REQUIREMENTS: Record<PlantType, {
   fertility: number;
   role: string;
   attractsWildlife: string[];
+  growthRate?: number;  // multiplier on age per tick (default 1); trees use < 1 to grow slower
 }> = {
   blue_grama: {
     name: 'Blue Grama Grass',
@@ -386,6 +387,15 @@ export const PLANT_REQUIREMENTS: Record<PlantType, {
     fertility: 25,
     role: 'Monarch host plant',
     attractsWildlife: ['monarch'],
+  },
+  mesquite: {
+    name: 'Mesquite',
+    emoji: ['🌑', '🌱', '🪴', '🌳', '🌲'],
+    moisture: 30,
+    fertility: 25,
+    role: 'Desert canopy tree',
+    attractsWildlife: ['bee', 'hawk', 'rabbit'],
+    growthRate: 0.35, // trees grow slowly — about 3× longer per stage than herbs
   },
 };
 
@@ -633,7 +643,7 @@ export function growPlants(gs: GameState, restoration: number): boolean {
       if (tile.moisture < req.moisture * 0.7) continue;
       if (tile.fertility < req.fertility * 0.7) continue;
 
-      plant.age++;
+      plant.age += req.growthRate ?? 1;
       if (plant.age >= GROWTH_TICKS_PER_STAGE) {
         plant.stage = (plant.stage + 1) as PlantStage;
         plant.age = 0;

@@ -24,7 +24,7 @@ export type TerrainType =
   | 'rock'
   | 'water'; // permanent water feature — ponds, seasonal pools
 
-export type PlantType = 'blue_grama' | 'desert_marigold' | 'lupine' | 'sage' | 'milkweed';
+export type PlantType = 'blue_grama' | 'desert_marigold' | 'lupine' | 'sage' | 'milkweed' | 'mesquite';
 export type PlantStage = 0 | 1 | 2 | 3 | 4; // seed → sprout → young → mature → blooming
 
 export interface PlantState {
