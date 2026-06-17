@@ -1765,7 +1765,7 @@ export function GameScene({ onShowWatershed }: {
                 >
                   {ui.fastDialogue ? '⚡ Fast' : '⏤ Normal'}
                 </button>
-                <div style={{ fontSize: 9, color: 'rgba(240,255,240,0.45)' }}>
+                <div style={{ fontSize: 9, color: 'rgba(240,255,240,0.45)', paddingRight: 8 }}>
                   {isTyping ? 'tap to skip ▸' : 'tap to continue ▸'}
                 </div>
               </div>
