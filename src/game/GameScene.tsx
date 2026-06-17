@@ -469,7 +469,7 @@ export function GameScene({ onShowWatershed }: {
     const calculateFrogHeight = () => {
       // Scale based on the smaller of width/height, but keep visible minimum
       const minDim = Math.min(window.innerWidth, window.innerHeight);
-      const h = Math.min(280, Math.max(180, minDim * 0.3));
+      const h = Math.min(280, Math.max(60, minDim * 0.3));
       setFrogHeight(Math.round(h));
     };
     calculateFrogHeight();
