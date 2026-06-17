@@ -1702,7 +1702,7 @@ export function GameScene({ onShowWatershed }: {
               alt="Moss"
               style={{
                 position: 'absolute',
-                bottom: -60,
+                bottom: -200,
                 right: -120,
                 width: 312,
                 height: 312,
