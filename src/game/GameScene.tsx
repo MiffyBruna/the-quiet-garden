@@ -1261,11 +1261,9 @@ export function GameScene({ onShowWatershed }: {
         if (distSq <= bubbleRadius ** 2) {
           // Clicked on speech bubble — talk to Moss
           if (gs.questStep === 'intro') {
+            // Don't repeat intro dialogue — advance directly to inspect_soil
             advanceQuest('inspect_soil');
-            queueDialogue([
-              ...getQuestMossDialogue('intro'),
-              ...getQuestMossDialogue('inspect_soil'),
-            ]);
+            queueDialogue(getQuestMossDialogue('inspect_soil'));
           } else {
             const dialogues = getQuestMossDialogue(gs.questStep);
             queueDialogue(dialogues.length > 0 ? dialogues : [{
