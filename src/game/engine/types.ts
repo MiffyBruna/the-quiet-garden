@@ -173,6 +173,15 @@ export interface GameState {
 
   // Cinematic camera (null = follow player, set during completion tour)
   cinematicCam: { px: number; py: number } | null;
+
+  // Intro animation: Moss walks toward player then back home
+  introAnimationState: null | {
+    startTick: number;
+    targetTX: number;
+    targetTY: number;
+    originalTX: number;
+    originalTY: number;
+  };
 }
 
 // ---------------------------------------------------------------------------

@@ -449,6 +449,9 @@ export function GameScene({ onShowWatershed }: {
   const typewriterRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isTypingRef = useRef(false);
 
+  // Intro animation: track if dialogue was shown last frame
+  const introDialogueWasShownRef = useRef(false);
+
   // Keep uiRef in sync
   useEffect(() => { uiRef.current = ui; }, [ui]);
 
@@ -1293,8 +1296,62 @@ export function GameScene({ onShowWatershed }: {
         },
       );
 
-      // Bund stencil: compute valid tiles from player position during positioning mode
+      // Intro animation: detect when dialogue finishes and trigger Moss walk
       const currentUI = uiRef.current;
+      const dialogueNowShowing = currentUI.dialogue !== null;
+      if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState) {
+        // Dialogue just finished — start the animation
+        // Moss walks toward player for ~3-4 steps, then back
+        gs.introAnimationState = {
+          startTick: gs.tick,
+          targetTX: gs.playerTX,
+          targetTY: gs.playerTY,
+          originalTX: gs.mossTX,
+          originalTY: gs.mossTY,
+        };
+        track('cinematic_intro_animation', {});
+        RundotGameAPI.analytics.recordCustomEvent('cinematic_intro_animation', {});
+      }
+      introDialogueWasShownRef.current = dialogueNowShowing;
+
+      // Update Moss position if intro animation is active
+      if (gs.introAnimationState) {
+        const elapsed = gs.tick - gs.introAnimationState.startTick;
+        const walkDuration = 50; // frames to walk toward player (~0.8s at 60fps)
+        const returnDuration = 50; // frames to walk back
+        const totalDuration = walkDuration + returnDuration;
+
+        if (elapsed < walkDuration) {
+          // Walking toward player
+          const progress = elapsed / walkDuration;
+          gs.mossTX = Math.round(
+            gs.introAnimationState.originalTX +
+            (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * progress
+          );
+          gs.mossTY = Math.round(
+            gs.introAnimationState.originalTY +
+            (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * progress
+          );
+        } else if (elapsed < totalDuration) {
+          // Walking back
+          const returnProgress = (elapsed - walkDuration) / returnDuration;
+          gs.mossTX = Math.round(
+            gs.introAnimationState.targetTX +
+            (gs.introAnimationState.originalTX - gs.introAnimationState.targetTX) * returnProgress
+          );
+          gs.mossTY = Math.round(
+            gs.introAnimationState.targetTY +
+            (gs.introAnimationState.originalTY - gs.introAnimationState.targetTY) * returnProgress
+          );
+        } else {
+          // Animation complete
+          gs.mossTX = gs.introAnimationState.originalTX;
+          gs.mossTY = gs.introAnimationState.originalTY;
+          gs.introAnimationState = null;
+        }
+      }
+
+      // Bund stencil: compute valid tiles from player position during positioning mode
       const stencilTiles = currentUI.bundMode === 'positioning'
         ? BUND_SHAPE_OFFSETS
             .map(({ dx, dy }) => ({ x: gs.playerTX + dx, y: gs.playerTY + dy }))

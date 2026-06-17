@@ -198,6 +198,7 @@ export function createInitialGameState(): GameState {
     workingBundCount: 0,
     firstWiltSeen: false,
     cinematicCam: null,
+    introAnimationState: null,
   };
 }
 
