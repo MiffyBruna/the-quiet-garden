@@ -468,6 +468,10 @@ export function GameScene({ onShowWatershed }: {
   const typewriterRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isTypingRef = useRef(false);
 
+  // Tile info fade animation state
+  const [tileInfoFading, setTileInfoFading] = useState(false);
+  const [displayedTileInfo, setDisplayedTileInfo] = useState<UIState['inspectedTile'] | null>(null);
+
   // Intro animation: track if dialogue was shown last frame
   const introDialogueWasShownRef = useRef(false);
 
@@ -514,6 +518,31 @@ export function GameScene({ onShowWatershed }: {
       if (typewriterRef.current) clearInterval(typewriterRef.current);
     };
   }, [ui.dialogue, ui.fastDialogue]);
+
+  // Tile info fade animation — smooth transition when switching inspected tiles
+  useEffect(() => {
+    if (!ui.inspectedTile) {
+      setDisplayedTileInfo(null);
+      setTileInfoFading(false);
+      return;
+    }
+
+    // If this is the same tile, just show it
+    if (displayedTileInfo &&
+        displayedTileInfo.x === ui.inspectedTile.x &&
+        displayedTileInfo.y === ui.inspectedTile.y) {
+      return;
+    }
+
+    // Different tile — fade out, swap, fade in
+    setTileInfoFading(true);
+    const timer = setTimeout(() => {
+      setDisplayedTileInfo(ui.inspectedTile);
+      setTileInfoFading(false);
+    }, 150); // Fade out duration
+
+    return () => clearTimeout(timer);
+  }, [ui.inspectedTile]);
 
   // -------------------------------------------------------------------------
   // Dialogue queue management
@@ -1584,7 +1613,7 @@ export function GameScene({ onShowWatershed }: {
       />
 
       {/* ── Tile Inspect Panel ───────────────────────────────────────────── */}
-      {ui.inspectedTile && !ui.dialogue && (
+      {displayedTileInfo && !ui.dialogue && (
         <div
           style={{
             position: 'absolute',
@@ -1597,6 +1626,8 @@ export function GameScene({ onShowWatershed }: {
             padding: 12,
             zIndex: 30,
             color: '#F0FFF0',
+            opacity: tileInfoFading ? 0 : 1,
+            transition: 'opacity 150ms ease-in-out',
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -1611,7 +1642,7 @@ export function GameScene({ onShowWatershed }: {
             </button>
           </div>
           {((): React.ReactNode => {
-            const t = ui.inspectedTile.tile;
+            const t = displayedTileInfo.tile;
             const terrainLabels: Record<string, string> = {
               cracked_soil: 'Cracked Soil', dry_soil: 'Dry Soil', mulch: 'Mulch',
               bund: 'Semicircular Bund', moist_soil: 'Moist Soil', grass: 'Grass',
