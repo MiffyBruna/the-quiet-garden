@@ -1050,7 +1050,7 @@ export function getQuestObjective(step: QuestStep): string {
 export const MOSS_DIALOGUES: Record<QuestStep, DialogueLine[]> = {
   intro: [
     { speaker: 'Moss', emoji: '🐸', text: 'Nothing is wrong with this place. It has simply forgotten how to keep water.' },
-    { speaker: 'Moss', emoji: '🐸', text: 'Walk with me. Let\'s inspect the soil.' },
+    { speaker: 'Moss', emoji: '🐸', text: 'Walk with me.' },
   ],
   inspect_soil: [
     { speaker: 'Moss', emoji: '🐸', text: 'Bare cracked soil lets water run away before any root can drink. Inspect a few tiles and see what we are working with.' },
