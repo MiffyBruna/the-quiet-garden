@@ -181,15 +181,12 @@ function renderFrame(
     const sx = fairy.px - camX;
     const sy = fairy.py - camY;
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
-    const glow = 0.6 + 0.4 * Math.sin(fairy.glowPhase + tick * 0.06);
-    ctx.fillStyle = `rgba(255, 240, 100, ${glow * 0.25})`;
-    ctx.beginPath();
-    ctx.arc(sx, sy, 10, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.font = '16px serif';
+    // Gentle vertical float
+    const float = Math.sin(fairy.glowPhase + tick * 0.04) * 2;
+    ctx.font = '18px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('✨', sx, sy);
+    ctx.fillText('🧚', sx, sy + float);
   }
 
   // --- Draw wildlife entities ---
