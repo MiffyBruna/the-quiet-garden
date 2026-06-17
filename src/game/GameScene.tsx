@@ -1301,52 +1301,84 @@ export function GameScene({ onShowWatershed }: {
       const dialogueNowShowing = currentUI.dialogue !== null;
       if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState) {
         // Dialogue just finished — start the animation
-        // Moss walks toward player for ~3-4 steps, then back
+        // Both player and Moss walk toward each other, meet, then walk back
         gs.introAnimationState = {
           startTick: gs.tick,
           targetTX: gs.playerTX,
           targetTY: gs.playerTY,
           originalTX: gs.mossTX,
           originalTY: gs.mossTY,
-        };
+          playerOriginalTX: gs.playerTX,
+          playerOriginalTY: gs.playerTY,
+        } as any;
         track('cinematic_intro_animation', {});
         RundotGameAPI.analytics.recordCustomEvent('cinematic_intro_animation', {});
       }
       introDialogueWasShownRef.current = dialogueNowShowing;
 
-      // Update Moss position if intro animation is active
+      // Update both player and Moss positions during intro animation
       if (gs.introAnimationState) {
         const elapsed = gs.tick - gs.introAnimationState.startTick;
-        const walkDuration = 50; // frames to walk toward player (~0.8s at 60fps)
-        const returnDuration = 50; // frames to walk back
+        const walkDuration = 100; // frames to walk toward each other (~1.67s at 60fps)
+        const returnDuration = 100; // frames to walk back together
         const totalDuration = walkDuration + returnDuration;
 
         if (elapsed < walkDuration) {
-          // Walking toward player
+          // Walking toward each other
           const progress = elapsed / walkDuration;
+          // Moss walks toward player
           gs.mossTX = Math.round(
             gs.introAnimationState.originalTX +
-            (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * progress
+            (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * progress * 0.5
           );
           gs.mossTY = Math.round(
             gs.introAnimationState.originalTY +
-            (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * progress
+            (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * progress * 0.5
+          );
+          // Player walks toward Moss
+          gs.playerDestTX = Math.round(
+            gs.introAnimationState.playerOriginalTX +
+            (gs.introAnimationState.originalTX - gs.introAnimationState.playerOriginalTX) * progress * 0.5
+          );
+          gs.playerDestTY = Math.round(
+            gs.introAnimationState.playerOriginalTY +
+            (gs.introAnimationState.originalTY - gs.introAnimationState.playerOriginalTY) * progress * 0.5
           );
         } else if (elapsed < totalDuration) {
-          // Walking back
+          // Walking back together to original positions
           const returnProgress = (elapsed - walkDuration) / returnDuration;
+          // Moss walks back to her home
+          const mossCurrentTX = gs.introAnimationState.originalTX +
+            (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * 0.5;
+          const mossCurrentTY = gs.introAnimationState.originalTY +
+            (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * 0.5;
           gs.mossTX = Math.round(
-            gs.introAnimationState.targetTX +
-            (gs.introAnimationState.originalTX - gs.introAnimationState.targetTX) * returnProgress
+            mossCurrentTX +
+            (gs.introAnimationState.originalTX - mossCurrentTX) * returnProgress
           );
           gs.mossTY = Math.round(
-            gs.introAnimationState.targetTY +
-            (gs.introAnimationState.originalTY - gs.introAnimationState.targetTY) * returnProgress
+            mossCurrentTY +
+            (gs.introAnimationState.originalTY - mossCurrentTY) * returnProgress
+          );
+          // Player walks back to their original spot
+          const playerCurrentTX = gs.introAnimationState.playerOriginalTX +
+            (gs.introAnimationState.originalTX - gs.introAnimationState.playerOriginalTX) * 0.5;
+          const playerCurrentTY = gs.introAnimationState.playerOriginalTY +
+            (gs.introAnimationState.originalTY - gs.introAnimationState.playerOriginalTY) * 0.5;
+          gs.playerDestTX = Math.round(
+            playerCurrentTX +
+            (gs.introAnimationState.playerOriginalTX - playerCurrentTX) * returnProgress
+          );
+          gs.playerDestTY = Math.round(
+            playerCurrentTY +
+            (gs.introAnimationState.playerOriginalTY - playerCurrentTY) * returnProgress
           );
         } else {
-          // Animation complete
+          // Animation complete — return to original positions
           gs.mossTX = gs.introAnimationState.originalTX;
           gs.mossTY = gs.introAnimationState.originalTY;
+          gs.playerDestTX = gs.introAnimationState.playerOriginalTX;
+          gs.playerDestTY = gs.introAnimationState.playerOriginalTY;
           gs.introAnimationState = null;
         }
       }
