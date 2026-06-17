@@ -804,6 +804,9 @@ export function GameScene({ onShowWatershed }: {
 
       if (!currentUI.unlockedTools.includes(tool)) return;
 
+      // Disable all input during intro cinematic animation
+      if (gs.introAnimationState) return;
+
       if (tool === 'move') {
         const tile = getTile(gs.tiles, tx, ty);
         if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') return;
@@ -1319,10 +1322,10 @@ export function GameScene({ onShowWatershed }: {
       // Update both player and Moss positions during intro animation
       if (gs.introAnimationState) {
         const elapsed = gs.tick - gs.introAnimationState.startTick;
-        const meetDuration = 60; // meet in middle
-        const walkDuration = 80; // walk to rock together
-        const circleDuration = 120; // circle around rock smoothly
-        const returnDuration = 100; // return home
+        const meetDuration = 100; // meet in middle — slow and graceful
+        const walkDuration = 140; // walk to rock together — leisurely pace
+        const circleDuration = 180; // circle around rock smoothly — enjoy the moment
+        const returnDuration = 140; // return home — reflective walk
         const totalDuration = meetDuration + walkDuration + circleDuration + returnDuration;
 
         // Rock location on right side of map
