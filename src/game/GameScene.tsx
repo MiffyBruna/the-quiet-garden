@@ -1636,18 +1636,18 @@ export function GameScene({ onShowWatershed }: {
             }}
             onClick={handleDialogueInput}
           >
-            {/* Moss portrait peeking from top-right corner */}
+            {/* Moss portrait popping from top of speech bubble */}
             <img
               src="/moss-portrait.png"
               alt="Moss"
               style={{
                 position: 'absolute',
-                top: -50,
-                right: -25,
+                top: -95,
+                right: 20,
                 width: 120,
                 height: 120,
                 objectFit: 'contain',
-                objectPosition: 'top right',
+                objectPosition: 'bottom center',
                 filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.7))',
                 transform: 'scaleX(-1)',
                 zIndex: 41,
