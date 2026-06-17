@@ -579,8 +579,11 @@ export function GameScene({ onShowWatershed }: {
       return getTile(gs.tiles, x, y)?.terrain === 'rock';
     });
 
+    const mossInShape = allShapeTiles.some(({ x, y }) => x === gs.mossTX && y === gs.mossTY);
+
     const validTiles = allShapeTiles.filter(({ x, y }) => {
       if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
+      if (x === gs.mossTX && y === gs.mossTY) return false; // never dig under Moss
       const t = getTile(gs.tiles, x, y);
       return t && t.terrain !== 'rock' && t.terrain !== 'water';
     });
@@ -591,6 +594,13 @@ export function GameScene({ onShowWatershed }: {
         text: 'Rocks resist the shovel here. Move to softer ground before digging the bund.',
       }]);
       return;
+    }
+
+    if (mossInShape) {
+      queueDialogue([{
+        speaker: 'Moss', emoji: '🐸',
+        text: "I'd rather not be dug up, thank you. The rest of the shape is marked — carry on.",
+      }]);
     }
 
     gs.highlightTiles = validTiles;
