@@ -82,7 +82,7 @@ export interface Tile {
 // Tools
 // ---------------------------------------------------------------------------
 
-export type ToolType = 'move' | 'inspect' | 'bund' | 'mulch' | 'seed' | 'rain' | 'talk' | 'journal';
+export type ToolType = 'move' | 'inspect' | 'bund' | 'mulch' | 'seed' | 'rain' | 'talk' | 'journal' | 'shovel';
 
 // ---------------------------------------------------------------------------
 // Quest

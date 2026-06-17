@@ -16,7 +16,7 @@ import {
 } from './engine/types';
 import {
   createInitialGameState,
-  applyBund, applyMulch, applyPlantSeed,
+  applyBund, applyMulch, applyPlantSeed, applyShovel,
   triggerRain, updateGame,
   PLANT_REQUIREMENTS, calculateRestoration,
   getQuestObjective, getQuestMossDialogue,
@@ -352,17 +352,17 @@ export function GameScene({ onShowWatershed }: {
         break;
       case 'dig_bund':
         highlights.push(...BUND_HIGHLIGHT);
-        newTools = [...new Set([...newTools, 'bund' as ToolType])];
+        newTools = [...new Set([...newTools, 'bund' as ToolType, 'shovel' as ToolType])];
         break;
       case 'second_rain':
         newTools = [...new Set([...newTools, 'rain' as ToolType])];
         break;
       case 'plant_seed':
         highlights.push(...SEED_HIGHLIGHT);
-        newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType])];
+        newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType, 'shovel' as ToolType])];
         break;
       case 'free_play':
-        newTools = ['move', 'inspect', 'bund', 'mulch', 'seed', 'rain', 'talk', 'journal'];
+        newTools = ['move', 'inspect', 'bund', 'mulch', 'seed', 'rain', 'talk', 'journal', 'shovel'];
         break;
       default:
         break;
@@ -463,6 +463,22 @@ export function GameScene({ onShowWatershed }: {
         const ok = applyMulch(gs, tx, ty);
         if (ok) {
           track('custom_mulch_placed', { tx, ty });
+        }
+        return;
+      }
+
+      if (tool === 'shovel') {
+        const ok = applyShovel(gs, tx, ty);
+        if (ok) {
+          track('custom_shovel_used', { tx, ty });
+          // If player shovels a bund tile during dig_bund quest, update the counter
+          if (gs.questStep === 'dig_bund') {
+            const dug = BUND_HIGHLIGHT.filter(
+              ({ x, y }) => getTile(gs.tiles, x, y)?.terrain === 'bund',
+            ).length;
+            const total = BUND_HIGHLIGHT.length;
+            setUI((p) => ({ ...p, questObjective: `Dig the half-moon bund (${dug}/${total})` }));
+          }
         }
         return;
       }
@@ -706,6 +722,21 @@ export function GameScene({ onShowWatershed }: {
         paddingBottom: safeArea.bottom,
       }}
     >
+      <style>{`
+        @keyframes questFlicker {
+          0%   { border-color: rgba(255,220,40,0.0); box-shadow: none; }
+          15%  { border-color: rgba(255,220,40,0.9); box-shadow: 0 0 7px rgba(255,220,40,0.5); }
+          30%  { border-color: rgba(255,220,40,0.2); box-shadow: none; }
+          50%  { border-color: rgba(255,220,40,0.9); box-shadow: 0 0 7px rgba(255,220,40,0.5); }
+          70%  { border-color: rgba(255,220,40,0.2); box-shadow: none; }
+          85%  { border-color: rgba(255,220,40,0.6); box-shadow: 0 0 4px rgba(255,220,40,0.3); }
+          100% { border-color: rgba(255,220,40,0.0); box-shadow: none; }
+        }
+        .quest-objective {
+          animation: questFlicker 2.4s ease-out forwards;
+          border: 1px solid rgba(255,220,40,0);
+        }
+      `}</style>
       {/* ── Top HUD ──────────────────────────────────────────────────────── */}
       <div
         style={{
@@ -731,6 +762,8 @@ export function GameScene({ onShowWatershed }: {
             Ch.1: The Valley That Forgot the Rain
           </div>
           <div
+            key={ui.questStep}
+            className="quest-objective"
             style={{
               fontSize: 10,
               color: '#F0FFF0',
@@ -1041,6 +1074,7 @@ const TOOL_DEFS: Array<{ id: ToolType; emoji: string; label: string }> = [
   { id: 'move',    emoji: '👟', label: 'Move' },
   { id: 'inspect', emoji: '🔍', label: 'Inspect' },
   { id: 'bund',    emoji: '🌙', label: 'Dig Bund' },
+  { id: 'shovel',  emoji: '⛏️',  label: 'Undo' },
   { id: 'mulch',   emoji: '🍂', label: 'Mulch' },
   { id: 'seed',    emoji: '🌱', label: 'Plant' },
   { id: 'rain',    emoji: '☔', label: 'Rain' },

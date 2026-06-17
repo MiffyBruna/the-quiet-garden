@@ -96,6 +96,9 @@ export function applyBund(gs: GameState, tx: number, ty: number): boolean {
 }
 
 export function applyMulch(gs: GameState, tx: number, ty: number): boolean {
+  // Don't allow mulching the tile Moss is standing on
+  if (tx === gs.mossTX && ty === gs.mossTY) return false;
+
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return false;
   if (tile.terrain === 'rock' || tile.terrain === 'bund' || tile.terrain === 'mulch') return false;
@@ -110,12 +113,37 @@ export function applyMulch(gs: GameState, tx: number, ty: number): boolean {
   return true;
 }
 
+export function applyShovel(gs: GameState, tx: number, ty: number): boolean {
+  const tile = getTile(gs.tiles, tx, ty);
+  if (!tile) return false;
+  if (tile.terrain === 'rock') return false;
+
+  // Remove a plant first if one is present
+  if (tile.plant) {
+    setTile(gs.tiles, tx, ty, { plant: undefined, isModified: true });
+    return true;
+  }
+
+  // Revert human-placed bund or mulch back to dry soil
+  if (tile.terrain === 'bund' || tile.terrain === 'mulch') {
+    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+    return true;
+  }
+
+  return false;
+}
+
 export function applyPlantSeed(
   gs: GameState,
   tx: number,
   ty: number,
   plantType: PlantType,
 ): { planted: boolean; reason: string } {
+  // Don't allow planting on the tile Moss is standing on
+  if (tx === gs.mossTX && ty === gs.mossTY) {
+    return { planted: false, reason: 'Moss is standing there.' };
+  }
+
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return { planted: false, reason: 'No tile here.' };
   if (tile.terrain === 'rock') return { planted: false, reason: 'Cannot plant on rock.' };
