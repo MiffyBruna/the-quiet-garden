@@ -142,13 +142,14 @@ function renderFrame(
         }
       }
 
-      // Water overlay — skip bund tiles (they use the puddle ellipse above instead)
-      if (tile.water > 1 && tile.terrain !== 'bund') {
-        ctx.fillStyle = `rgba(80,140,220,${Math.min(0.55, tile.water / 120)})`;
+      // Water overlay — only show on non-bund tiles with significant water,
+      // and never on tiles with plants (keeps plants clean and readable).
+      // Threshold > 10 prevents transient rain-pass water from tinting the whole map.
+      if (tile.water > 10 && tile.terrain !== 'bund' && !tile.plant) {
+        ctx.fillStyle = `rgba(80,140,220,${Math.min(0.45, tile.water / 140)})`;
         ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
-        // Shimmer
         if (tick % 12 < 6) {
-          ctx.fillStyle = 'rgba(180,220,255,0.12)';
+          ctx.fillStyle = 'rgba(180,220,255,0.10)';
           ctx.fillRect(sx + 2, sy + 2, T - 4, 2);
         }
       }

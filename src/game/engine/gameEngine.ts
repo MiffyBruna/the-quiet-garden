@@ -676,7 +676,7 @@ export function getQuestObjective(step: QuestStep): string {
     case 'dig_bund':      return 'Dig a semicircular bund';
     case 'second_rain':   return 'Call gentle rain again ☔';
     case 'plant_seed':    return 'Plant Blue Grama Grass 🌱';
-    case 'free_play':     return 'Restore the valley';
+    case 'free_play':     return 'Call rain ☔ to grow your seeds';
     default:              return '';
   }
 }
@@ -705,7 +705,8 @@ export const MOSS_DIALOGUES: Record<QuestStep, DialogueLine[]> = {
   ],
   free_play: [
     { speaker: 'Moss', emoji: '🐸', text: 'One good rain held a little longer. That is how healing starts.' },
-    { speaker: 'Moss', emoji: '🐸', text: 'Keep going. The valley has more to remember.' },
+    { speaker: 'Moss', emoji: '🐸', text: 'Now call more rain to help the seeds grow. Watch the sprouts — they will tell you when the soil is ready for more plants.' },
+    { speaker: 'Moss', emoji: '🐸', text: 'Once the grasses take hold, try adding mulch between them, then plant a Desert Marigold. Pollinators will follow.' },
   ],
 };
 
