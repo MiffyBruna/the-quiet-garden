@@ -89,22 +89,27 @@ export function applyBund(gs: GameState, tx: number, ty: number): boolean {
   if (!tile) return false;
   if (tile.terrain === 'rock' || tile.terrain === 'bund') return false;
 
-  setTile(gs.tiles, tx, ty, { terrain: 'bund', isModified: true });
-
-  // Place adjacent bund tiles for 3-wide semicircle shape
-  const adjacentPairs: Array<[number, number]> = [
-    [tx - 1, ty], [tx + 1, ty],
+  // Half-moon shape: 5 tiles across the top row, 3 tiles centered on the row below.
+  //   [·][·][X][·][·]   ← top row  (ty)
+  //      [·][X][·]       ← bottom row (ty+1)
+  // The opening faces south so it cups water flowing downhill.
+  const shape: Array<[number, number]> = [
+    [tx - 2, ty], [tx - 1, ty], [tx, ty], [tx + 1, ty], [tx + 2, ty],
+    [tx - 1, ty + 1], [tx, ty + 1], [tx + 1, ty + 1],
   ];
-  for (const [ax, ay] of adjacentPairs) {
+
+  let placed = false;
+  for (const [ax, ay] of shape) {
     if (!inBounds(ax, ay)) continue;
-    const adj = getTile(gs.tiles, ax, ay);
-    if (adj && adj.terrain !== 'rock') {
+    const t = getTile(gs.tiles, ax, ay);
+    if (t && t.terrain !== 'rock') {
       setTile(gs.tiles, ax, ay, { terrain: 'bund', isModified: true });
+      placed = true;
     }
   }
 
-  gs.bundPlaced = true;
-  return true;
+  if (placed) gs.bundPlaced = true;
+  return placed;
 }
 
 export function applyMulch(gs: GameState, tx: number, ty: number): boolean {
