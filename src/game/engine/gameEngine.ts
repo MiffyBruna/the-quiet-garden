@@ -37,6 +37,32 @@ let _eid = 0;
 function nextId(): string { return `e${++_eid}`; }
 
 // ---------------------------------------------------------------------------
+// Ecological moisture helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the minimum moisture floor at a given restoration %.
+ * Soil can never fall below this — healthy ecosystems retain water.
+ *
+ * 0–70%:  28 + 5 per 10% step
+ * 70–100%: 63 + 3 per 10% step
+ */
+export function getMinimumMoisture(restoration: number): number {
+  if (restoration <= 70) {
+    return 28 + Math.floor(restoration / 10) * 5;
+  }
+  return 63 + Math.floor((restoration - 70) / 10) * 3;
+}
+
+/**
+ * Returns a drying-speed multiplier.
+ * At 0% restoration the land dries fast (1.0×); at 100% it dries very slowly (0.15×).
+ */
+export function getDryingMultiplier(restoration: number): number {
+  return Math.max(0.15, 1.0 - (restoration / 100) * 0.85);
+}
+
+// ---------------------------------------------------------------------------
 // Initial state
 // ---------------------------------------------------------------------------
 
@@ -77,6 +103,10 @@ export function createInitialGameState(): GameState {
     discoveredWildlife: [],
     discoveredFairies: [],
     discoveredPlants: [],
+
+    restorationMilestonesSeen: [],
+    completionTriggered: false,
+    cinematicCam: null,
   };
 }
 
@@ -87,7 +117,8 @@ export function createInitialGameState(): GameState {
 export function applyBund(gs: GameState, tx: number, ty: number): boolean {
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return false;
-  if (tile.terrain === 'rock' || tile.terrain === 'bund') return false;
+  if (tile.terrain === 'rock' || tile.terrain === 'bund' || tile.terrain === 'water') return false;
+  if (tile.plant) return false; // plant blocks reshaping — caller shows message
 
   // Place a single bund tile — the player carves the half-moon one tile at a time.
   setTile(gs.tiles, tx, ty, { terrain: 'bund', isModified: true });
@@ -101,7 +132,11 @@ export function applyMulch(gs: GameState, tx: number, ty: number): boolean {
 
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return false;
-  if (tile.terrain === 'rock' || tile.terrain === 'bund' || tile.terrain === 'mulch') return false;
+  if (
+    tile.terrain === 'rock' || tile.terrain === 'bund' ||
+    tile.terrain === 'mulch' || tile.terrain === 'water'
+  ) return false;
+  if (tile.plant) return false; // plant is established — caller shows message
 
   setTile(gs.tiles, tx, ty, {
     terrain: 'mulch',
@@ -116,7 +151,7 @@ export function applyMulch(gs: GameState, tx: number, ty: number): boolean {
 export function applyShovel(gs: GameState, tx: number, ty: number): boolean {
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return false;
-  if (tile.terrain === 'rock') return false;
+  if (tile.terrain === 'rock' || tile.terrain === 'water') return false;
 
   // Remove a plant first if one is present
   if (tile.plant) {
@@ -131,6 +166,37 @@ export function applyShovel(gs: GameState, tx: number, ty: number): boolean {
   }
 
   return false;
+}
+
+export function applyLandscape(
+  gs: GameState,
+  tx: number, ty: number,
+  heldPlant: import('./types').PlantState | null,
+): { action: 'picked' | 'placed' | 'none'; plant: import('./types').PlantState | null } {
+  const tile = getTile(gs.tiles, tx, ty);
+  if (!tile) return { action: 'none', plant: null };
+
+  // If holding a plant, try to place it here
+  if (heldPlant) {
+    if (
+      tile.terrain !== 'rock' && tile.terrain !== 'water' &&
+      tile.terrain !== 'bund' && !tile.plant &&
+      tx !== gs.mossTX || ty !== gs.mossTY
+    ) {
+      setTile(gs.tiles, tx, ty, { plant: { ...heldPlant }, isModified: true });
+      return { action: 'placed', plant: null };
+    }
+    return { action: 'none', plant: heldPlant }; // can't place here, keep holding
+  }
+
+  // Not holding — try to pick up a mature+ plant
+  if (tile.plant && tile.plant.stage >= 3) {
+    const picked = { ...tile.plant };
+    setTile(gs.tiles, tx, ty, { plant: undefined, isModified: true });
+    return { action: 'picked', plant: picked };
+  }
+
+  return { action: 'none', plant: null };
 }
 
 export function applyPlantSeed(
@@ -148,6 +214,7 @@ export function applyPlantSeed(
   if (!tile) return { planted: false, reason: 'No tile here.' };
   if (tile.terrain === 'rock') return { planted: false, reason: 'Cannot plant on rock.' };
   if (tile.terrain === 'bund') return { planted: false, reason: 'Plant near the bund, not on it.' };
+  if (tile.terrain === 'water') return { planted: false, reason: 'Cannot plant in open water.' };
   if (tile.plant) return { planted: false, reason: 'Something is already growing here.' };
 
   const req = PLANT_REQUIREMENTS[plantType];
@@ -265,14 +332,17 @@ function terrainAbsorption(terrain: TerrainType): number {
     case 'moist_soil':   return 0.40;
     case 'grass':        return 0.50;
     case 'rock':         return 0.02;
+    case 'water':        return 0.95; // permanent water tiles absorb freely
     default:             return 0.15;
   }
 }
 
-export function simulateWater(gs: GameState): void {
+export function simulateWater(gs: GameState, restoration: number): void {
   const { tiles } = gs;
+  const moistureFloor = getMinimumMoisture(restoration);
+  const dryingMult = getDryingMultiplier(restoration);
 
-  // Step 1: add rainfall to all non-rock tiles
+  // Step 1: add rainfall to all non-rock, non-water tiles
   if (gs.isRaining) {
     for (let y = 0; y < MAP_H; y++) {
       for (let x = 0; x < MAP_W; x++) {
@@ -294,10 +364,18 @@ export function simulateWater(gs: GameState): void {
       const absorbed = tile.water * absorption;
       let runoff = tile.water - absorbed;
 
-      // Bunds catch and hold water
       if (tile.terrain === 'bund') {
         tile.water = Math.min(100, tile.water);
         tile.moisture = Math.min(100, tile.moisture + absorbed * 0.8);
+
+        // At 70%+ restoration, bunds with sustained high moisture become permanent ponds
+        if (restoration >= 70 && tile.moisture >= 80 && Math.random() < 0.005) {
+          setTile(tiles, x, y, { terrain: 'water', water: 80, isModified: true });
+        }
+      } else if (tile.terrain === 'water') {
+        // Permanent water tiles just stay full and overflow a little
+        tile.moisture = 100;
+        tile.water = Math.min(100, tile.water + absorbed * 0.2);
       } else {
         tile.moisture = Math.min(100, tile.moisture + absorbed * 0.4);
         tile.water = 0;
@@ -307,7 +385,7 @@ export function simulateWater(gs: GameState): void {
 
       // Flow to lower adjacent tiles (prefer south/downhill)
       const neighbors: Array<[number, number, number]> = [
-        [x, y + 1, getTile(tiles, x, y + 1)?.elevation ?? 10],    // south (downhill)
+        [x, y + 1, getTile(tiles, x, y + 1)?.elevation ?? 10],
         [x - 1, y, getTile(tiles, x - 1, y)?.elevation ?? 10],
         [x + 1, y, getTile(tiles, x + 1, y)?.elevation ?? 10],
       ];
@@ -326,14 +404,20 @@ export function simulateWater(gs: GameState): void {
     }
   }
 
-  // Step 3: update terrain based on moisture
+  // Step 3: update terrain based on moisture, apply floor + decay
   for (let y = 1; y < MAP_H - 1; y++) {
     for (let x = 1; x < MAP_W - 1; x++) {
       const tile = getTile(tiles, x, y);
       if (!tile) continue;
 
-      // Natural moisture decay
-      tile.moisture = Math.max(0, tile.moisture - 0.01);
+      // Permanent water tiles stay wet — skip decay
+      if (tile.terrain === 'water') {
+        tile.moisture = 100;
+        continue;
+      }
+
+      // Moisture decay — slower as ecosystem matures
+      tile.moisture = Math.max(moistureFloor, tile.moisture - 0.01 * dryingMult);
 
       // Moisture improves fertility and reduces erosion slowly
       if (tile.moisture > 30) {
@@ -349,8 +433,35 @@ export function simulateWater(gs: GameState): void {
         tile.terrain = 'grass';
       }
 
-      // Water evaporates
+      // Water surface evaporates
       tile.water = Math.max(0, tile.water * 0.92);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Natural water feature expansion (93%+ restoration)
+// ---------------------------------------------------------------------------
+
+function tryExpandWaterFeatures(gs: GameState): void {
+  const tiles = gs.tiles;
+  for (let y = 2; y < MAP_H - 2; y++) {
+    for (let x = 2; x < MAP_W - 2; x++) {
+      const tile = getTile(tiles, x, y);
+      if (!tile || tile.terrain === 'water' || tile.terrain === 'rock') continue;
+      if (tile.plant) continue; // don't flood established plants
+      if (tile.moisture <= 70 || tile.fertility <= 60) continue;
+      if (tile.elevation > 3) continue; // only low-lying areas
+
+      // Must neighbour an existing water or bund tile
+      const hasWaterNeighbour = [
+        getTile(tiles, x - 1, y), getTile(tiles, x + 1, y),
+        getTile(tiles, x, y - 1), getTile(tiles, x, y + 1),
+      ].some((t) => t?.terrain === 'water' || t?.terrain === 'bund');
+
+      if (hasWaterNeighbour && Math.random() < 0.0003) {
+        setTile(tiles, x, y, { terrain: 'water', water: 60, moisture: 100, isModified: true });
+      }
     }
   }
 }
@@ -402,6 +513,7 @@ interface GameStats {
   mulchCount: number;
   restoration: number;
   plantDiversity: number;
+  waterTileCount: number;
 }
 
 const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
@@ -441,6 +553,16 @@ const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
     wisdom: 'A rabbit is not a pest. It is a sign of enough abundance to share.',
   },
   {
+    type: 'frog', emoji: '🐸',
+    check: (_, s) => s.waterTileCount >= 2,
+    wisdom: 'Frogs return when the water stays. They are the valley\'s memory of what it once was.',
+  },
+  {
+    type: 'dragonfly', emoji: '🪲',
+    check: (_, s) => s.waterTileCount >= 3,
+    wisdom: 'Dragonflies emerge from still water. A pond is never just a pond.',
+  },
+  {
     type: 'quail', emoji: '🐦',
     check: (_, s) => s.restoration >= 70,
     wisdom: 'Quail scatter seeds as they walk. They are gardeners who do not know it.',
@@ -462,6 +584,7 @@ function computeGameStats(gs: GameState): GameStats {
   let tileCount = 0;
   let bloomCount = 0;
   let mulchCount = 0;
+  let waterTileCount = 0;
   const plantTypesFound = new Set<string>();
 
   for (let y = 0; y < MAP_H; y++) {
@@ -471,6 +594,7 @@ function computeGameStats(gs: GameState): GameStats {
       tileCount++;
       totalFertility += tile.fertility;
       if (tile.terrain === 'mulch') mulchCount++;
+      if (tile.terrain === 'water') waterTileCount++;
       if (tile.plant) {
         plantTypesFound.add(tile.plant.type);
         if (tile.plant.stage >= 4) bloomCount++;
@@ -482,6 +606,7 @@ function computeGameStats(gs: GameState): GameStats {
     avgFertility: tileCount > 0 ? totalFertility / tileCount : 0,
     bloomCount,
     mulchCount,
+    waterTileCount,
     plantDiversity: plantTypesFound.size,
     restoration: calculateRestoration(gs),
   };
@@ -710,6 +835,34 @@ export const MOSS_DIALOGUES: Record<QuestStep, DialogueLine[]> = {
   ],
 };
 
+/** Milestone dialogue — Moss comments as the ecosystem heals */
+export const MOSS_MILESTONE_DIALOGUES: Record<number, DialogueLine> = {
+  20: { speaker: 'Moss', emoji: '🐸', text: 'The soil is beginning to remember.' },
+  40: { speaker: 'Moss', emoji: '🐸', text: 'Roots are helping the valley hold water now.' },
+  60: { speaker: 'Moss', emoji: '🐸', text: 'The land no longer loses every drop.' },
+  80: { speaker: 'Moss', emoji: '🐸', text: 'The valley is starting to sustain itself.' },
+};
+
+/** The 100% completion sequence */
+export const MOSS_COMPLETION_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Moss', emoji: '🐸', text: 'Look around.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'The valley is holding water.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'The flowers are feeding insects.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'The insects are feeding birds.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'The roots are holding soil.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'You did not save this place.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'You helped it remember.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'The valley remembers now.' },
+];
+
+/** Post-completion landscape tool dialogue */
+export const MOSS_LANDSCAPE_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Moss', emoji: '🐸', text: 'The hard work is finished.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'Now comes the fun part.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'A healthy garden is not frozen. It keeps changing.' },
+  { speaker: 'Moss', emoji: '🐸', text: 'Make this place your own.' },
+];
+
 export function getQuestMossDialogue(step: QuestStep): DialogueLine[] {
   return MOSS_DIALOGUES[step] ?? [];
 }
@@ -722,6 +875,8 @@ export function updateGame(
   gs: GameState,
   dt: number,
   onUIChange?: (restoration: number, avgMoisture: number, wildlifeCount: number, questStep: QuestStep) => void,
+  onMilestone?: (milestone: number, line: DialogueLine) => void,
+  onCompletion?: () => void,
 ): void {
   gs.tick++;
 
@@ -746,8 +901,13 @@ export function updateGame(
   const now = gs.tick * 16;
   if (now - gs.lastPhysicsTick >= 100) {
     gs.lastPhysicsTick = now;
+    const restoration = calculateRestoration(gs);
     if (gs.isRaining || hasPondedWater(gs)) {
-      simulateWater(gs);
+      simulateWater(gs, restoration);
+    }
+    // 93%+ tipping point: natural water feature expansion
+    if (restoration >= 93) {
+      tryExpandWaterFeatures(gs);
     }
   }
 
@@ -764,11 +924,28 @@ export function updateGame(
   // Wildlife movement
   updateWildlife(gs, dt);
 
-  // Notify React
+  // Notify React every ~0.5s
   if (onUIChange && gs.tick % 30 === 0) {
     const restoration = calculateRestoration(gs);
     const avgMoisture = getAvgMoisture(gs);
     onUIChange(restoration, avgMoisture, gs.discoveredWildlife.length, gs.questStep);
+
+    // Check ecological milestones (only in free_play)
+    if (onMilestone && gs.questStep === 'free_play') {
+      for (const pct of [20, 40, 60, 80] as const) {
+        if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
+          gs.restorationMilestonesSeen.push(pct);
+          const line = MOSS_MILESTONE_DIALOGUES[pct];
+          if (line) onMilestone(pct, line);
+        }
+      }
+    }
+
+    // 100% completion (once only)
+    if (onCompletion && !gs.completionTriggered && restoration >= 100) {
+      gs.completionTriggered = true;
+      onCompletion();
+    }
   }
 }
 
@@ -776,7 +953,7 @@ function hasPondedWater(gs: GameState): boolean {
   for (let y = 0; y < MAP_H; y++) {
     for (let x = 0; x < MAP_W; x++) {
       const t = getTile(gs.tiles, x, y);
-      if (t && t.water > 0.5) return true;
+      if (t && (t.water > 0.5 || t.terrain === 'water')) return true;
     }
   }
   return false;

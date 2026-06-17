@@ -16,15 +16,23 @@ import {
 } from './engine/types';
 import {
   createInitialGameState,
-  applyBund, applyMulch, applyPlantSeed, applyShovel,
+  applyBund, applyMulch, applyPlantSeed, applyShovel, applyLandscape,
   triggerRain, updateGame,
   PLANT_REQUIREMENTS, calculateRestoration,
   getQuestObjective, getQuestMossDialogue,
+  MOSS_COMPLETION_DIALOGUE, MOSS_LANDSCAPE_DIALOGUE,
   getTile,
 } from './engine/gameEngine';
 import {
   INSPECT_HIGHLIGHTS, BUND_HIGHLIGHT, SEED_HIGHLIGHT,
 } from './engine/mapGen';
+
+// Module-scope lifecycle telemetry (registered once per page load)
+import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
+RundotGameAPI.lifecycles.onPause(() => RundotGameAPI.analytics.recordCustomEvent('game_paused'));
+RundotGameAPI.lifecycles.onResume(() => RundotGameAPI.analytics.recordCustomEvent('game_resumed'));
+RundotGameAPI.lifecycles.onSleep(() => RundotGameAPI.analytics.recordCustomEvent('game_sleep'));
+RundotGameAPI.lifecycles.onQuit(() => RundotGameAPI.analytics.recordCustomEvent('game_quit'));
 
 // ---------------------------------------------------------------------------
 // Colour helpers
@@ -45,6 +53,7 @@ function tileBaseColor(tile: Tile): string {
     case 'moist_soil': return `rgb(${Math.round(130-m*60)},${Math.round(100-m*45)},${Math.round(60-m*20)})`;
     case 'grass':      return `rgb(${Math.round(80+m*20)},${Math.round(160+m*30)},${Math.round(70+m*20)})`;
     case 'rock':       return '#8A8680';
+    case 'water':      return '#4A90C4';  // deep pond blue
     default:           return '#B8864E';
   }
 }
@@ -66,9 +75,10 @@ function renderFrame(
   const H = canvas.height;
   const T = TILE_SIZE;
 
-  // Camera follows player
-  const camX = Math.round(gs.playerPX - W / 2 + T / 2);
-  const camY = Math.round(gs.playerPY - H / 2 + T / 2);
+  // Camera: use cinematicCam if set (completion tour), else follow player
+  const camCenter = gs.cinematicCam ?? { px: gs.playerPX, py: gs.playerPY };
+  const camX = Math.round(camCenter.px - W / 2 + T / 2);
+  const camY = Math.round(camCenter.py - H / 2 + T / 2);
 
   ctx.clearRect(0, 0, W, H);
 
@@ -95,66 +105,89 @@ function renderFrame(
       ctx.fillStyle = tileBaseColor(tile);
       ctx.fillRect(sx, sy, T, T);
 
-      // Subtle grid line
-      ctx.strokeStyle = 'rgba(0,0,0,0.04)';
-      ctx.lineWidth = 0.5;
-      ctx.strokeRect(sx, sy, T, T);
-
-      // Crack texture on cracked soil
-      if (tile.terrain === 'cracked_soil') {
-        ctx.strokeStyle = `rgba(90,60,30,${0.25 - tile.moisture * 0.002})`;
-        ctx.lineWidth = 0.8;
-        const seed = tx * 7 + ty * 13;
-        ctx.beginPath();
-        ctx.moveTo(sx + (seed % 8) + 2, sy + (seed % 6) + 2);
-        ctx.lineTo(sx + T - (seed % 5) - 2, sy + T / 2 + (seed % 4));
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(sx + T / 2, sy + (seed % 5) + 2);
-        ctx.lineTo(sx + (seed % 6) + 2, sy + T - 3);
-        ctx.stroke();
-      }
-
-      // Bund arc
-      if (tile.terrain === 'bund') {
-        ctx.strokeStyle = '#6B4C2A';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(sx + T / 2, sy + T * 0.75, T * 0.4, Math.PI, 0);
-        ctx.stroke();
-        // Small puddle inside bund if water present
-        if (tile.water > 5) {
-          ctx.fillStyle = `rgba(100,160,220,${Math.min(0.5, tile.water / 120)})`;
-          ctx.beginPath();
-          ctx.ellipse(sx + T / 2, sy + T * 0.8, T * 0.3, T * 0.12, 0, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // Mulch dots
-      if (tile.terrain === 'mulch') {
-        ctx.fillStyle = 'rgba(60,35,15,0.35)';
-        const dots = [{ x: 5, y: 5 }, { x: 14, y: 8 }, { x: 8, y: 15 }, { x: 18, y: 16 }];
-        for (const d of dots) {
-          ctx.beginPath();
-          ctx.arc(sx + d.x, sy + d.y, 1.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // Water overlay — only show on non-bund tiles with significant water,
-      // and never on tiles with plants (keeps plants clean and readable).
-      // Threshold > 10 prevents transient rain-pass water from tinting the whole map.
-      if (tile.water > 10 && tile.terrain !== 'bund' && !tile.plant) {
-        ctx.fillStyle = `rgba(80,140,220,${Math.min(0.45, tile.water / 140)})`;
+      // --- Water tile (permanent pond / pool) ---
+      if (tile.terrain === 'water') {
+        // Shimmer effect
+        const shimmer = 0.06 + 0.04 * Math.sin(tick * 0.08 + tx * 0.7 + ty * 0.5);
+        ctx.fillStyle = `rgba(120,200,255,${shimmer})`;
         ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
-        if (tick % 12 < 6) {
-          ctx.fillStyle = 'rgba(180,220,255,0.10)';
-          ctx.fillRect(sx + 2, sy + 2, T - 4, 2);
+        // Highlight glint
+        if (tick % 20 < 10) {
+          ctx.fillStyle = 'rgba(255,255,255,0.12)';
+          ctx.fillRect(sx + 3, sy + 3, T - 8, 2);
+        }
+        // Occasional lily pad (every 7th tile by position hash)
+        if ((tx * 3 + ty * 7) % 9 === 0) {
+          ctx.font = '10px serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🪷', sx + T / 2, sy + T / 2);
+        }
+        // Grid line
+        ctx.strokeStyle = 'rgba(0,80,180,0.15)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(sx, sy, T, T);
+      } else {
+        // Subtle grid line for non-water tiles
+        ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(sx, sy, T, T);
+
+        // Crack texture on cracked soil
+        if (tile.terrain === 'cracked_soil') {
+          ctx.strokeStyle = `rgba(90,60,30,${0.25 - tile.moisture * 0.002})`;
+          ctx.lineWidth = 0.8;
+          const seed = tx * 7 + ty * 13;
+          ctx.beginPath();
+          ctx.moveTo(sx + (seed % 8) + 2, sy + (seed % 6) + 2);
+          ctx.lineTo(sx + T - (seed % 5) - 2, sy + T / 2 + (seed % 4));
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(sx + T / 2, sy + (seed % 5) + 2);
+          ctx.lineTo(sx + (seed % 6) + 2, sy + T - 3);
+          ctx.stroke();
+        }
+
+        // Bund arc
+        if (tile.terrain === 'bund') {
+          ctx.strokeStyle = '#6B4C2A';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(sx + T / 2, sy + T * 0.75, T * 0.4, Math.PI, 0);
+          ctx.stroke();
+          // Small puddle inside bund if water present
+          if (tile.water > 5) {
+            ctx.fillStyle = `rgba(100,160,220,${Math.min(0.5, tile.water / 120)})`;
+            ctx.beginPath();
+            ctx.ellipse(sx + T / 2, sy + T * 0.8, T * 0.3, T * 0.12, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Mulch dots
+        if (tile.terrain === 'mulch') {
+          ctx.fillStyle = 'rgba(60,35,15,0.35)';
+          const dots = [{ x: 5, y: 5 }, { x: 14, y: 8 }, { x: 8, y: 15 }, { x: 18, y: 16 }];
+          for (const d of dots) {
+            ctx.beginPath();
+            ctx.arc(sx + d.x, sy + d.y, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Water overlay — only on non-bund, non-plant tiles with significant water
+        // Threshold > 10 prevents transient rain-pass tinting the whole map
+        if (tile.water > 10 && tile.terrain !== 'bund' && !tile.plant) {
+          ctx.fillStyle = `rgba(80,140,220,${Math.min(0.45, tile.water / 140)})`;
+          ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
+          if (tick % 12 < 6) {
+            ctx.fillStyle = 'rgba(180,220,255,0.10)';
+            ctx.fillRect(sx + 2, sy + 2, T - 4, 2);
+          }
         }
       }
 
-      // Plant
+      // Plant — always rendered last so it sits above terrain, mulch, water
       if (tile.plant) {
         const req = PLANT_REQUIREMENTS[tile.plant.type];
         const emoji = req?.emoji[tile.plant.stage] ?? '🌱';
@@ -182,7 +215,6 @@ function renderFrame(
     const sx = fairy.px - camX;
     const sy = fairy.py - camY;
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
-    // Gentle vertical float
     const float = Math.sin(fairy.glowPhase + tick * 0.04) * 2;
     ctx.font = '18px serif';
     ctx.textAlign = 'center';
@@ -205,13 +237,11 @@ function renderFrame(
   {
     const sx = gs.mossTX * T - camX;
     const sy = gs.mossTY * T - camY;
-    // Gentle blink/bob
     const bob = Math.sin(tick * 0.05) * 1.5;
     ctx.font = `${T - 2}px serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('🐸', sx + T / 2, sy + T / 2 + bob);
-    // Name label
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
     ctx.fillRect(sx + T / 2 - 20, sy - 4, 40, 13);
     ctx.fillStyle = '#fff';
@@ -221,36 +251,30 @@ function renderFrame(
     ctx.fillText('Moss', sx + T / 2, sy + 2);
   }
 
-  // --- Draw player ---
-  {
+  // --- Draw player (hidden during cinematic) ---
+  if (!gs.cinematicCam) {
     const sx = Math.round(gs.playerPX - camX);
     const sy = Math.round(gs.playerPY - camY);
     const cx = sx + T / 2;
     const cy = sy + T / 2;
 
-    // Shadow
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.beginPath();
     ctx.ellipse(cx, sy + T - 3, 7, 3, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Body
     ctx.fillStyle = '#4A7A52';
     ctx.fillRect(cx - 5, cy - 1, 10, 10);
 
-    // Head
     ctx.fillStyle = '#D4A882';
     ctx.beginPath();
     ctx.arc(cx, cy - 5, 6, 0, Math.PI * 2);
     ctx.fill();
 
-    // Hat brim
     ctx.fillStyle = '#5C3D2E';
     ctx.fillRect(cx - 7, cy - 10, 14, 3);
-    // Hat crown
     ctx.fillRect(cx - 4, cy - 16, 9, 7);
 
-    // Walking animation: bob feet
     const walkBob = gs.playerPX !== gs.playerDestTX * TILE_SIZE || gs.playerPY !== gs.playerDestTY * TILE_SIZE
       ? Math.abs(Math.sin(tick * 0.25)) * 2 : 0;
     ctx.fillStyle = '#5C3D2E';
@@ -263,7 +287,6 @@ function renderFrame(
     ctx.strokeStyle = 'rgba(120, 170, 255, 0.6)';
     ctx.lineWidth = 1.2;
     for (const drop of gs.rainDrops) {
-      // World-space rain, so offset by camera
       const sx = drop.x - camX;
       const sy = drop.y - camY;
       if (sx < 0 || sx > W || sy < 0 || sy > H) continue;
@@ -293,6 +316,7 @@ const INITIAL_UI: UIState = {
   avgMoisture: 8,
   wildlifeCount: 0,
   rainCooling: false,
+  heldPlant: null,
 };
 
 export function GameScene({ onShowWatershed }: {
@@ -382,6 +406,54 @@ export function GameScene({ onShowWatershed }: {
   }, [queueDialogue]);
 
   // -------------------------------------------------------------------------
+  // Completion event — camera pan → dialogue → landscape tool
+  // -------------------------------------------------------------------------
+  const triggerCompletionEvent = useCallback(() => {
+    track('custom_restoration_complete');
+    RundotGameAPI.analytics.recordCustomEvent('restoration_complete', { valley: 'chapter1' });
+
+    const gs = gsRef.current;
+
+    // Waypoints: pan from bund → center map → seed area → player
+    const waypoints = [
+      { px: 15 * TILE_SIZE, py: 15 * TILE_SIZE }, // bund area
+      { px: 16 * TILE_SIZE, py: 16 * TILE_SIZE }, // pond area
+      { px: 16 * TILE_SIZE, py: 18 * TILE_SIZE }, // seed / plant area
+    ];
+
+    let wp = 0;
+    gs.cinematicCam = waypoints[0] ?? null;
+
+    const advanceWaypoint = () => {
+      wp++;
+      if (wp < waypoints.length) {
+        gs.cinematicCam = waypoints[wp] ?? null;
+        setTimeout(advanceWaypoint, 2000);
+      } else {
+        // End cinematic, restore camera
+        gs.cinematicCam = null;
+        // Show completion dialogue
+        queueDialogue(MOSS_COMPLETION_DIALOGUE);
+        // After final dialogue clears, unlock landscape tool + show its intro
+        // (We use the dialogue closing event via onDialogueEnd, which we handle
+        // by checking ui state changes — simpler: delay and then unlock)
+        const totalDialogueMs = MOSS_COMPLETION_DIALOGUE.length * 4000;
+        setTimeout(() => {
+          setUI((prev) => ({
+            ...prev,
+            unlockedTools: [...prev.unlockedTools, 'landscape' as ToolType],
+            questObjective: 'The valley remembers 🌿',
+          }));
+          queueDialogue(MOSS_LANDSCAPE_DIALOGUE);
+          track('custom_landscape_tool_unlocked');
+        }, totalDialogueMs);
+      }
+    };
+
+    setTimeout(advanceWaypoint, 2000);
+  }, [queueDialogue]);
+
+  // -------------------------------------------------------------------------
   // Player movement
   // -------------------------------------------------------------------------
   const movePlayer = useCallback((dx: number, dy: number) => {
@@ -390,7 +462,7 @@ export function GameScene({ onShowWatershed }: {
     const ny = gs.playerTY + dy;
     if (nx < 1 || nx >= MAP_W - 1 || ny < 1 || ny >= MAP_H - 1) return;
     const tile = getTile(gs.tiles, nx, ny);
-    if (!tile || tile.terrain === 'rock') return;
+    if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') return;
 
     gs.playerTX = nx;
     gs.playerTY = ny;
@@ -415,7 +487,7 @@ export function GameScene({ onShowWatershed }: {
 
       if (tool === 'move') {
         const tile = getTile(gs.tiles, tx, ty);
-        if (!tile || tile.terrain === 'rock') return;
+        if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') return;
         gs.playerDestTX = tx;
         gs.playerDestTY = ty;
         gs.playerTX = tx;
@@ -428,6 +500,7 @@ export function GameScene({ onShowWatershed }: {
         if (!tile) return;
         setUI((prev) => ({ ...prev, inspectedTile: { x: tx, y: ty, tile: { ...tile } } }));
         track('custom_tile_inspected', { terrain: tile.terrain, moisture: Math.round(tile.moisture) });
+        RundotGameAPI.analytics.recordCustomEvent('tile_inspected', { terrain: tile.terrain });
 
         if (gs.questStep === 'inspect_soil') {
           gs.inspectedCount++;
@@ -439,9 +512,6 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'bund') {
-        // During the guided quest (dig through plant), restrict bund digging:
-        //   • dig_bund  → only the highlighted half-moon tiles
-        //   • second_rain / plant_seed → bund is complete, no new digging until both grasses are planted
         if (gs.questStep === 'dig_bund') {
           const inShape = BUND_HIGHLIGHT.some(({ x, y }) => x === tx && y === ty);
           if (!inShape) {
@@ -458,9 +528,21 @@ export function GameScene({ onShowWatershed }: {
           }]);
           return;
         }
+
+        // Block digging on plant tiles
+        const bundTile = getTile(gs.tiles, tx, ty);
+        if (bundTile?.plant) {
+          queueDialogue([{
+            speaker: 'Moss', emoji: '🐸',
+            text: 'Remove the plant first before reshaping the land.',
+          }]);
+          return;
+        }
+
         const ok = applyBund(gs, tx, ty);
         if (ok) {
           track('custom_bund_placed', { tx, ty });
+          RundotGameAPI.analytics.recordCustomEvent('bund_placed', { tx, ty });
           if (gs.questStep === 'dig_bund') {
             const dug = BUND_HIGHLIGHT.filter(
               ({ x, y }) => getTile(gs.tiles, x, y)?.terrain === 'bund',
@@ -477,15 +559,24 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'mulch') {
+        // Block mulching on plant tiles
+        const mulchTile = getTile(gs.tiles, tx, ty);
+        if (mulchTile?.plant) {
+          queueDialogue([{
+            speaker: 'Moss', emoji: '🐸',
+            text: 'This plant is already established here. Mulch the empty soil nearby instead.',
+          }]);
+          return;
+        }
         const ok = applyMulch(gs, tx, ty);
         if (ok) {
           track('custom_mulch_placed', { tx, ty });
+          RundotGameAPI.analytics.recordCustomEvent('mulch_placed', { tx, ty });
         }
         return;
       }
 
       if (tool === 'shovel') {
-        // During the dig_bund quest, bund tiles are permanent — you commit to the shape
         if (gs.questStep === 'dig_bund' && getTile(gs.tiles, tx, ty)?.terrain === 'bund') {
           queueDialogue([{
             speaker: 'Moss', emoji: '🐸',
@@ -496,12 +587,25 @@ export function GameScene({ onShowWatershed }: {
         const ok = applyShovel(gs, tx, ty);
         if (ok) {
           track('custom_shovel_used', { tx, ty });
+          RundotGameAPI.analytics.recordCustomEvent('shovel_used', { tx, ty });
+        }
+        return;
+      }
+
+      if (tool === 'landscape') {
+        const result = applyLandscape(gs, tx, ty, currentUI.heldPlant);
+        if (result.action === 'picked') {
+          setUI((p) => ({ ...p, heldPlant: result.plant }));
+          track('custom_landscape_picked');
+        } else if (result.action === 'placed') {
+          setUI((p) => ({ ...p, heldPlant: null }));
+          track('custom_landscape_placed', { tx, ty });
+          RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty });
         }
         return;
       }
 
       if (tool === 'seed') {
-        // During the plant_seed quest, only allow planting on the two highlighted spots
         if (gs.questStep === 'plant_seed') {
           const inSpot = SEED_HIGHLIGHT.some(({ x, y }) => x === tx && y === ty);
           if (!inSpot) {
@@ -516,8 +620,8 @@ export function GameScene({ onShowWatershed }: {
         if (result.planted) {
           const name = PLANT_REQUIREMENTS[currentUI.selectedSeed]?.name ?? currentUI.selectedSeed;
           track('custom_seed_planted', { plant: currentUI.selectedSeed });
+          RundotGameAPI.analytics.recordCustomEvent('seed_planted', { plant: currentUI.selectedSeed });
           if (gs.questStep === 'plant_seed') {
-            // Require BOTH highlighted spots to be planted before advancing
             const bothPlanted = SEED_HIGHLIGHT.every(
               ({ x, y }) => getTile(gs.tiles, x, y)?.plant != null,
             );
@@ -556,7 +660,6 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'journal') {
-        const gs = gsRef.current;
         onShowWatershed(
           calculateRestoration(gs),
           [...gs.discoveredWildlife],
@@ -617,16 +720,19 @@ export function GameScene({ onShowWatershed }: {
   useEffect(() => {
     keydownRef.current = (e: KeyboardEvent) => {
       if (keyCooldown.current) return;
-
       const currentUI = uiRef.current;
+
+      // While dialogue is active: only advance it — block everything else
+      if (currentUI.dialogue) {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+          advanceDialogue();
+        }
+        return;
+      }
 
       if (e.key === 'Escape') {
         if (currentUI.inspectedTile) setUI((p) => ({ ...p, inspectedTile: null }));
-        if (currentUI.dialogue) advanceDialogue();
         return;
-      }
-      if (e.key === 'Enter' || e.key === ' ') {
-        if (currentUI.dialogue) { advanceDialogue(); return; }
       }
 
       const mvMap: Record<string, [number, number]> = {
@@ -654,6 +760,9 @@ export function GameScene({ onShowWatershed }: {
   // -------------------------------------------------------------------------
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+      // World is locked while dialogue is showing
+      if (uiRef.current.dialogue !== null) return;
+
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
@@ -669,8 +778,9 @@ export function GameScene({ onShowWatershed }: {
       }
 
       const gs = gsRef.current;
-      const camX = Math.round(gs.playerPX - canvas.width / 2 + TILE_SIZE / 2);
-      const camY = Math.round(gs.playerPY - canvas.height / 2 + TILE_SIZE / 2);
+      const camCenter = gs.cinematicCam ?? { px: gs.playerPX, py: gs.playerPY };
+      const camX = Math.round(camCenter.px - canvas.width / 2 + TILE_SIZE / 2);
+      const camY = Math.round(camCenter.py - canvas.height / 2 + TILE_SIZE / 2);
 
       const worldX = (clientX - rect.left) * (canvas.width / rect.width) + camX;
       const worldY = (clientY - rect.top) * (canvas.height / rect.height) + camY;
@@ -690,7 +800,6 @@ export function GameScene({ onShowWatershed }: {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Set canvas size to container
     const resize = () => {
       const container = canvas.parentElement;
       if (!container) return;
@@ -726,15 +835,21 @@ export function GameScene({ onShowWatershed }: {
         gs.playerPY = destPY;
       }
 
-      updateGame(gs, dt, (restoration, avgMoisture, wildlifeCount, questStep) => {
-        setUI((prev) => ({
-          ...prev,
-          restoration,
-          avgMoisture,
-          wildlifeCount,
-          questStep,
-        }));
-      });
+      updateGame(
+        gs,
+        dt,
+        (restoration, avgMoisture, wildlifeCount, questStep) => {
+          setUI((prev) => ({ ...prev, restoration, avgMoisture, wildlifeCount, questStep }));
+        },
+        (_milestone, line) => {
+          // Ecological milestone — Moss comments on ecosystem recovery
+          queueDialogue([line]);
+        },
+        () => {
+          // 100% restoration completion
+          triggerCompletionEvent();
+        },
+      );
 
       renderFrame(canvas, gs, gs.highlightTiles, gs.tick);
       rafRef.current = requestAnimationFrame(loop);
@@ -745,7 +860,7 @@ export function GameScene({ onShowWatershed }: {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
     };
-  }, [queueDialogue]);
+  }, [queueDialogue, triggerCompletionEvent]);
 
   // -------------------------------------------------------------------------
   // Layout constants
@@ -783,6 +898,7 @@ export function GameScene({ onShowWatershed }: {
           border: 1px solid rgba(255,220,40,0);
         }
       `}</style>
+
       {/* ── Top HUD ──────────────────────────────────────────────────────── */}
       <div
         style={{
@@ -846,7 +962,11 @@ export function GameScene({ onShowWatershed }: {
           left: 0,
           width: '100%',
           height: '100%',
-          cursor: ui.activeTool === 'move' ? 'crosshair' : 'pointer',
+          cursor: ui.dialogue
+            ? 'default'
+            : ui.activeTool === 'landscape' && ui.heldPlant
+              ? 'grabbing'
+              : ui.activeTool === 'move' ? 'crosshair' : 'pointer',
           touchAction: 'none',
         }}
         onClick={handleCanvasClick}
@@ -854,7 +974,7 @@ export function GameScene({ onShowWatershed }: {
       />
 
       {/* ── Tile Inspect Panel ───────────────────────────────────────────── */}
-      {ui.inspectedTile && (
+      {ui.inspectedTile && !ui.dialogue && (
         <div
           style={{
             position: 'absolute',
@@ -884,7 +1004,8 @@ export function GameScene({ onShowWatershed }: {
             const t = ui.inspectedTile.tile;
             const terrainLabels: Record<string, string> = {
               cracked_soil: 'Cracked Soil', dry_soil: 'Dry Soil', mulch: 'Mulch',
-              bund: 'Semicircular Bund', moist_soil: 'Moist Soil', grass: 'Grass', rock: 'Rock',
+              bund: 'Semicircular Bund', moist_soil: 'Moist Soil', grass: 'Grass',
+              rock: 'Rock', water: 'Seasonal Pool',
             };
             const label = terrainLabels[t.terrain] ?? t.terrain;
             const suggMap: Record<string, string> = {
@@ -895,6 +1016,7 @@ export function GameScene({ onShowWatershed }: {
               moist_soil: 'Good conditions — try planting a pioneer species.',
               grass: 'This area is healing well.',
               rock: 'Rocks shelter seeds and reduce wind erosion.',
+              water: 'A permanent water feature. Life will gather here.',
             };
             const suggestion = suggMap[t.terrain] ?? 'Inspect nearby tiles to understand water flow.';
             return (
@@ -943,7 +1065,7 @@ export function GameScene({ onShowWatershed }: {
         </div>
       )}
 
-      {/* ── Seed selector (shown when seed tool active) ──────────────────── */}
+      {/* ── Seed selector (shown when seed tool active, no dialogue) ─────── */}
       {ui.activeTool === 'seed' && !ui.dialogue && (
         <div
           style={{
@@ -991,6 +1113,34 @@ export function GameScene({ onShowWatershed }: {
         </div>
       )}
 
+      {/* ── Landscape held-plant indicator ───────────────────────────────── */}
+      {ui.activeTool === 'landscape' && ui.heldPlant && !ui.dialogue && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: TOOLBAR_H + safeArea.bottom + 8,
+            left: 8,
+            right: 8,
+            background: 'rgba(20,35,20,0.92)',
+            borderRadius: 10,
+            border: '1px solid rgba(124,202,124,0.4)',
+            padding: '8px 14px',
+            zIndex: 35,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <span style={{ fontSize: 22 }}>
+            {PLANT_REQUIREMENTS[ui.heldPlant.type]?.emoji[ui.heldPlant.stage] ?? '🌿'}
+          </span>
+          <div style={{ fontSize: 11, color: '#F0FFF0' }}>
+            <div style={{ fontWeight: 700, color: '#7CCA7C' }}>Holding plant</div>
+            <div style={{ opacity: 0.7 }}>Tap an empty tile to place it</div>
+          </div>
+        </div>
+      )}
+
       {/* ── Tool Belt — hidden while any dialogue is on screen ──────────── */}
       {!ui.dialogue && (
       <div
@@ -1011,25 +1161,22 @@ export function GameScene({ onShowWatershed }: {
         }}
       >
         {TOOL_DEFS.filter((def) => ui.unlockedTools.includes(def.id)).map((def) => {
-          const unlocked = true; // already filtered to unlocked tools only
-          // Rain is additionally blocked while raining / cooling down
           const rainBlocked = def.id === 'rain' && ui.rainCooling;
           const active = ui.activeTool === def.id;
           return (
             <button
               key={def.id}
-              disabled={!unlocked || rainBlocked}
+              disabled={rainBlocked}
               onClick={() => {
-                if (!unlocked || rainBlocked) return;
+                if (rainBlocked) return;
 
                 if (def.id === 'rain') {
-                  // Handle rain directly — avoid the async activeTool read bug
                   const gs = gsRef.current;
                   triggerRain(gs);
-                  // Disable rain for the duration of rain (5s) + 10s cooldown = 15s total
                   setUI((p) => ({ ...p, rainCooling: true }));
                   setTimeout(() => setUI((p) => ({ ...p, rainCooling: false })), 15000);
                   track('custom_rain_called', { rains: gs.rainsCount });
+                  RundotGameAPI.analytics.recordCustomEvent('rain_called', { rains: gs.rainsCount });
                   if (gs.questStep === 'first_rain') {
                     setTimeout(() => {
                       queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'The rain came. But the valley could not hold it.' }]);
@@ -1052,12 +1199,8 @@ export function GameScene({ onShowWatershed }: {
                 }
 
                 if (def.id === 'talk') {
-                  // Handle talk directly — avoid the async activeTool read bug
                   const gs = gsRef.current;
                   if (gs.questStep === 'intro') {
-                    // Advance quest first (unlocks inspect tool, sets highlights),
-                    // then override dialogue queue with intro lines followed by
-                    // the inspect instruction, so the player hears both in order.
                     advanceQuest('inspect_soil');
                     queueDialogue([
                       ...getQuestMossDialogue('intro'),
@@ -1082,11 +1225,14 @@ export function GameScene({ onShowWatershed }: {
                     [...gss.discoveredFairies],
                     [...gss.discoveredPlants],
                   );
+                  track('custom_journal_opened');
+                  RundotGameAPI.analytics.recordCustomEvent('journal_opened');
                   return;
                 }
 
                 setUI((p) => ({ ...p, activeTool: def.id, inspectedTile: null }));
                 track('custom_tool_selected', { tool: def.id });
+                RundotGameAPI.analytics.recordCustomEvent('tool_selected', { tool: def.id });
               }}
               style={{
                 display: 'flex',
@@ -1097,8 +1243,8 @@ export function GameScene({ onShowWatershed }: {
                 border: active ? '1px solid rgba(124,202,124,0.5)' : '1px solid transparent',
                 borderRadius: 10,
                 padding: '5px 3px',
-                cursor: unlocked ? 'pointer' : 'default',
-                opacity: unlocked ? 1 : 0.3,
+                cursor: rainBlocked ? 'default' : 'pointer',
+                opacity: rainBlocked ? 0.4 : 1,
                 minWidth: 36,
               }}
             >
@@ -1120,15 +1266,16 @@ export function GameScene({ onShowWatershed }: {
 // ---------------------------------------------------------------------------
 
 const TOOL_DEFS: Array<{ id: ToolType; emoji: string; label: string }> = [
-  { id: 'move',    emoji: '👟', label: 'Move' },
-  { id: 'inspect', emoji: '🔍', label: 'Inspect' },
-  { id: 'bund',    emoji: '🌙', label: 'Dig Bund' },
-  { id: 'shovel',  emoji: '⛏️',  label: 'Undo' },
-  { id: 'mulch',   emoji: '🍂', label: 'Mulch' },
-  { id: 'seed',    emoji: '🌱', label: 'Plant' },
-  { id: 'rain',    emoji: '☔', label: 'Rain' },
-  { id: 'talk',    emoji: '💬', label: 'Moss' },
-  { id: 'journal', emoji: '📖', label: 'Journal' },
+  { id: 'move',      emoji: '👟', label: 'Move' },
+  { id: 'inspect',   emoji: '🔍', label: 'Inspect' },
+  { id: 'bund',      emoji: '🌙', label: 'Dig Bund' },
+  { id: 'shovel',    emoji: '⛏️',  label: 'Undo' },
+  { id: 'mulch',     emoji: '🍂', label: 'Mulch' },
+  { id: 'seed',      emoji: '🌱', label: 'Plant' },
+  { id: 'rain',      emoji: '☔', label: 'Rain' },
+  { id: 'talk',      emoji: '💬', label: 'Moss' },
+  { id: 'journal',   emoji: '📖', label: 'Journal' },
+  { id: 'landscape', emoji: '🌿', label: 'Reshape' },
 ];
 
 export default GameScene;

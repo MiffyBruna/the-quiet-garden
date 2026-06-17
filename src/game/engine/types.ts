@@ -21,7 +21,8 @@ export type TerrainType =
   | 'bund'
   | 'moist_soil'
   | 'grass'
-  | 'rock';
+  | 'rock'
+  | 'water'; // permanent water feature — ponds, seasonal pools
 
 export type PlantType = 'blue_grama' | 'desert_marigold' | 'lupine' | 'sage' | 'milkweed';
 export type PlantStage = 0 | 1 | 2 | 3 | 4; // seed → sprout → young → mature → blooming
@@ -39,7 +40,8 @@ export interface PlantState {
 export type WildlifeType =
   | 'ant' | 'beetle' | 'bee' | 'hoverfly'
   | 'painted_lady' | 'monarch' | 'cottontail'
-  | 'quail' | 'finch' | 'hawk';
+  | 'quail' | 'finch' | 'hawk'
+  | 'dragonfly' | 'frog';
 
 export interface WildlifeEntity {
   id: string;
@@ -82,7 +84,9 @@ export interface Tile {
 // Tools
 // ---------------------------------------------------------------------------
 
-export type ToolType = 'move' | 'inspect' | 'bund' | 'mulch' | 'seed' | 'rain' | 'talk' | 'journal' | 'shovel';
+export type ToolType =
+  | 'move' | 'inspect' | 'bund' | 'mulch' | 'seed'
+  | 'rain' | 'talk' | 'journal' | 'shovel' | 'landscape';
 
 // ---------------------------------------------------------------------------
 // Quest
@@ -155,6 +159,13 @@ export interface GameState {
   discoveredWildlife: string[];
   discoveredFairies: string[];
   discoveredPlants: string[];
+
+  // Ecological progression tracking
+  restorationMilestonesSeen: number[]; // milestones (20,40,60,80) already announced by Moss
+  completionTriggered: boolean;         // true once 100% restoration event fires
+
+  // Cinematic camera (null = follow player, set during completion tour)
+  cinematicCam: { px: number; py: number } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,4 +186,5 @@ export interface UIState {
   avgMoisture: number;
   wildlifeCount: number;
   rainCooling: boolean; // true while rain is active + cooldown — disables rain button
+  heldPlant: PlantState | null; // landscape tool: plant picked up for relocation
 }
