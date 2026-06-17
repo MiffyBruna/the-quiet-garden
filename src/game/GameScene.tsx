@@ -241,10 +241,14 @@ function renderFrame(
         }
       }
 
-      // Objective highlight (pulsing yellow border)
+      // Objective highlight (soft pulsing glow and border)
       const isHighlighted = highlights.some((h) => h.x === tx && h.y === ty);
       if (isHighlighted) {
         const pulse = 0.5 + 0.5 * Math.sin(tick * 0.12);
+        // Soft fade fill
+        ctx.fillStyle = `rgba(255, 220, 40, ${0.08 + pulse * 0.12})`;
+        ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
+        // Pulsing border
         ctx.strokeStyle = `rgba(255, 220, 40, ${0.5 + pulse * 0.5})`;
         ctx.lineWidth = 2;
         ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
