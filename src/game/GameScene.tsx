@@ -571,13 +571,28 @@ export function GameScene({ onShowWatershed }: {
   // -------------------------------------------------------------------------
   const confirmBund = useCallback(() => {
     const gs = gsRef.current;
-    const validTiles = BUND_SHAPE_OFFSETS
-      .map(({ dx, dy }) => ({ x: gs.playerTX + dx, y: gs.playerTY + dy }))
-      .filter(({ x, y }) => {
-        if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
-        const t = getTile(gs.tiles, x, y);
-        return t && t.terrain !== 'rock' && t.terrain !== 'water';
-      });
+    const allShapeTiles = BUND_SHAPE_OFFSETS
+      .map(({ dx, dy }) => ({ x: gs.playerTX + dx, y: gs.playerTY + dy }));
+
+    const hasRockConflict = allShapeTiles.some(({ x, y }) => {
+      if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
+      return getTile(gs.tiles, x, y)?.terrain === 'rock';
+    });
+
+    const validTiles = allShapeTiles.filter(({ x, y }) => {
+      if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
+      const t = getTile(gs.tiles, x, y);
+      return t && t.terrain !== 'rock' && t.terrain !== 'water';
+    });
+
+    if (validTiles.length === 0) {
+      queueDialogue([{
+        speaker: 'Moss', emoji: '🐸',
+        text: 'Rocks resist the shovel here. Move to softer ground before digging the bund.',
+      }]);
+      return;
+    }
+
     gs.highlightTiles = validTiles;
     setUI((p) => ({
       ...p,
@@ -587,10 +602,18 @@ export function GameScene({ onShowWatershed }: {
         ? `Dig the half-moon bund (0/${validTiles.length})`
         : p.questObjective,
     }));
+
+    if (hasRockConflict) {
+      queueDialogue([{
+        speaker: 'Moss', emoji: '🐸',
+        text: 'Some of the shape sits on rock — those spots will be skipped. Dig what remains.',
+      }]);
+    }
+
     RundotGameAPI.analytics.recordCustomEvent('bund_stencil_confirmed', {
       cx: gs.playerTX, cy: gs.playerTY, tiles: validTiles.length,
     });
-  }, []);
+  }, [queueDialogue]);
 
   const cancelBund = useCallback(() => {
     gsRef.current.highlightTiles = [];
