@@ -42,23 +42,23 @@ function nextId(): string { return `e${++_eid}`; }
 
 /**
  * Returns the minimum moisture floor.
- * Before 5 working bunds, the floor stays low — the land hasn't earned retention.
- * After 5+ bunds, the floor rises with restoration.
+ * At 0% restoration with no bunds, soil dries completely.
+ * As bunds and restoration grow, the floor rises to retain water.
  */
 export function getMinimumMoisture(restoration: number, workingBundCount = 0): number {
-  if (workingBundCount < 1) return 6;
-  if (workingBundCount < 5) return Math.min(28, 8 + restoration * 0.5);
-  if (restoration < 10) return 12;
-  if (restoration < 20) return 16;
-  if (restoration < 30) return 22;
-  if (restoration < 40) return 28;
-  if (restoration < 50) return 35;
-  if (restoration < 60) return 43;
-  if (restoration < 70) return 50;
-  if (restoration < 80) return 60;
-  if (restoration < 90) return 68;
-  if (restoration < 100) return 72;
-  return 76;
+  if (workingBundCount < 1) return 0;  // No retention at start
+  if (workingBundCount < 5) return Math.min(20, 6 + restoration * 0.4);
+  if (restoration < 10) return 10;
+  if (restoration < 20) return 14;
+  if (restoration < 30) return 20;
+  if (restoration < 40) return 26;
+  if (restoration < 50) return 33;
+  if (restoration < 60) return 41;
+  if (restoration < 70) return 48;
+  if (restoration < 80) return 58;
+  if (restoration < 90) return 66;
+  if (restoration < 100) return 70;
+  return 74;
 }
 
 /**

@@ -1268,6 +1268,8 @@ export function GameScene({ onShowWatershed }: {
         const bubbleRadius = 10;
         const distSq = (screenX - mossBubbleScreenX) ** 2 + (screenY - mossBubbleScreenY) ** 2;
         if (distSq <= bubbleRadius ** 2) {
+          // Prevent speech bubble interaction during intro animation
+          if (gs.introAnimationState) return;
           // Clicked on speech bubble — talk to Moss
           if (gs.questStep === 'intro') {
             // Don't repeat intro dialogue — advance directly to inspect_soil
@@ -1936,6 +1938,8 @@ export function GameScene({ onShowWatershed }: {
               className={active ? 'tool-active' : ''}
               onClick={() => {
                 if (rainBlocked) return;
+                // Prevent any tool interaction during intro animation
+                if (gsRef.current.introAnimationState) return;
 
                 if (def.id === 'rain') {
                   const gs = gsRef.current;
