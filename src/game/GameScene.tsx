@@ -1319,62 +1319,68 @@ export function GameScene({ onShowWatershed }: {
       // Update both player and Moss positions during intro animation
       if (gs.introAnimationState) {
         const elapsed = gs.tick - gs.introAnimationState.startTick;
-        const walkDuration = 100; // frames to walk toward each other (~1.67s at 60fps)
-        const returnDuration = 100; // frames to walk back together
-        const totalDuration = walkDuration + returnDuration;
+        const walkDuration = 80; // walk toward each other
+        const circleDuration = 100; // walk around rock together
+        const returnDuration = 80; // return to original positions
+        const totalDuration = walkDuration + circleDuration + returnDuration;
 
         if (elapsed < walkDuration) {
-          // Walking toward each other
+          // Phase 1: Walking toward each other
           const progress = elapsed / walkDuration;
-          // Moss walks toward player
           gs.mossTX = Math.round(
             gs.introAnimationState.originalTX +
-            (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * progress * 0.5
+            (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * progress * 0.4
           );
           gs.mossTY = Math.round(
             gs.introAnimationState.originalTY +
-            (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * progress * 0.5
+            (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * progress * 0.4
           );
-          // Player walks toward Moss
           gs.playerDestTX = Math.round(
             gs.introAnimationState.playerOriginalTX +
-            (gs.introAnimationState.originalTX - gs.introAnimationState.playerOriginalTX) * progress * 0.5
+            (gs.introAnimationState.originalTX - gs.introAnimationState.playerOriginalTX) * progress * 0.4
           );
           gs.playerDestTY = Math.round(
             gs.introAnimationState.playerOriginalTY +
-            (gs.introAnimationState.originalTY - gs.introAnimationState.playerOriginalTY) * progress * 0.5
+            (gs.introAnimationState.originalTY - gs.introAnimationState.playerOriginalTY) * progress * 0.4
           );
+        } else if (elapsed < walkDuration + circleDuration) {
+          // Phase 2: Circle around the rock at Moss's original position
+          const circleProgress = (elapsed - walkDuration) / circleDuration;
+          const angle = circleProgress * Math.PI * 2; // full circle
+          const radius = 2; // circle around rock is 2 tiles
+          const rockCX = gs.introAnimationState.originalTX;
+          const rockCY = gs.introAnimationState.originalTY;
+
+          // Both walk around the rock together
+          gs.mossTX = Math.round(rockCX + radius * Math.cos(angle));
+          gs.mossTY = Math.round(rockCY + radius * Math.sin(angle));
+          gs.playerDestTX = Math.round(rockCX + radius * Math.cos(angle + Math.PI)); // opposite side
+          gs.playerDestTY = Math.round(rockCY + radius * Math.sin(angle + Math.PI));
         } else if (elapsed < totalDuration) {
-          // Walking back together to original positions
-          const returnProgress = (elapsed - walkDuration) / returnDuration;
-          // Moss walks back to her home
-          const mossCurrentTX = gs.introAnimationState.originalTX +
-            (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * 0.5;
-          const mossCurrentTY = gs.introAnimationState.originalTY +
-            (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * 0.5;
+          // Phase 3: Return to original positions
+          const returnProgress = (elapsed - walkDuration - circleDuration) / returnDuration;
+
+          // Moss returns to home
+          const mossEndX = gs.introAnimationState.originalTX + (gs.introAnimationState.targetTX - gs.introAnimationState.originalTX) * 0.4;
+          const mossEndY = gs.introAnimationState.originalTY + (gs.introAnimationState.targetTY - gs.introAnimationState.originalTY) * 0.4;
           gs.mossTX = Math.round(
-            mossCurrentTX +
-            (gs.introAnimationState.originalTX - mossCurrentTX) * returnProgress
+            mossEndX + (gs.introAnimationState.originalTX - mossEndX) * returnProgress
           );
           gs.mossTY = Math.round(
-            mossCurrentTY +
-            (gs.introAnimationState.originalTY - mossCurrentTY) * returnProgress
+            mossEndY + (gs.introAnimationState.originalTY - mossEndY) * returnProgress
           );
-          // Player walks back to their original spot
-          const playerCurrentTX = gs.introAnimationState.playerOriginalTX +
-            (gs.introAnimationState.originalTX - gs.introAnimationState.playerOriginalTX) * 0.5;
-          const playerCurrentTY = gs.introAnimationState.playerOriginalTY +
-            (gs.introAnimationState.originalTY - gs.introAnimationState.playerOriginalTY) * 0.5;
+
+          // Player returns home
+          const playerEndX = gs.introAnimationState.playerOriginalTX + (gs.introAnimationState.originalTX - gs.introAnimationState.playerOriginalTX) * 0.4;
+          const playerEndY = gs.introAnimationState.playerOriginalTY + (gs.introAnimationState.originalTY - gs.introAnimationState.playerOriginalTY) * 0.4;
           gs.playerDestTX = Math.round(
-            playerCurrentTX +
-            (gs.introAnimationState.playerOriginalTX - playerCurrentTX) * returnProgress
+            playerEndX + (gs.introAnimationState.playerOriginalTX - playerEndX) * returnProgress
           );
           gs.playerDestTY = Math.round(
-            playerCurrentTY +
-            (gs.introAnimationState.playerOriginalTY - playerCurrentTY) * returnProgress
+            playerEndY + (gs.introAnimationState.playerOriginalTY - playerEndY) * returnProgress
           );
         } else {
-          // Animation complete — return to original positions
+          // Animation complete
           gs.mossTX = gs.introAnimationState.originalTX;
           gs.mossTY = gs.introAnimationState.originalTY;
           gs.playerDestTX = gs.introAnimationState.playerOriginalTX;
@@ -1613,6 +1619,22 @@ export function GameScene({ onShowWatershed }: {
             }}
             onClick={handleDialogueInput}
           >
+            {/* Moss portrait in top-right */}
+            <img
+              src="/moss-portrait.png"
+              alt="Moss"
+              style={{
+                position: 'absolute',
+                top: -8,
+                right: 12,
+                width: 80,
+                height: 80,
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))',
+                transform: 'scaleX(-1)', // flip horizontally
+                zIndex: 41,
+              }}
+            />
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <span style={{ fontSize: 30, flexShrink: 0, lineHeight: 1.1 }}>{ui.dialogue.emoji}</span>
               <div>
