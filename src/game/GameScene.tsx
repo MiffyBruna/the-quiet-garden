@@ -1499,7 +1499,7 @@ export function GameScene({ onShowWatershed }: {
                 <div><b>Moisture:</b> {Math.round(t.moisture)}%</div>
                 <div><b>Fertility:</b> {Math.round(t.fertility)}%</div>
                 <div><b>Erosion risk:</b> {Math.round(t.erosion)}%</div>
-                <div style={{ marginTop: 6, fontStyle: 'italic', opacity: 0.8 }}>{suggestion}</div>
+                <div style={{ marginTop: 6, fontStyle: 'italic', opacity: 0.8 }}>{renderDialogueText(suggestion)}</div>
               </div>
             );
           })()}
