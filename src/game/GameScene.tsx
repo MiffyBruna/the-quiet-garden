@@ -1706,7 +1706,7 @@ export function GameScene({ onShowWatershed }: {
               bottom: safeArea.bottom,
               left: 0,
               right: 0,
-              zIndex: 44,
+              zIndex: frogHeight < 180 ? 41 : 44,
               overflow: 'visible',
               display: 'flex',
               justifyContent: 'center',
@@ -1785,7 +1785,7 @@ export function GameScene({ onShowWatershed }: {
             right: 8,
             height: frogHeight,
             width: 'auto',
-            zIndex: 42,
+            zIndex: frogHeight < 180 ? 45 : 42,
             pointerEvents: 'none',
             transform: 'scaleX(-1)',
           }}
