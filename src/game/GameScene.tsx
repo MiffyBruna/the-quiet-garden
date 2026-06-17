@@ -462,6 +462,18 @@ export function GameScene({ onShowWatershed }: {
   const [ui, setUI] = useState<UIState>(INITIAL_UI);
   const uiRef = useRef<UIState>(INITIAL_UI);
   const safeArea = getSafeArea();
+  const [frogHeight, setFrogHeight] = useState<number>(280);
+
+  // Calculate frog height based on screen size
+  useEffect(() => {
+    const calculateFrogHeight = () => {
+      const h = Math.min(280, Math.max(180, window.innerHeight * 0.3));
+      setFrogHeight(h);
+    };
+    calculateFrogHeight();
+    window.addEventListener('resize', calculateFrogHeight);
+    return () => window.removeEventListener('resize', calculateFrogHeight);
+  }, []);
 
   // Typewriter animation state
   const [displayedText, setDisplayedText] = useState('');
@@ -1769,7 +1781,7 @@ export function GameScene({ onShowWatershed }: {
             position: 'fixed',
             bottom: 120,
             right: 8,
-            height: 'clamp(180px, 30vh, 280px)',
+            height: frogHeight,
             width: 'auto',
             zIndex: 42,
             pointerEvents: 'none',
