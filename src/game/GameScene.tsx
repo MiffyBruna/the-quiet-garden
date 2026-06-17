@@ -439,7 +439,9 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'bund') {
-        // During the dig_bund quest, only allow digging on the highlighted half-moon tiles
+        // During the guided quest (dig through plant), restrict bund digging:
+        //   • dig_bund  → only the highlighted half-moon tiles
+        //   • second_rain / plant_seed → bund is complete, no new digging until both grasses are planted
         if (gs.questStep === 'dig_bund') {
           const inShape = BUND_HIGHLIGHT.some(({ x, y }) => x === tx && y === ty);
           if (!inShape) {
@@ -449,6 +451,12 @@ export function GameScene({ onShowWatershed }: {
             }]);
             return;
           }
+        } else if (gs.questStep === 'second_rain' || gs.questStep === 'plant_seed') {
+          queueDialogue([{
+            speaker: 'Moss', emoji: '🐸',
+            text: 'The half-moon is complete. Tend to the seeds first.',
+          }]);
+          return;
         }
         const ok = applyBund(gs, tx, ty);
         if (ok) {
