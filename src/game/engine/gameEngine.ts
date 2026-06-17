@@ -272,7 +272,7 @@ export function applyLandscape(
     if (
       tile.terrain !== 'rock' && tile.terrain !== 'water' &&
       tile.terrain !== 'bund' && !tile.plant &&
-      tx !== gs.mossTX || ty !== gs.mossTY
+      !(tx === gs.mossTX && ty === gs.mossTY)
     ) {
       setTile(gs.tiles, tx, ty, { plant: { ...heldPlant }, isModified: true });
       return { action: 'placed', plant: null };
