@@ -443,7 +443,18 @@ export function GameScene({ onShowWatershed }: {
         const ok = applyBund(gs, tx, ty);
         if (ok) {
           track('custom_bund_placed', { tx, ty });
-          if (gs.questStep === 'dig_bund') advanceQuest('second_rain');
+          if (gs.questStep === 'dig_bund') {
+            // Count how many of the 8 highlighted half-moon tiles have been dug
+            const dug = BUND_HIGHLIGHT.filter(
+              ({ x, y }) => getTile(gs.tiles, x, y)?.terrain === 'bund',
+            ).length;
+            const total = BUND_HIGHLIGHT.length;
+            if (dug >= total) {
+              advanceQuest('second_rain');
+            } else {
+              setUI((p) => ({ ...p, questObjective: `Dig the half-moon bund (${dug}/${total})` }));
+            }
+          }
         }
         return;
       }

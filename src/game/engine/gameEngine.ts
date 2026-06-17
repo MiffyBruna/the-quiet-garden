@@ -89,27 +89,10 @@ export function applyBund(gs: GameState, tx: number, ty: number): boolean {
   if (!tile) return false;
   if (tile.terrain === 'rock' || tile.terrain === 'bund') return false;
 
-  // Half-moon shape: 5 tiles across the top row, 3 tiles centered on the row below.
-  //   [·][·][X][·][·]   ← top row  (ty)
-  //      [·][X][·]       ← bottom row (ty+1)
-  // The opening faces south so it cups water flowing downhill.
-  const shape: Array<[number, number]> = [
-    [tx - 2, ty], [tx - 1, ty], [tx, ty], [tx + 1, ty], [tx + 2, ty],
-    [tx - 1, ty + 1], [tx, ty + 1], [tx + 1, ty + 1],
-  ];
-
-  let placed = false;
-  for (const [ax, ay] of shape) {
-    if (!inBounds(ax, ay)) continue;
-    const t = getTile(gs.tiles, ax, ay);
-    if (t && t.terrain !== 'rock') {
-      setTile(gs.tiles, ax, ay, { terrain: 'bund', isModified: true });
-      placed = true;
-    }
-  }
-
-  if (placed) gs.bundPlaced = true;
-  return placed;
+  // Place a single bund tile — the player carves the half-moon one tile at a time.
+  setTile(gs.tiles, tx, ty, { terrain: 'bund', isModified: true });
+  gs.bundPlaced = true;
+  return true;
 }
 
 export function applyMulch(gs: GameState, tx: number, ty: number): boolean {

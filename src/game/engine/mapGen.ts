@@ -130,10 +130,12 @@ export const INSPECT_HIGHLIGHTS: Array<{ x: number; y: number }> = [
   { x: 17, y: 22 },
 ];
 
+// Half-moon bund shape: 5 tiles on top row, 3 tiles centered below.
+//   13 14 15 16 17   (y=15)
+//      14 15 16      (y=16)
 export const BUND_HIGHLIGHT: Array<{ x: number; y: number }> = [
-  { x: 14, y: 16 },
-  { x: 15, y: 16 },
-  { x: 16, y: 16 },
+  { x: 13, y: 15 }, { x: 14, y: 15 }, { x: 15, y: 15 }, { x: 16, y: 15 }, { x: 17, y: 15 },
+  { x: 14, y: 16 }, { x: 15, y: 16 }, { x: 16, y: 16 },
 ];
 
 export const SEED_HIGHLIGHT: Array<{ x: number; y: number }> = [
