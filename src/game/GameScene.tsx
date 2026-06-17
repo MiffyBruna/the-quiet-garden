@@ -1729,6 +1729,7 @@ export function GameScene({ onShowWatershed }: {
                 borderRadius: 12,
                 padding: 14,
                 paddingRight: 14,
+                minHeight: 120,
               }}
               onClick={handleDialogueInput}
             >
