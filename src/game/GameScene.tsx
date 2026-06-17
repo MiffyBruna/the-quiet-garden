@@ -1696,19 +1696,19 @@ export function GameScene({ onShowWatershed }: {
               overflow: 'visible',
             }}
           >
-            {/* Moss portrait peeking from above right */}
+            {/* Moss portrait peeking from above */}
             <img
               src="/moss-portrait.png"
               alt="Moss"
               style={{
                 position: 'absolute',
-                top: -140,
-                right: -120,
-                transform: 'scaleX(-1)',
-                width: 220,
-                height: 220,
+                top: -160,
+                left: '35%',
+                transform: 'translateX(-50%) scaleX(-1)',
+                width: 240,
+                height: 240,
                 objectFit: 'contain',
-                objectPosition: 'bottom right',
+                objectPosition: 'bottom center',
                 filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.8))',
                 zIndex: 43,
                 pointerEvents: 'none',
