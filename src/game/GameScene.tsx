@@ -462,7 +462,6 @@ export function GameScene({ onShowWatershed }: {
   const [ui, setUI] = useState<UIState>(INITIAL_UI);
   const uiRef = useRef<UIState>(INITIAL_UI);
   const safeArea = getSafeArea();
-  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
 
   // Typewriter animation state
   const [displayedText, setDisplayedText] = useState('');
@@ -481,13 +480,6 @@ export function GameScene({ onShowWatershed }: {
 
   // Keep uiRef in sync
   useEffect(() => { uiRef.current = ui; }, [ui]);
-
-  // Track window width for responsive frog positioning
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Typewriter effect — animate dialogue text unless fast mode is on
   useEffect(() => {
@@ -1768,26 +1760,16 @@ export function GameScene({ onShowWatershed }: {
         );
       })()}
 
-      {/* Moss portrait — responsive positioning */}
+      {/* Moss portrait — smoothly scales with screen size */}
       {ui.dialogue && (
         <img
           src="/moss-portrait.png"
           alt=""
-          style={windowWidth < 600 ? {
-            position: 'fixed',
-            bottom: 120,
-            left: '50%',
-            maxHeight: '30vh',
-            minHeight: 180,
-            width: 'auto',
-            zIndex: 42,
-            pointerEvents: 'none',
-            transform: 'translateX(-50%) scaleX(-1)',
-          } : {
+          style={{
             position: 'fixed',
             bottom: 120,
             right: 8,
-            height: 280,
+            height: 'clamp(180px, 30vh, 280px)',
             width: 'auto',
             zIndex: 42,
             pointerEvents: 'none',
