@@ -1091,7 +1091,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           ].filter(({ x, y }) => {
             if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
             const t = getTile(gs.tiles, x, y);
-            return t && t.terrain !== 'rock' && t.terrain !== 'water';
+            return t && t.terrain !== 'rock' && t.terrain !== 'water' && t.terrain !== 'bund';
           });
           // Prefer candidate with the smallest X distance from player (horizontal bias)
           candidates.sort((a, b) => Math.abs(a.x - gs.playerTX) - Math.abs(b.x - gs.playerTX));
