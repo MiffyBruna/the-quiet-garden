@@ -117,9 +117,17 @@ export function WatershedProgress({
   const c = theme.colors;
   const [activeTab, setActiveTab] = useState<CatalogTab>('chapters');
 
-  const chapters = CHAPTERS.map((ch) =>
-    ch.id === 'dryland' ? { ...ch, restoration: chapter1Restoration } : ch,
-  );
+  const chapters = CHAPTERS.map((ch) => {
+    if (ch.id === 'dryland') {
+      return { ...ch, restoration: chapter1Restoration };
+    }
+    // Unlock Chapter 2 when Chapter 1 reaches 80%+
+    if (ch.id === 'meadow') {
+      return { ...ch, locked: chapter1Restoration < 80 };
+    }
+    // Future chapters locked for now
+    return ch;
+  });
 
   const overallRestoration = Math.round(chapter1Restoration / 5);
   const sanctuaryUnlocked = chapter1Restoration >= 100;
