@@ -22,6 +22,7 @@ import {
   getQuestObjective, getQuestMossDialogue,
   MOSS_COMPLETION_DIALOGUE, MOSS_LANDSCAPE_DIALOGUE, MOSS_FIRST_RESTORATION_DIALOGUE,
   getTile,
+  serializeDiscoveries, deserializeDiscoveries,
 } from './engine/gameEngine';
 import {
   INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS,
@@ -460,6 +461,7 @@ export function GameScene({ onShowWatershed }: {
   const gsRef = useRef<GameState>(createInitialGameState());
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
+  const lastSaveTickRef = useRef<number>(0);
   const [ui, setUI] = useState<UIState>(INITIAL_UI);
   const uiRef = useRef<UIState>(INITIAL_UI);
   const safeArea = getSafeArea();
@@ -476,6 +478,36 @@ export function GameScene({ onShowWatershed }: {
     calculateFrogHeight();
     window.addEventListener('resize', calculateFrogHeight);
     return () => window.removeEventListener('resize', calculateFrogHeight);
+  }, []);
+
+  // Journal Persistence: Load discoveries on mount, save on quit
+  useEffect(() => {
+    // Load saved discoveries from storage
+    (async () => {
+      try {
+        const saved = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
+        if (saved) {
+          deserializeDiscoveries(gsRef.current, saved);
+        }
+      } catch (e) {
+        console.warn('Failed to load discoveries:', e);
+      }
+    })();
+
+    // Save on quit
+    const quitHandler = () => {
+      try {
+        const serialized = serializeDiscoveries(gsRef.current);
+        RundotGameAPI.appStorage.setItem('quiet-garden-discoveries', serialized);
+      } catch (e) {
+        console.warn('Failed to save discoveries on quit:', e);
+      }
+    };
+    RundotGameAPI.lifecycles.onQuit(quitHandler);
+
+    return () => {
+      // Cleanup is handled by RundotGameAPI
+    };
   }, []);
 
   // Typewriter animation state
@@ -1139,7 +1171,8 @@ export function GameScene({ onShowWatershed }: {
           queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'The rain is already falling. Let it do its work.' }]);
           return;
         }
-        triggerRain(gs);
+        const currentRestoration = calculateRestoration(gs);
+        triggerRain(gs, currentRestoration);
         track('custom_rain_called', { rains: gs.rainsCount });
 
         if (gs.questStep === 'first_rain') {
@@ -1376,6 +1409,17 @@ export function GameScene({ onShowWatershed }: {
         },
       );
 
+      // Journal Persistence: Save discoveries every 30 ticks (~0.5s at 60fps)
+      if (gs.tick - lastSaveTickRef.current >= 30) {
+        lastSaveTickRef.current = gs.tick;
+        try {
+          const serialized = serializeDiscoveries(gs);
+          RundotGameAPI.appStorage.setItem('quiet-garden-discoveries', serialized);
+        } catch (e) {
+          console.warn('Failed to save discoveries:', e);
+        }
+      }
+
       // Intro animation: detect when dialogue finishes and trigger Moss walk
       const currentUI = uiRef.current;
       const dialogueNowShowing = currentUI.dialogue !== null;
@@ -1574,49 +1618,73 @@ export function GameScene({ onShowWatershed }: {
           top: safeArea.top,
           left: 0,
           right: 0,
-          height: HUD_H,
+          minHeight: HUD_H,
           background: 'rgba(20,35,20,0.85)',
           backdropFilter: 'blur(4px)',
           zIndex: 20,
           display: 'flex',
-          alignItems: 'center',
-          padding: '16px 12px 0',
+          alignItems: 'flex-start',
+          padding: '12px 12px 8px',
           gap: 10,
+          overflow: 'hidden',
         }}
       >
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: '#7CCA7C', fontWeight: 700, letterSpacing: '0.08em' }}>
+        <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
+          <div style={{ fontSize: 11, color: '#7CCA7C', fontWeight: 700, letterSpacing: '0.08em', lineHeight: 1 }}>
             THE QUIET GARDEN
           </div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 1 }}>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 1, lineHeight: 1 }}>
             Ch.1: The Valley That Forgot the Rain
           </div>
           <div
             key={ui.questStep}
             className="quest-objective"
             style={{
-              fontSize: 10,
+              fontSize: 9,
               color: '#F0FFF0',
-              marginTop: 3,
+              marginTop: 2,
               padding: '2px 6px',
               background: 'rgba(255,255,255,0.1)',
               borderRadius: 4,
               display: 'inline-block',
+              maxWidth: '100%',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
             ▸ {ui.questObjective}
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#7CCA7C' }}>
-            {ui.restoration}%
-          </div>
-          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>restored</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, whiteSpace: 'nowrap' }}>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>
-              💧{Math.round(ui.avgMoisture)}% · 🐾{ui.wildlifeCount}
-            </span>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#7CCA7C', lineHeight: 1 }}>
+              {ui.restoration}%
+            </div>
+            {(() => {
+              let badge = '';
+              let color = '';
+              if (ui.restoration >= 70) {
+                badge = '◆ Resilient';
+                color = '#4CAF50';  // Green
+              } else if (ui.restoration >= 40) {
+                badge = '▲ Recovering';
+                color = '#FFC107';  // Yellow
+              } else {
+                badge = '● Fragile';
+                color = '#F44336';  // Red
+              }
+              return (
+                <div style={{ fontSize: 7, fontWeight: 700, color, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  {badge}
+                </div>
+              );
+            })()}
+          </div>
+          <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', lineHeight: 1 }}>restored</div>
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>
+            💧{Math.round(ui.avgMoisture)}% · 🐾{ui.wildlifeCount}
           </div>
         </div>
       </div>
@@ -1978,7 +2046,7 @@ export function GameScene({ onShowWatershed }: {
                 if (def.id === 'rain') {
                   const gs = gsRef.current;
                   const restoration = calculateRestoration(gs);
-                  triggerRain(gs);
+                  triggerRain(gs, restoration);
                   setUI((p) => ({ ...p, rainCooling: true }));
                   const cooldown = getRainCooldown(restoration);
                   setTimeout(() => setUI((p) => ({ ...p, rainCooling: false })), cooldown);

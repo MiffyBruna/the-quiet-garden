@@ -1,7 +1,7 @@
 /**
  * The Gardener's Journal — static content for the field journal feature.
  *
- * Plants (28), Guide Notes (3 per guide × 5 guides).
+ * Plants (30 = 6 per zone × 5 zones), Guide Notes (3 per guide × 5 guides).
  * Wildlife and fairies are imported from gardenData.ts.
  *
  * Discovery levels are derived at runtime from zone health:
@@ -61,7 +61,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Nitrogen fixer',
     fact: 'Lupines host bacteria in their roots that convert atmospheric nitrogen into a form other plants can use. They are not just growing — they are rebuilding the soil for everything that comes after them.',
     attractsWildlife: ['Butterflies', 'Bees'],
-    appearsAtHealth: 28,
+    appearsAtHealth: 25,
   },
   {
     id: 'sage',
@@ -85,6 +85,17 @@ export const PLANTS: PlantEntry[] = [
     attractsWildlife: ['Monarch Butterflies'],
     appearsAtHealth: 55,
   },
+  {
+    id: 'mesquite',
+    name: 'Mesquite',
+    emoji: '🌳',
+    zoneId: 'dryland',
+    biome: 'Dryland Valley',
+    role: 'Nitrogen fixer & food source',
+    fact: 'Mesquite trees fix nitrogen while producing nutrient-dense seed pods. Indigenous peoples gathered mesquite pods for thousands of years, ground them into flour, and stored them for months. A single mesquite tree can feed a family.',
+    attractsWildlife: ['Beetles', 'Birds'],
+    appearsAtHealth: 70,
+  },
 
   // ── MEADOW ────────────────────────────────────────────────────────────────
   {
@@ -107,7 +118,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Early pollinator food',
     fact: 'Violets bloom before most other meadow plants, providing critical early-season nectar when bees first emerge. The seeds are also carried by ants, spreading the plant across the meadow.',
     attractsWildlife: ['Bumblebees'],
-    appearsAtHealth: 10,
+    appearsAtHealth: 15,
   },
   {
     id: 'yarrow',
@@ -118,7 +129,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Mid-season bloom',
     fact: 'Yarrow\'s flat flower heads create a landing platform for dozens of pollinator species at once. It has been used medicinally for thousands of years — and ecologically for just as long.',
     attractsWildlife: ['Hoverflies', 'Bees'],
-    appearsAtHealth: 22,
+    appearsAtHealth: 25,
   },
   {
     id: 'bee_balm',
@@ -129,7 +140,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Hummingbird plant',
     fact: 'Bee balm\'s tubular red flowers are perfectly shaped for hummingbird beaks. Its strong aromatic oils also deter pests from nearby plants — it is a generous neighbour.',
     attractsWildlife: ['Hummingbirds', 'Bumblebees'],
-    appearsAtHealth: 35,
+    appearsAtHealth: 40,
   },
   {
     id: 'goldenrod',
@@ -140,7 +151,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Late-season nectar',
     fact: 'Goldenrod is often blamed for hayfever, but ragweed is almost always responsible. Goldenrod pollen is too heavy to blow in wind — it needs an insect to carry it. It has been unfairly maligned for a century.',
     attractsWildlife: ['Butterflies', 'Bees'],
-    appearsAtHealth: 48,
+    appearsAtHealth: 55,
   },
   {
     id: 'aster',
@@ -151,7 +162,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Late bloom',
     fact: 'Asters are among the last flowers to bloom before winter. For migrating pollinators, they are a final fuel stop — a meadow with asters extends the season for dozens of species.',
     attractsWildlife: ['Migrating Pollinators'],
-    appearsAtHealth: 60,
+    appearsAtHealth: 70,
   },
 
   // ── FOREST ────────────────────────────────────────────────────────────────
@@ -197,29 +208,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Shrub layer',
     fact: 'Elderberry grows fast, fruits prolifically, and provides habitat for insects in its hollow stems. It is a generous plant — it gives before the slower trees are ready.',
     attractsWildlife: ['Songbirds'],
-    appearsAtHealth: 32,
-  },
-  {
-    id: 'comfrey',
-    name: 'Comfrey',
-    emoji: '🌿',
-    zoneId: 'forest',
-    biome: 'The Forest',
-    role: 'Nutrient accumulator',
-    fact: 'Comfrey sends roots three metres deep to pull up minerals that shallow-rooted plants cannot reach. When its leaves fall and decompose, those minerals become available to everything else. It is a living elevator for fertility.',
-    attractsWildlife: [],
     appearsAtHealth: 40,
-  },
-  {
-    id: 'clover_plant',
-    name: 'White Clover',
-    emoji: '🍀',
-    zoneId: 'forest',
-    biome: 'The Forest',
-    role: 'Ground cover',
-    fact: 'Clover fixes nitrogen and feeds pollinators at ground level, creating fertility in the spaces between trees. It was once deliberately seeded into lawns — then the lawn-care industry convinced people it was a weed.',
-    attractsWildlife: ['Bees', 'Pollinators'],
-    appearsAtHealth: 48,
   },
   {
     id: 'wild_strawberry',
@@ -233,15 +222,15 @@ export const PLANTS: PlantEntry[] = [
     appearsAtHealth: 55,
   },
   {
-    id: 'oyster_mushroom',
-    name: 'Oyster Mushroom Log',
-    emoji: '🍄',
+    id: 'clover_plant',
+    name: 'White Clover',
+    emoji: '🍀',
     zoneId: 'forest',
     biome: 'The Forest',
-    role: 'Fungal decomposer',
-    fact: 'Oyster mushrooms decompose lignin — one of the hardest biological materials to break down. They are among the few organisms that can. A log inoculated with oyster mushroom mycelium is on its way back to being soil.',
-    attractsWildlife: [],
-    appearsAtHealth: 62,
+    role: 'Ground cover',
+    fact: 'Clover fixes nitrogen and feeds pollinators at ground level, creating fertility in the spaces between trees. It was once deliberately seeded into lawns — then the lawn-care industry convinced people it was a weed.',
+    attractsWildlife: ['Bees', 'Pollinators'],
+    appearsAtHealth: 70,
   },
 
   // ── WETLAND ───────────────────────────────────────────────────────────────
@@ -265,7 +254,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Bank stabiliser',
     fact: 'Sedges — "sedges have edges," as botanists say — stabilise stream banks with dense root mats. They are the first line of defence against erosion and the first welcome mat for frogs.',
     attractsWildlife: ['Frogs'],
-    appearsAtHealth: 18,
+    appearsAtHealth: 15,
   },
   {
     id: 'rush',
@@ -276,7 +265,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Wetland habitat',
     fact: 'Rushes create the dense, partially submerged habitat that dragonfly nymphs need to climb toward their final metamorphosis. Without rushes, dragonflies cannot complete their lives.',
     attractsWildlife: ['Dragonflies'],
-    appearsAtHealth: 30,
+    appearsAtHealth: 25,
   },
   {
     id: 'willow',
@@ -287,7 +276,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Riparian tree',
     fact: 'Willows grow fast, root deep, and anchor stream banks against floods. Their roots also pump oxygen into waterlogged soil, creating habitat for specialized bacteria that clean the water further.',
     attractsWildlife: ['Beavers'],
-    appearsAtHealth: 45,
+    appearsAtHealth: 40,
   },
   {
     id: 'water_lily',
@@ -298,7 +287,18 @@ export const PLANTS: PlantEntry[] = [
     role: 'Aquatic habitat',
     fact: 'Water lily pads provide resting platforms for frogs, shade that cools water for fish, and shelter for invertebrates below. Their roots stabilise the bottom sediments and provide oxygen underground.',
     attractsWildlife: ['Frogs', 'Dragonflies'],
-    appearsAtHealth: 58,
+    appearsAtHealth: 55,
+  },
+  {
+    id: 'ButtonBush',
+    name: 'Button Bush',
+    emoji: '🌸',
+    zoneId: 'wetland',
+    biome: 'The Wetland',
+    role: 'Wetland shrub',
+    fact: 'Button bush thrives in shallow wetlands, producing distinctive round flower heads. Its fruits float downriver, planting new button bushes across a watershed. It is the river\'s gardener.',
+    attractsWildlife: ['Butterflies', 'Bees'],
+    appearsAtHealth: 70,
   },
 
   // ── COASTAL DUNES ─────────────────────────────────────────────────────────
@@ -322,7 +322,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Pioneer coastal plant',
     fact: 'Sea rocket colonises bare sand at the top of the beach, one of the most hostile plant habitats on Earth. It tolerates salt, wind, drought, and occasional flooding. Everything that comes after it owes it a debt.',
     attractsWildlife: ['Coastal Pollinators'],
-    appearsAtHealth: 18,
+    appearsAtHealth: 15,
   },
   {
     id: 'dune_lupine',
@@ -333,7 +333,7 @@ export const PLANTS: PlantEntry[] = [
     role: 'Nitrogen fixer',
     fact: 'Dune lupine fixes nitrogen in one of the poorest soils on the planet, creating fertility from air and sunlight. Its purple flowers signal that the dune is becoming something more than sand.',
     attractsWildlife: ['Butterflies'],
-    appearsAtHealth: 32,
+    appearsAtHealth: 25,
   },
   {
     id: 'beach_strawberry',
@@ -344,7 +344,29 @@ export const PLANTS: PlantEntry[] = [
     role: 'Ground cover',
     fact: 'Beach strawberry spreads via runners across the dune, knitting the surface together while feeding birds and pollinators. It is small, low, and resilient — exactly what the dune needs near the tideline.',
     attractsWildlife: ['Birds'],
-    appearsAtHealth: 48,
+    appearsAtHealth: 40,
+  },
+  {
+    id: 'beach_plum',
+    name: 'Beach Plum',
+    emoji: '🫐',
+    zoneId: 'dune',
+    biome: 'The Coastal Dunes',
+    role: 'Fruit producer',
+    fact: 'Beach plum shrubs produce edible fruits and stabilize dunes with their root systems. Once abundant, they are now rare — restoring them helps restore entire dune ecosystems.',
+    attractsWildlife: ['Birds', 'Insects'],
+    appearsAtHealth: 55,
+  },
+  {
+    id: 'dune_rose',
+    name: 'Dune Rose',
+    emoji: '🌹',
+    zoneId: 'dune',
+    biome: 'The Coastal Dunes',
+    role: 'Native shrub',
+    fact: 'Dune roses have deep roots that hold sand and shallow runners that spread across the surface. Their pink flowers attract pollinators and their hips feed birds. Beauty and function in one tough plant.',
+    attractsWildlife: ['Pollinators', 'Birds'],
+    appearsAtHealth: 70,
   },
 ];
 

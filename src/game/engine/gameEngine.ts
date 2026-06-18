@@ -212,6 +212,7 @@ export function createInitialGameState(): GameState {
 
     entities: [],
     fairies: [],
+    fairySpawnCooldown: 0,
 
     mossTX: MOSS_START_TX,
     mossTY: MOSS_START_TY,
@@ -219,6 +220,7 @@ export function createInitialGameState(): GameState {
     isRaining: false,
     rainTimer: 0,
     rainDrops: [],
+    lastRestorationBeforeRain: 0,
 
     tick: 0,
     lastPhysicsTick: 0,
@@ -234,6 +236,7 @@ export function createInitialGameState(): GameState {
     discoveredWildlife: [],
     discoveredFairies: [],
     discoveredPlants: [],
+    discoveredGuideNotes: [],
 
     bundCenterTX: 15,
     bundCenterTY: 15,
@@ -242,6 +245,8 @@ export function createInitialGameState(): GameState {
     completionTriggered: false,
     workingBundCount: 0,
     firstWiltSeen: false,
+    grassSpreadingStarted: false,
+    bundRemovalPenalty: 0,
     cinematicCam: null,
     introAnimationState: null,
   };
@@ -250,6 +255,52 @@ export function createInitialGameState(): GameState {
 // ---------------------------------------------------------------------------
 // Tool actions
 // ---------------------------------------------------------------------------
+
+/**
+ * Flood-fill to find all connected bund tiles (8-directional).
+ * Used by Undo Bund system to remove entire bund clusters.
+ */
+function findConnectedBunds(tiles: Tile[][], startX: number, startY: number): Array<{ x: number; y: number }> {
+  const visited = new Set<string>();
+  const queue: Array<{ x: number; y: number }> = [{ x: startX, y: startY }];
+  const connected: Array<{ x: number; y: number }> = [];
+
+  while (queue.length > 0) {
+    const { x, y } = queue.shift()!;
+    const key = `${x},${y}`;
+
+    if (visited.has(key)) continue;
+    visited.add(key);
+
+    const tile = getTile(tiles, x, y);
+    if (!tile || tile.terrain !== 'bund') continue;
+
+    connected.push({ x, y });
+
+    // Check all 8 neighbors
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        const nextKey = `${x + dx},${y + dy}`;
+        if (!visited.has(nextKey)) {
+          queue.push({ x: x + dx, y: y + dy });
+        }
+      }
+    }
+  }
+
+  return connected;
+}
+
+/**
+ * Calculate restoration penalty for removing a bund cluster.
+ * Penalty: -2% per tile + -0.5% × current restoration.
+ */
+function calculateBundRemovalPenalty(bundCount: number, currentRestoration: number): number {
+  const perTilePenalty = bundCount * 2;
+  const restorationScaledPenalty = currentRestoration * 0.5;
+  return Math.min(currentRestoration, perTilePenalty + restorationScaledPenalty);
+}
 
 export function applyBund(gs: GameState, tx: number, ty: number): boolean {
   const tile = getTile(gs.tiles, tx, ty);
@@ -296,9 +347,33 @@ export function applyShovel(gs: GameState, tx: number, ty: number): boolean {
     return true;
   }
 
-  // Revert human-placed bund or mulch back to dry soil
-  // Clear collected water and reset moisture when removing structures
-  if (tile.terrain === 'bund' || tile.terrain === 'mulch') {
+  // Undo Bund: remove entire connected bund cluster with penalty
+  if (tile.terrain === 'bund') {
+    const currentRestoration = calculateRestoration(gs);
+    const connectedBunds = findConnectedBunds(gs.tiles, tx, ty);
+    const penalty = calculateBundRemovalPenalty(connectedBunds.length, currentRestoration);
+
+    // Remove all connected bund tiles
+    for (const bund of connectedBunds) {
+      const bundTile = getTile(gs.tiles, bund.x, bund.y);
+      if (bundTile) {
+        setTile(gs.tiles, bund.x, bund.y, {
+          terrain: 'dry_soil',
+          water: 0,
+          moisture: Math.max(8, bundTile.moisture * 0.6),
+          isModified: true
+        });
+      }
+    }
+
+    // Apply penalty to restoration score
+    gs.bundRemovalPenalty += penalty;
+
+    return true;
+  }
+
+  // Remove mulch back to dry soil
+  if (tile.terrain === 'mulch') {
     setTile(gs.tiles, tx, ty, {
       terrain: 'dry_soil',
       water: 0,  // Clear any collected water
@@ -511,10 +586,11 @@ export const PLANT_REQUIREMENTS: Record<PlantType, {
 // Rain
 // ---------------------------------------------------------------------------
 
-export function triggerRain(gs: GameState): void {
+export function triggerRain(gs: GameState, restoration: number = 0): void {
   gs.isRaining = true;
   gs.rainTimer = 5000; // 5 seconds of rain
   gs.rainsCount++;
+  gs.lastRestorationBeforeRain = restoration;  // Capture for Moss rain dialogue
 
   // Spawn rain drops distributed across visible area
   gs.rainDrops = [];
@@ -630,6 +706,11 @@ export function simulateWater(gs: GameState, restoration: number): void {
         continue;
       }
 
+      // Bund Neighbor Zone: apply fertility & moisture bonuses based on distance to nearest bund
+      const neighborBonus = getBundNeighborBonus(tiles, x, y);
+      tile.moisture = Math.min(moistureCap, tile.moisture + neighborBonus.moisture * 0.1);  // Scale bonus
+      tile.fertility = Math.min(100, tile.fertility + neighborBonus.fertility * 0.1);      // Scale bonus
+
       // Moisture decay — combined formula:
       //   base × restoration_curve × bund_count_modifier × plant_modifier
       //   × nearby_plant_cluster × mulch_modifier × erosion_drying × local_water_retention
@@ -674,6 +755,38 @@ export function simulateWater(gs: GameState, restoration: number): void {
 }
 
 // ---------------------------------------------------------------------------
+// Bund Neighbor Zone (Radius-based fertility & moisture bonus)
+// ---------------------------------------------------------------------------
+
+/**
+ * Bund Neighbor Zone: Returns {moisture, fertility} bonuses based on distance to nearest bund.
+ * Radius 1 (adjacent): +8% moisture, +3% fertility
+ * Radius 2: +5% moisture, +2% fertility
+ * Radius 3: +2% moisture, +1% fertility
+ */
+function getBundNeighborBonus(tiles: Tile[][], x: number, y: number): { moisture: number; fertility: number } {
+  let minDist = 999;
+
+  // Find distance to nearest bund
+  for (let dy = -3; dy <= 3; dy++) {
+    for (let dx = -3; dx <= 3; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const tile = getTile(tiles, x + dx, y + dy);
+      if (tile?.terrain === 'bund') {
+        const dist = Math.max(Math.abs(dx), Math.abs(dy));
+        minDist = Math.min(minDist, dist);
+      }
+    }
+  }
+
+  // Return bonus based on distance
+  if (minDist === 1) return { moisture: 8, fertility: 3 };
+  if (minDist === 2) return { moisture: 5, fertility: 2 };
+  if (minDist === 3) return { moisture: 2, fertility: 1 };
+  return { moisture: 0, fertility: 0 };
+}
+
+// ---------------------------------------------------------------------------
 // Natural water feature expansion (93%+ restoration)
 // ---------------------------------------------------------------------------
 
@@ -695,6 +808,33 @@ function tryExpandWaterFeatures(gs: GameState): void {
 
       if (hasWaterNeighbour && Math.random() < 0.0003) {
         setTile(tiles, x, y, { terrain: 'water', water: 60, moisture: 100, isModified: true });
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Natural grass spread
+// ---------------------------------------------------------------------------
+
+/**
+ * Spreads natural grass to fertile/moist empty soil tiles at 92%+ restoration.
+ * 5% chance per tile per tick if moisture > 30 AND fertility > 25.
+ */
+function spreadNaturalGrass(gs: GameState): void {
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      const tile = getTile(gs.tiles, x, y);
+      if (!tile) continue;
+
+      // Only spread to dry/cracked soil that is unoccupied
+      if ((tile.terrain !== 'dry_soil' && tile.terrain !== 'cracked_soil') || tile.plant) continue;
+
+      // Conditions: fertile + moist
+      if (tile.moisture > 30 && tile.fertility > 25) {
+        if (Math.random() < 0.05) {
+          setTile(gs.tiles, x, y, { terrain: 'grass', isModified: true });
+        }
       }
     }
   }
@@ -757,7 +897,12 @@ export function growPlants(gs: GameState, restoration: number): boolean {
 
       // Growth speed depends on moisture level
       const growthMult = getGrowthSpeedMultiplier(tile.moisture);
-      plant.age += (req.growthRate ?? 1) * growthMult;
+
+      // Bund neighbor bonus: 5% growth acceleration per bonus tier (max 15% from radius 3 bund)
+      const neighborBonus = getBundNeighborBonus(gs.tiles, x, y);
+      const neighborGrowthBonus = 1.0 + (neighborBonus.moisture * 0.005);  // max 1.04× at radius 1
+
+      plant.age += (req.growthRate ?? 1) * growthMult * neighborGrowthBonus;
       if (plant.age >= GROWTH_TICKS_PER_STAGE) {
         plant.stage = (plant.stage + 1) as PlantStage;
         plant.age = 0;
@@ -926,12 +1071,12 @@ interface FairyMilestone {
 
 const FAIRY_MILESTONES: FairyMilestone[] = [
   {
-    id: 'tutorial_fairy', percent: 15, type: 'grama',
+    id: 'first_fairy', percent: 15, type: 'grama',
     wisdom: '"The valley has held its first rain. The memory is faint — but it is there."',
     preferredTile: (gs) => [gs.mossTX + 1, gs.mossTY],
   },
   {
-    id: 'rain_fairy', percent: 25, type: 'marigold',
+    id: 'second_fairy', percent: 22, type: 'marigold',
     wisdom: '"Every bund is a small promise. The land is beginning to listen."',
     preferredTile: (gs) => {
       // Near first bund tile
@@ -942,41 +1087,17 @@ const FAIRY_MILESTONES: FairyMilestone[] = [
     },
   },
   {
-    id: 'soil_fairy', percent: 35, type: 'sage',
+    id: 'third_fairy', percent: 32, type: 'sage',
     wisdom: '"Soil remembers fertility. It just needs time and care to recall it."',
     preferredTile: () => [10, 18],
   },
   {
-    id: 'root_fairy', percent: 45, type: 'grama',
-    wisdom: '"The grass holds the hill together. Small roots hold small worlds."',
-    preferredTile: (gs) => {
-      for (let y = 1; y < MAP_H - 1; y++)
-        for (let x = 1; x < MAP_W - 1; x++) {
-          const t = getTile(gs.tiles, x, y);
-          if (t?.plant?.type === 'blue_grama' && t.plant.stage >= 3) return [x, y - 1];
-        }
-      return [14, 17];
-    },
-  },
-  {
-    id: 'flower_fairy', percent: 55, type: 'marigold',
-    wisdom: '"Every yellow petal is a landing strip for something smaller than your smallest thought."',
-    preferredTile: (gs) => {
-      for (let y = 1; y < MAP_H - 1; y++)
-        for (let x = 1; x < MAP_W - 1; x++) {
-          const t = getTile(gs.tiles, x, y);
-          if (t?.plant?.type === 'desert_marigold' && t.plant.stage >= 4) return [x + 1, y];
-        }
-      return [20, 14];
-    },
-  },
-  {
-    id: 'bee_fairy', percent: 65, type: 'lupine',
+    id: 'fourth_fairy', percent: 42, type: 'lupine',
     wisdom: '"Pollinators do not ask for much. Just a flower that stays open."',
     preferredTile: () => [8, 12],
   },
   {
-    id: 'butterfly_fairy', percent: 75, type: 'milkweed',
+    id: 'fifth_fairy', percent: 52, type: 'milkweed',
     wisdom: '"Lupine gives back to soil what years of neglect took away. Patience is a kind of generosity."',
     preferredTile: (gs) => {
       for (let y = 1; y < MAP_H - 1; y++)
@@ -986,31 +1107,6 @@ const FAIRY_MILESTONES: FairyMilestone[] = [
         }
       return [22, 18];
     },
-  },
-  {
-    id: 'pond_fairy', percent: 85, type: 'sage',
-    wisdom: '"Frogs return when the water stays. They are the valley\'s memory of what it once was."',
-    preferredTile: (gs) => {
-      for (let y = 1; y < MAP_H - 1; y++)
-        for (let x = 1; x < MAP_W - 1; x++)
-          if (getTile(gs.tiles, x, y)?.terrain === 'water') return [x + 1, y];
-      return [16, 16];
-    },
-  },
-  {
-    id: 'bird_fairy', percent: 93, type: 'milkweed',
-    wisdom: '"Finches follow diversity. Many plants mean many songs."',
-    preferredTile: () => [6, 20],
-  },
-  {
-    id: 'valley_memory_fairy', percent: 95, type: 'grama',
-    wisdom: '"The rain is no longer a visitor. It belongs here now."',
-    preferredTile: () => [16, 10],
-  },
-  {
-    id: 'watershed_fairy', percent: 100, type: 'marigold',
-    wisdom: '"Without milkweed there are no monarchs. You gave the migration a place to pause."',
-    preferredTile: () => [15, 15],
   },
 ];
 
@@ -1037,6 +1133,12 @@ function findFairySafeTile(gs: GameState, preferX: number, preferY: number): [nu
 }
 
 export function spawnFairies(gs: GameState, restoration: number): void {
+  // Max 5 fairies cap
+  if (gs.fairies.length >= 5) return;
+
+  // Prevent spawning too close together (cooldown: 180 ticks = ~3 seconds at 60fps)
+  if (gs.fairySpawnCooldown > 0) return;
+
   for (const milestone of FAIRY_MILESTONES) {
     if (gs.discoveredFairies.includes(milestone.id)) continue;
     if (restoration < milestone.percent) continue;
@@ -1054,6 +1156,7 @@ export function spawnFairies(gs: GameState, restoration: number): void {
     };
     gs.fairies.push(fairy);
     gs.discoveredFairies.push(milestone.id);
+    gs.fairySpawnCooldown = 180;  // 3 second cooldown before next spawn
     break; // spawn one per call to spread them out over time
   }
 }
@@ -1135,15 +1238,38 @@ export function calculateRestoration(gs: GameState): number {
   const plantScore = Math.min(100, plantTypes.size * 20);
   const wildlifeScore = Math.min(100, gs.discoveredWildlife.length * 10);
 
-  // Weighted: soil health (moisture + fertility) is 50%, biodiversity (plants + wildlife) is 50%
-  const score = (
-    moistureScore  * 0.25 +
+  // Dynamic weighting based on restoration level:
+  // Early (0-70%): Balance all factors equally (fragile phase — everything matters)
+  // Late (70%+): Emphasize biodiversity (35/35) over soil (15/15) (resilient phase — self-sustaining)
+  let moistureWeight = 0.25, fertilityWeight = 0.25, plantWeight = 0.25, wildlifeWeight = 0.25;
+
+  // Calculate unweighted score to determine phase
+  const baseScore = (
+    moistureScore * 0.25 +
     fertilityScore * 0.25 +
-    plantScore     * 0.25 +
-    wildlifeScore  * 0.25
+    plantScore * 0.25 +
+    wildlifeScore * 0.25
   );
 
-  return Math.round(Math.min(100, score));
+  if (baseScore >= 70) {
+    // Late game (resilient): Biodiversity matters more than soil health
+    moistureWeight = 0.15;
+    fertilityWeight = 0.15;
+    plantWeight = 0.35;
+    wildlifeWeight = 0.35;
+  }
+
+  const score = (
+    moistureScore  * moistureWeight +
+    fertilityScore * fertilityWeight +
+    plantScore     * plantWeight +
+    wildlifeScore  * wildlifeWeight
+  );
+
+  // Apply bund removal penalty (cumulative reduction from removing bund clusters)
+  const penalizedScore = Math.max(0, score - gs.bundRemovalPenalty);
+
+  return Math.round(Math.min(100, penalizedScore));
 }
 
 // ---------------------------------------------------------------------------
@@ -1262,12 +1388,33 @@ export function updateGame(
 ): void {
   gs.tick++;
 
+  // Decrement fairy spawn cooldown
+  if (gs.fairySpawnCooldown > 0) {
+    gs.fairySpawnCooldown--;
+  }
+
   // Update rain
   if (gs.isRaining) {
     gs.rainTimer -= dt;
     if (gs.rainTimer <= 0) {
       gs.isRaining = false;
       gs.rainDrops = [];
+
+      // Moss Rain Dialogue: Trigger only if restoration increased >8% from the start of this rain
+      if (onMilestone && gs.questStep === 'free_play') {
+        const currentRestoration = calculateRestoration(gs);
+        const restorationGain = currentRestoration - gs.lastRestorationBeforeRain;
+        if (restorationGain > 8) {
+          const dialogue: DialogueLine = {
+            speaker: 'Moss',
+            emoji: '🐸',
+            text: restorationGain >= 15
+              ? 'The rain brought hope. The land remembers.'
+              : 'The valley is drinking deeply now.',
+          };
+          onMilestone(0, dialogue);  // Use 0 as placeholder milestone number
+        }
+      }
     }
     // Animate rain drops
     for (const drop of gs.rainDrops) {
@@ -1299,6 +1446,14 @@ export function updateGame(
     const restoration = calculateRestoration(gs);
     const firstWilt = growPlants(gs, restoration);
     if (firstWilt && onFirstWilt) onFirstWilt();
+    // 92%+ tipping point: natural grass begins spreading
+    if (restoration >= 92 && !gs.grassSpreadingStarted) {
+      gs.grassSpreadingStarted = true;
+      if (onMilestone) onMilestone(92, { speaker: 'Moss', emoji: '🐸', text: '✓ Native grasses spreading naturally!' });
+    }
+    if (restoration >= 92) {
+      spreadNaturalGrass(gs);
+    }
     if (gs.tick % 180 === 0) {
       spawnWildlife(gs);
       spawnFairies(gs, restoration);
@@ -1354,4 +1509,36 @@ function getAvgMoisture(gs: GameState): number {
     }
   }
   return count > 0 ? Math.round(total / count) : 0;
+}
+
+// ---------------------------------------------------------------------------
+// Journal Persistence (save/load discoveries across sessions)
+// ---------------------------------------------------------------------------
+
+/**
+ * Serialize discoveries to JSON string for storage.
+ */
+export function serializeDiscoveries(gs: GameState): string {
+  return JSON.stringify({
+    discoveredWildlife: gs.discoveredWildlife,
+    discoveredFairies: gs.discoveredFairies,
+    discoveredPlants: gs.discoveredPlants,
+    discoveredGuideNotes: gs.discoveredGuideNotes,
+  });
+}
+
+/**
+ * Deserialize discoveries from JSON string and apply to GameState.
+ */
+export function deserializeDiscoveries(gs: GameState, json: string): void {
+  try {
+    const data = JSON.parse(json);
+    if (Array.isArray(data.discoveredWildlife)) gs.discoveredWildlife = data.discoveredWildlife;
+    if (Array.isArray(data.discoveredFairies)) gs.discoveredFairies = data.discoveredFairies;
+    if (Array.isArray(data.discoveredPlants)) gs.discoveredPlants = data.discoveredPlants;
+    if (Array.isArray(data.discoveredGuideNotes)) gs.discoveredGuideNotes = data.discoveredGuideNotes;
+  } catch (e) {
+    // Silently ignore malformed JSON — use defaults
+    console.warn('Failed to deserialize discoveries:', e);
+  }
 }

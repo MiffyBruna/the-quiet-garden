@@ -133,6 +133,7 @@ export interface GameState {
   // Entities
   entities: WildlifeEntity[];
   fairies: FairyEntity[];
+  fairySpawnCooldown: number;       // ticks until next fairy can spawn (prevents bunching)
 
   // Moss
   mossTX: number;
@@ -142,6 +143,7 @@ export interface GameState {
   isRaining: boolean;
   rainTimer: number; // ms remaining
   rainDrops: Array<{ x: number; y: number; speed: number; length: number }>;
+  lastRestorationBeforeRain: number;  // For Moss rain dialogue trigger (>8% gain required)
 
   // Time
   tick: number;           // frame counter
@@ -161,6 +163,7 @@ export interface GameState {
   discoveredWildlife: string[];
   discoveredFairies: string[];
   discoveredPlants: string[];
+  discoveredGuideNotes: string[];  // Guide note IDs player has unlocked
 
   // Ecological progression tracking
   bundCenterTX: number;                  // player TX when bund stencil was confirmed — seeds placed relative to this
@@ -170,6 +173,8 @@ export interface GameState {
   completionTriggered: boolean;         // true once 100% restoration event fires
   workingBundCount: number;             // bunds currently holding moisture ≥ 25 — affects drying speed
   firstWiltSeen: boolean;               // whether first-time plant-wilt dialogue has fired
+  grassSpreadingStarted: boolean;       // true once natural grass spread begins at 92% restoration
+  bundRemovalPenalty: number;           // cumulative restoration penalty from removing bunds
 
   // Cinematic camera (null = follow player, set during completion tour)
   cinematicCam: { px: number; py: number } | null;
