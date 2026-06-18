@@ -46,7 +46,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
     setMusicVolumeState(settings.musicVolume);
 
     if (settings.musicEnabled) {
-      playMusic('/cdn-assets/sprites/soundtrack.mp3', settings.musicVolume);
+      playMusic('/cdn-assets/soundtrack.mp3', settings.musicVolume);
       RundotGameAPI.analytics.recordCustomEvent('landing_music_started');
     }
 
@@ -120,7 +120,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       style={{
         width: '100vw',
         height: '100vh',
-        backgroundImage: 'url(/cdn-assets/sprites/landing-bg.png)',
+        backgroundImage: 'url(/cdn-assets/landing-bg.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
@@ -219,7 +219,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       >
         {/* Title Image */}
         <img
-          src="/cdn-assets/sprites/game-title.png"
+          src="/cdn-assets/game-title.png"
           alt="The Quiet Garden"
           className="game-logo"
         />
@@ -263,7 +263,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             }}
           >
             <img
-              src="/cdn-assets/sprites/btn-start.png"
+              src="/cdn-assets/btn-start.png"
               alt={saveExists ? 'New Game' : 'Start'}
               style={{
                 width: '100%',

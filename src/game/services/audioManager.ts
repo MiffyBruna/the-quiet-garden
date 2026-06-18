@@ -103,7 +103,7 @@ export function setMusicVolume(volume: number): void {
 export function toggleMusic(enabled: boolean): void {
   saveAudioSettings({ musicEnabled: enabled });
   if (enabled && audioInstance === null) {
-    playMusic('/cdn-assets/sprites/soundtrack.mp3');
+    playMusic('/cdn-assets/soundtrack.mp3');
   } else if (!enabled) {
     stopMusic();
   }
