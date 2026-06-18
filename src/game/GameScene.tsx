@@ -137,7 +137,6 @@ function getPlayerSprite(facing: string, isMoving: boolean, tick: number): HTMLI
     const direction = (facing === 'e' ? 'right' : facing === 'w' ? 'left' : facing === 'n' ? 'up' : 'down') as keyof typeof playerSpriteWalk;
     const frames = playerSpriteWalk[direction];
     spriteName = frames[frameIndex]!;
-    console.log(`Player facing: ${facing}, direction: ${direction}, frame: ${frameIndex}, sprite: ${spriteName}`);
   } else {
     // Idle - use proper idle sprite for each direction
     const direction = (facing === 'e' ? 'right' : facing === 'w' ? 'left' : facing === 'n' ? 'up' : 'down') as keyof typeof playerSpriteIdle;
@@ -1033,8 +1032,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
     gs.playerDestTY = ny;
     if (dx > 0) gs.playerFacing = 'e';
     if (dx < 0) gs.playerFacing = 'w';
-    if (dy > 0) gs.playerFacing = 's';
-    if (dy < 0) gs.playerFacing = 'n';
+    if (dy < 0) gs.playerFacing = 's';  // Swapped: down on screen = negative Y
+    if (dy > 0) gs.playerFacing = 'n';  // Swapped: up on screen = positive Y
 
     // Play footstep sound
     playSFX('footstep', 0.5).catch(() => {});
