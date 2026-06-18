@@ -2745,12 +2745,7 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
             >
               <span style={{ fontSize: 18, lineHeight: '1' }}>{def.emoji}</span>
               <span style={{ fontSize: 7, color: active ? '#7CCA7C' : 'rgba(240,255,240,0.6)', textAlign: 'center', lineHeight: '1' }}>
-                {(() => {
-                  if (def.id === 'talk') {
-                    return gsRef.current?.chapter === 'meadow' ? 'Clover' : 'Moss';
-                  }
-                  return def.label;
-                })()}
+                {def.id === 'talk' ? (gsRef.current.chapter === 'meadow' ? 'Clover' : 'Moss') : def.label}
               </span>
             </button>
           );
