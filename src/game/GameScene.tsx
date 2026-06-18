@@ -147,34 +147,6 @@ function getPlayerSprite(facing: string, isMoving: boolean, tick: number): HTMLI
   return loadSprite(path);
 }
 
-// Fallback drawing function (stashed old sprite code in case we need to revert)
-function drawPlayerShapeFallback(ctx: CanvasRenderingContext2D, sx: number, sy: number, T: number, tick: number, isMoving: boolean): void {
-  const cx = sx + T / 2;
-  const cy = sy + T / 2;
-
-  ctx.fillStyle = 'rgba(0,0,0,0.15)';
-  ctx.beginPath();
-  ctx.ellipse(cx, sy + T - 3, 7, 3, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#4A7A52';
-  ctx.fillRect(cx - 5, cy - 1, 10, 10);
-
-  ctx.fillStyle = '#D4A882';
-  ctx.beginPath();
-  ctx.arc(cx, cy - 5, 6, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#5C3D2E';
-  ctx.fillRect(cx - 7, cy - 10, 14, 3);
-  ctx.fillRect(cx - 4, cy - 16, 9, 7);
-
-  const walkBob = isMoving ? Math.abs(Math.sin(tick * 0.25)) * 2 : 0;
-  ctx.fillStyle = '#5C3D2E';
-  ctx.fillRect(cx - 5, cy + 7 + walkBob, 4, 4);
-  ctx.fillRect(cx + 1, cy + 7 - walkBob + 2, 4, 4);
-}
-
 function renderDialogueText(text: string): React.ReactNode {
   // List of quest-related phrases to highlight in bold
   const boldPhrases = [
@@ -478,9 +450,6 @@ function renderFrame(
       ctx.imageSmoothingEnabled = false; // Pixelated rendering
       ctx.drawImage(sprite, spriteX, spriteY, spriteDisplayWidth, spriteDisplayHeight);
       ctx.imageSmoothingEnabled = true; // Re-enable for other elements
-    } else {
-      // Fallback: draw simple shape if sprite not loaded
-      drawPlayerShapeFallback(ctx, sx, sy, T, tick, isMoving);
     }
   }
 

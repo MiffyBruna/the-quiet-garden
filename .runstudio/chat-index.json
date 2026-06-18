@@ -4,7 +4,13 @@
       "id": "conv-1781649686416-kv6uigqge",
       "title": "Let's build a game!",
       "createdAt": 1781649686416,
-      "updatedAt": 1781755072055
+      "updatedAt": 1781755298686
+    },
+    {
+      "id": "conv-1781755186172-a7fmmpuoa",
+      "title": "New conversation",
+      "createdAt": 1781755186172,
+      "updatedAt": 1781755186172
     }
   ],
   "lastOpenedId": "conv-1781649686416-kv6uigqge"
