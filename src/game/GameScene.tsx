@@ -10,6 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
+import { playMusic, isMusicEnabled } from './services/audioManager';
 import {
   TILE_SIZE, MAP_W, MAP_H,
   GameState, UIState, ToolType, PlantType, DialogueLine, QuestStep, Tile,
@@ -510,6 +511,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
         setGameLoaded(true);
       }
     })();
+
+    // Ensure music is playing in the game
+    if (isMusicEnabled()) {
+      playMusic('/cdn-assets/soundtrack.mp3');
+    }
 
     // Save on quit
     const quitHandler = () => {

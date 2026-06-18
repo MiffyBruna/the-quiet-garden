@@ -3,6 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
+import { playMusic, loadAudioSettings, toggleMusic, setMusicVolume } from './services/audioManager';
 
 interface LandingPageProps {
   onStart: (isContinue: boolean) => void;
@@ -20,6 +21,8 @@ export function LandingPage({ onStart }: LandingPageProps) {
   const [loading, setLoading] = useState(true);
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  const [isMusicOn, setIsMusicOn] = useState(true);
+  const [musicVolume, setMusicVolumeState] = useState(70);
 
   useEffect(() => {
     (async () => {
@@ -33,6 +36,22 @@ export function LandingPage({ onStart }: LandingPageProps) {
         setLoading(false);
       }
     })();
+  }, []);
+
+  // Initialize audio settings and play music
+  useEffect(() => {
+    const settings = loadAudioSettings();
+    setIsMusicOn(settings.musicEnabled);
+    setMusicVolumeState(settings.musicVolume);
+
+    if (settings.musicEnabled) {
+      playMusic('/cdn-assets/soundtrack.mp3', settings.musicVolume);
+      RundotGameAPI.analytics.recordCustomEvent('landing_music_started');
+    }
+
+    return () => {
+      // Don't stop music on unmount - it will continue to game scene
+    };
   }, []);
 
   // Generate sparkles on mount and periodically
@@ -293,6 +312,74 @@ export function LandingPage({ onStart }: LandingPageProps) {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Audio Controls */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          zIndex: 50,
+          display: 'flex',
+          gap: '12px',
+          alignItems: 'center',
+          background: 'rgba(0, 0, 0, 0.3)',
+          padding: '8px 12px',
+          borderRadius: '4px',
+          backdropFilter: 'blur(2px)',
+        }}
+      >
+        {/* Music Toggle Button */}
+        <button
+          onClick={() => {
+            toggleMusic(!isMusicOn);
+            setIsMusicOn(!isMusicOn);
+            RundotGameAPI.analytics.recordCustomEvent('landing_music_toggled', {
+              enabled: String(!isMusicOn),
+            });
+          }}
+          style={{
+            background: 'transparent',
+            border: '1px solid #D4AF37',
+            color: '#D4AF37',
+            padding: '6px 12px',
+            borderRadius: '3px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+          }}
+        >
+          {isMusicOn ? '🔊' : '🔇'}
+        </button>
+
+        {/* Volume Slider */}
+        {isMusicOn && (
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={musicVolume}
+            onChange={(e) => {
+              const newVolume = parseInt(e.target.value);
+              setMusicVolumeState(newVolume);
+              setMusicVolume(newVolume);
+            }}
+            style={{
+              width: '80px',
+              cursor: 'pointer',
+              accentColor: '#D4AF37',
+            }}
+            title="Music Volume"
+          />
+        )}
       </div>
 
       {/* New Game Confirmation Dialog */}
