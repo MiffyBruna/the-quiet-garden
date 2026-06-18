@@ -498,9 +498,10 @@ const INITIAL_UI: UIState = {
   reshapeMode: 'move',
 };
 
-export function GameScene({ onShowWatershed, isContinue }: {
+export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
   onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[]) => void;
   isContinue: boolean;
+  selectedChapter?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gsRef = useRef<GameState>(createInitialGameState());
@@ -512,6 +513,15 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const safeArea = getSafeArea();
   const [frogHeight, setFrogHeight] = useState<number>(280);
   const [gameLoaded, setGameLoaded] = useState(false);
+
+  // Reset game state when chapter selection changes
+  useEffect(() => {
+    if (selectedChapter && selectedChapter !== 'dryland') {
+      // TODO: Implement loading logic for other chapters (meadow, forest, wetland, coastal)
+      // For now, just show that chapter was selected
+      console.log('Chapter selected:', selectedChapter);
+    }
+  }, [selectedChapter]);
 
   // Calculate frog height based on screen size
   useEffect(() => {

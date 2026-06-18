@@ -39,6 +39,7 @@ export function QuietGarden() {
   const [gameStarted, setGameStarted] = useState(false);
   const [isContinue, setIsContinue] = useState(false);
   const [showWatershed, setShowWatershed] = useState(false);
+  const [selectedChapter, setSelectedChapter] = useState<string>('dryland');
   const [watershedData, setWatershedData] = useState<WatershedData>({
     chapter1Restoration: 0,
     discoveredWildlife: [],
@@ -67,9 +68,9 @@ export function QuietGarden() {
   );
 
   const handleSelectChapter = useCallback((chapterId: string) => {
+    setSelectedChapter(chapterId);
     setShowWatershed(false);
     track('custom_chapter_selected', { chapter: chapterId });
-    // TODO: Implement chapter loading logic
   }, []);
 
   if (!gameStarted) {
@@ -78,7 +79,7 @@ export function QuietGarden() {
 
   return (
     <>
-      <GameScene onShowWatershed={handleOpenWatershed} isContinue={isContinue} />
+      <GameScene onShowWatershed={handleOpenWatershed} isContinue={isContinue} selectedChapter={selectedChapter} />
       {showWatershed && (
         <WatershedProgress
           chapter1Restoration={watershedData.chapter1Restoration}
