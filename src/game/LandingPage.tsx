@@ -202,26 +202,33 @@ export function LandingPage({ onStart }: LandingPageProps) {
             maxWidth: '400px',
           }}
         >
-          {/* Continue Button (only if save exists) */}
+          {/* Continue Button (text-based, only if save exists) */}
           {saveExists && (
             <button
               onClick={handleContinue}
               style={{
-                background: 'none',
-                border: 'none',
+                background: 'rgba(0, 0, 0, 0.1)',
+                border: '2px solid #D4AF37',
+                borderRadius: '4px',
+                padding: '10px 24px',
+                fontSize: 'clamp(12px, 4vw, 16px)',
+                fontWeight: 'bold',
+                color: '#D4AF37',
                 cursor: 'pointer',
-                padding: 0,
-                maxWidth: '100%',
-                transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease',
-                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
+                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                backdropFilter: 'blur(2px)',
               }}
               onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)';
                 e.currentTarget.style.transform = 'scale(1.08)';
-                e.currentTarget.style.filter = 'drop-shadow(0 6px 12px rgba(255, 215, 0, 0.3))';
+                e.currentTarget.style.boxShadow = '0 0 12px rgba(255, 215, 0, 0.4), inset 0 0 8px rgba(255, 215, 0, 0.1)';
               }}
               onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)';
                 e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.filter = 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))';
+                e.currentTarget.style.boxShadow = 'none';
               }}
               onTouchStart={(e) => {
                 e.currentTarget.style.transform = 'scale(0.96)';
@@ -230,15 +237,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              <img
-                src="/cdn-assets/btn-continue.png"
-                alt="Continue"
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                  display: 'block',
-                }}
-              />
+              Continue
             </button>
           )}
 
@@ -322,12 +321,22 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <p
               style={{
                 fontSize: '14px',
-                margin: '0 0 25px 0',
+                margin: '0 0 10px 0',
                 opacity: 0.85,
+                lineHeight: '1.5',
+              }}
+            >
+              ⚠️ Your previous saved game will be <strong>permanently overwritten</strong> and cannot be recovered.
+            </p>
+            <p
+              style={{
+                fontSize: '12px',
+                margin: '0 0 25px 0',
+                opacity: 0.7,
                 lineHeight: '1.4',
               }}
             >
-              Your progress will be lost. Are you sure?
+              Are you sure you want to continue?
             </p>
             <div
               style={{
