@@ -418,22 +418,22 @@ function ChapterCard({ chapter }: { chapter: ChapterInfo }) {
           color: '#F0FFF0',
           padding: `${theme.spacing.sm}px ${theme.spacing.md}px`,
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           gap: 10,
         }}
       >
-        <span style={{ fontSize: 28 }}>{emoji}</span>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: theme.fontSize.sm }}>{name}</div>
+        <span style={{ fontSize: 28, minWidth: 32, flexShrink: 0 }}>{emoji}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 700, fontSize: theme.fontSize.sm, lineHeight: 1.3 }}>{name}</div>
           <div style={{ fontSize: 10, opacity: 0.75, marginTop: 2 }}>
             {guideEmoji} {guideName}
           </div>
         </div>
-        <div style={{ textAlign: 'right' }}>
+        <div style={{ textAlign: 'right', minWidth: 45, flexShrink: 0 }}>
           <div style={{ fontWeight: 700, fontSize: theme.fontSize.md }}>
             {locked ? '🔒' : `${restoration}%`}
           </div>
-          <div style={{ fontSize: 10, opacity: 0.75 }}>{locked ? 'Locked' : 'restored'}</div>
+          <div style={{ fontSize: 9, opacity: 0.75 }}>{locked ? 'Locked' : 'restored'}</div>
         </div>
       </div>
 
