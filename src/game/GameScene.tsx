@@ -2423,8 +2423,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           borderTop: '1px solid rgba(124,202,124,0.25)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-around',
-          padding: '0 4px',
+          justifyContent: 'flex-start',
+          gap: 2,
+          padding: '0 2px',
+          overflowX: 'auto',
           zIndex: 20,
         }}
       >
@@ -2559,18 +2561,18 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 2,
+                gap: 1,
                 background: active ? 'rgba(124,202,124,0.2)' : 'transparent',
                 border: active ? '1px solid rgba(124,202,124,0.5)' : '1px solid transparent',
-                borderRadius: 10,
-                padding: '5px 3px',
+                borderRadius: 8,
+                padding: '3px 2px',
                 cursor: rainBlocked ? 'default' : 'pointer',
                 opacity: rainBlocked ? 0.4 : 1,
-                minWidth: 36,
+                minWidth: 32,
               }}
             >
-              <span style={{ fontSize: 20 }}>{def.emoji}</span>
-              <span style={{ fontSize: 8, color: active ? '#7CCA7C' : 'rgba(240,255,240,0.6)', textAlign: 'center' }}>
+              <span style={{ fontSize: 18, lineHeight: '1' }}>{def.emoji}</span>
+              <span style={{ fontSize: 7, color: active ? '#7CCA7C' : 'rgba(240,255,240,0.6)', textAlign: 'center', lineHeight: '1' }}>
                 {def.label}
               </span>
             </button>
