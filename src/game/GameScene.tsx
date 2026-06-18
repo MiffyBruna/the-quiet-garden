@@ -1913,13 +1913,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
               }}
               onClick={handleDialogueInput}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, maxWidth: '70%' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, maxWidth: '100%', minWidth: 0 }}>
                 <span style={{ fontSize: 30, flexShrink: 0, lineHeight: 1.1 }}>{ui.dialogue.emoji}</span>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700, marginBottom: 4 }}>
                     {ui.dialogue.speaker}
                   </div>
-                  <div style={{ fontSize: 13, color: '#F0FFF0', lineHeight: 1.55, fontStyle: 'italic' }}>
+                  <div style={{ fontSize: 13, color: '#F0FFF0', lineHeight: 1.55, fontStyle: 'italic', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
                     &ldquo;{renderDialogueText(displayedText)}&rdquo;
                     {isTyping && <span className="dialogue-cursor" style={{ color: '#7CCA7C', marginLeft: 1 }}>▌</span>}
                   </div>
