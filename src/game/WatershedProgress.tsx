@@ -102,7 +102,7 @@ export function WatershedProgress({
   onClose,
 }: WatershedProgressProps) {
   const c = theme.colors;
-  const [activeTab, setActiveTab] = useState<CatalogTab>('wildlife');
+  const [activeTab, setActiveTab] = useState<CatalogTab>('chapters');
 
   const chapters = CHAPTERS.map((ch) =>
     ch.id === 'dryland' ? { ...ch, restoration: chapter1Restoration } : ch,
@@ -173,6 +173,7 @@ export function WatershedProgress({
         }}
       >
         {[
+          { id: 'chapters' as CatalogTab, emoji: '📖', label: 'Chapters', count: 1, total: 5 },
           { id: 'plants' as CatalogTab, emoji: '🌱', label: 'Plants', count: discoveredPlants.length, total: 5 },
           { id: 'wildlife' as CatalogTab, emoji: '🐾', label: 'Wildlife', count: discoveredWildlife.length, total: 10 },
           { id: 'fairies' as CatalogTab, emoji: '✨', label: 'Fairies', count: discoveredFairies.length, total: 5 },
@@ -198,7 +199,7 @@ export function WatershedProgress({
         ))}
       </div>
 
-      {/* Chapter cards */}
+      {/* Content area */}
       <div
         style={{
           flex: 1,
@@ -206,11 +207,47 @@ export function WatershedProgress({
           display: 'flex',
           flexDirection: 'column',
           gap: theme.spacing.md,
+          overflowY: 'auto',
         }}
       >
-        {chapters.map((ch) => (
-          <ChapterCard key={ch.id} chapter={ch} />
-        ))}
+        {/* Chapters tab */}
+        {activeTab === 'chapters' && (
+          <>
+            {chapters.map((ch) => (
+              <ChapterCard key={ch.id} chapter={ch} />
+            ))}
+
+            {/* Sanctuary (only in chapters tab) */}
+            <div
+              style={{
+                borderRadius: theme.borderRadius.lg,
+                border: sanctuaryUnlocked
+                  ? `1px solid rgba(124, 202, 124, 0.5)`
+                  : `1px dashed ${c.border}`,
+                background: sanctuaryUnlocked
+                  ? 'linear-gradient(160deg, #1a3a1a, #2E5E2E)'
+                  : 'transparent',
+                padding: theme.spacing.lg,
+                textAlign: 'center',
+                color: sanctuaryUnlocked ? '#F0FFF0' : c.text.muted,
+              }}
+            >
+              <div style={{ fontSize: 36, marginBottom: 6 }}>🌺</div>
+              <div style={{ fontSize: theme.fontSize.md, fontWeight: 700 }}>The Sanctuary Garden</div>
+              {sanctuaryUnlocked ? (
+                <div style={{ fontSize: theme.fontSize.sm, opacity: 0.85, marginTop: 6, fontStyle: 'italic' }}>
+                  &ldquo;Nothing thrives alone.&rdquo;
+                </div>
+              ) : (
+                <div style={{ fontSize: theme.fontSize.sm, marginTop: 6, opacity: 0.65 }}>
+                  Complete Ch.1 to begin unlocking the sanctuary.
+                </div>
+              )}
+            </div>
+
+            <div style={{ height: theme.spacing.xl }} />
+          </>
+        )}
 
         {/* Catalog View (switches based on active tab) */}
         {activeTab === 'wildlife' && discoveredWildlife.length > 0 && (
@@ -356,36 +393,6 @@ export function WatershedProgress({
             No fairies discovered yet. Keep exploring!
           </div>
         )}
-
-        {/* Sanctuary */}
-        <div
-          style={{
-            borderRadius: theme.borderRadius.lg,
-            border: sanctuaryUnlocked
-              ? `1px solid rgba(124, 202, 124, 0.5)`
-              : `1px dashed ${c.border}`,
-            background: sanctuaryUnlocked
-              ? 'linear-gradient(160deg, #1a3a1a, #2E5E2E)'
-              : 'transparent',
-            padding: theme.spacing.lg,
-            textAlign: 'center',
-            color: sanctuaryUnlocked ? '#F0FFF0' : c.text.muted,
-          }}
-        >
-          <div style={{ fontSize: 36, marginBottom: 6 }}>🌺</div>
-          <div style={{ fontSize: theme.fontSize.md, fontWeight: 700 }}>The Sanctuary Garden</div>
-          {sanctuaryUnlocked ? (
-            <div style={{ fontSize: theme.fontSize.sm, opacity: 0.85, marginTop: 6, fontStyle: 'italic' }}>
-              &ldquo;Nothing thrives alone.&rdquo;
-            </div>
-          ) : (
-            <div style={{ fontSize: theme.fontSize.sm, marginTop: 6, opacity: 0.65 }}>
-              Complete Ch.1 to begin unlocking the sanctuary.
-            </div>
-          )}
-        </div>
-
-        <div style={{ height: theme.spacing.xl }} />
       </div>
     </div>
   );
