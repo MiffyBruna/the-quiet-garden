@@ -1023,7 +1023,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     const ny = gs.playerTY + dy;
     if (nx < 1 || nx >= MAP_W - 1 || ny < 1 || ny >= MAP_H - 1) return;
     const tile = getTile(gs.tiles, nx, ny);
-    if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') return;
+    if (!tile || tile.terrain === 'rock' || tile.terrain === 'water' || tile.terrain === 'bund') return;
     if (nx === gs.mossTX && ny === gs.mossTY) return; // can't step on Moss
 
     gs.playerTX = nx;
@@ -1077,7 +1077,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
       if (tool === 'move') {
         const tile = getTile(gs.tiles, tx, ty);
-        if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') return;
+        if (!tile || tile.terrain === 'rock' || tile.terrain === 'water' || tile.terrain === 'bund') return;
 
         let destX = tx, destY = ty;
 
