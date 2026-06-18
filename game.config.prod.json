@@ -1,6 +1,8 @@
 {
+  "gameId": "C7t3PbvCp0hpvyeA1a6P",
   "relativePathToDistFolder": "dist",
   "usesPreloader": false,
-  "orientation": "portrait",
+  "orientation": "both",
+  "keywords": null,
   "kitId": "stay-awhile"
 }
