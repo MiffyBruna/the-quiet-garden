@@ -488,7 +488,8 @@ export function applyLandscape(
   if (mode === 'convert' && !heldEntity) {
     const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil'];
     if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
-      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+      // Lower moisture so the tile stays brown and doesn't automatically upgrade back to green
+      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', moisture: Math.min(tile.moisture, 30), isModified: true });
       return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
     }
   }
