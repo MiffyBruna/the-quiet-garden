@@ -39,19 +39,19 @@ export function LandingPage({ onStart }: LandingPageProps) {
   useEffect(() => {
     const generateSparkles = () => {
       const newSparkles: Sparkle[] = [];
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 50; i++) {
         newSparkles.push({
           id: Math.random(),
           left: Math.random() * 100,
-          delay: Math.random() * 2,
-          duration: 2 + Math.random() * 1,
+          delay: Math.random() * 2.5,
+          duration: 2.5 + Math.random() * 1.5,
         });
       }
       setSparkles(newSparkles);
     };
 
     generateSparkles();
-    const interval = setInterval(generateSparkles, 3000);
+    const interval = setInterval(generateSparkles, 2500);
     return () => clearInterval(interval);
   }, []);
 
@@ -131,27 +131,28 @@ export function LandingPage({ onStart }: LandingPageProps) {
             transform: translateY(-100vh) scale(1);
             opacity: 0;
           }
-          5% {
+          3% {
             opacity: 1;
           }
-          95% {
+          97% {
             opacity: 1;
           }
           100% {
-            transform: translateY(100vh) scale(0.3);
+            transform: translateY(100vh) scale(0.2);
             opacity: 0;
           }
         }
         .sparkle-particle {
           position: absolute;
           top: 0;
-          width: 2px;
-          height: 2px;
-          background: radial-gradient(circle, #FFE6B0 0%, #FFD700 100%);
+          width: 3px;
+          height: 3px;
+          background: radial-gradient(circle, #FFF9E6 0%, #FFE6B0 50%, #FFD700 100%);
           border-radius: 50%;
-          filter: drop-shadow(0 0 2px #FFD700);
+          filter: drop-shadow(0 0 3px #FFD700) drop-shadow(0 0 1px #FFED4E);
           animation: sparkleRain linear forwards;
           pointer-events: none;
+          box-shadow: 0 0 4px #FFD700;
         }
       `}</style>
 
@@ -196,51 +197,12 @@ export function LandingPage({ onStart }: LandingPageProps) {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 'clamp(15px, 5vw, 25px)',
+            gap: 'clamp(12px, 3vw, 18px)',
             alignItems: 'center',
             width: '100%',
-            maxWidth: '400px',
+            maxWidth: '300px',
           }}
         >
-          {/* Continue Button (text-based, only if save exists) */}
-          {saveExists && (
-            <button
-              onClick={handleContinue}
-              style={{
-                background: 'rgba(0, 0, 0, 0.1)',
-                border: '2px solid #D4AF37',
-                borderRadius: '4px',
-                padding: '10px 24px',
-                fontSize: 'clamp(12px, 4vw, 16px)',
-                fontWeight: 'bold',
-                color: '#D4AF37',
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                backdropFilter: 'blur(2px)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)';
-                e.currentTarget.style.transform = 'scale(1.08)';
-                e.currentTarget.style.boxShadow = '0 0 12px rgba(255, 215, 0, 0.4), inset 0 0 8px rgba(255, 215, 0, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)';
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-              onTouchStart={(e) => {
-                e.currentTarget.style.transform = 'scale(0.96)';
-              }}
-              onTouchEnd={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              Continue
-            </button>
-          )}
-
           {/* Start/New Game Button */}
           <button
             onClick={handleNewGame}
@@ -249,17 +211,17 @@ export function LandingPage({ onStart }: LandingPageProps) {
               border: 'none',
               cursor: 'pointer',
               padding: 0,
-              maxWidth: '100%',
+              maxWidth: 'clamp(150px, 50vw, 250px)',
               transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease',
-              filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
+              filter: 'drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3))',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.08)';
-              e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(255, 215, 0, 0.4))';
+              e.currentTarget.style.filter = 'drop-shadow(0 6px 12px rgba(255, 215, 0, 0.4))';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.filter = 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))';
+              e.currentTarget.style.filter = 'drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3))';
             }}
             onTouchStart={(e) => {
               e.currentTarget.style.transform = 'scale(0.96)';
@@ -272,12 +234,51 @@ export function LandingPage({ onStart }: LandingPageProps) {
               src="/cdn-assets/btn-start.png"
               alt={saveExists ? 'New Game' : 'Start'}
               style={{
-                maxWidth: '100%',
+                width: '100%',
                 height: 'auto',
                 display: 'block',
               }}
             />
           </button>
+
+          {/* Continue Button (text-based, only if save exists) */}
+          {saveExists && (
+            <button
+              onClick={handleContinue}
+              style={{
+                background: 'rgba(0, 0, 0, 0.08)',
+                border: '1px solid #D4AF37',
+                borderRadius: '3px',
+                padding: '8px 20px',
+                fontSize: 'clamp(11px, 3vw, 13px)',
+                fontWeight: 'bold',
+                color: '#D4AF37',
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                backdropFilter: 'blur(1px)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.12)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 0 8px rgba(255, 215, 0, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.08)';
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.transform = 'scale(0.98)';
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              Continue
+            </button>
+          )}
         </div>
       </div>
 
