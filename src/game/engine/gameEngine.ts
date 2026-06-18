@@ -1517,14 +1517,10 @@ export function updateGame(
       }
     }
 
-    // 100% completion (once only)
-    if (restoration >= 100) {
-      console.log(`Restoration at 100%: triggered=${gs.completionTriggered}, onCompletion=${!!onCompletion}`);
-      if (onCompletion && !gs.completionTriggered) {
-        console.log('Triggering completion event');
-        gs.completionTriggered = true;
-        onCompletion();
-      }
+    // 100% completion (once per session)
+    if (onCompletion && !gs.completionTriggered && restoration >= 100) {
+      gs.completionTriggered = true;
+      onCompletion();
     }
   }
 }
@@ -1671,7 +1667,8 @@ export function deserializeGameState(json: string): GameState | null {
     if (typeof data.inspectedCount === 'number') gs.inspectedCount = data.inspectedCount;
     if (typeof data.bundPlaced === 'boolean') gs.bundPlaced = data.bundPlaced;
     if (typeof data.rainsCount === 'number') gs.rainsCount = data.rainsCount;
-    if (typeof data.completionTriggered === 'boolean') gs.completionTriggered = data.completionTriggered;
+    // Don't persist completionTriggered - allow event to fire again on reload at 100%
+    // if (typeof data.completionTriggered === 'boolean') gs.completionTriggered = data.completionTriggered;
 
     // Restore game systems
     if (typeof data.fairySpawnCooldown === 'number') gs.fairySpawnCooldown = data.fairySpawnCooldown;

@@ -26064,11 +26064,53 @@
       "timestamp": 1781755819590,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "1781755820479-o64p397jm",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781755820479,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781755824265-xu6tvuj6z",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781755824265,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781755826817-r1zorucl8",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781755826817,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781755832852-tzfx81dlq",
+      "role": "assistant",
+      "content": "Perfect! ✅ **Fixed the completion event bug!**\n\n## The Problem\nThe `completionTriggered` flag was being saved to storage. If the event fired once before, it would stay `true` when you loaded the game again, preventing the event from firing even at 100%.\n\n## The Solution\n1. **Disabled persistence** - The flag won't be saved anymore, so the completion event can fire each session when reaching 100%\n2. **Added visual feedback** - When restoration hits 100%, you'll now see **\"✓ COMPLETE\"** in gold next to the percentage\n\nNow try reaching 100% again and the ending chapter event should trigger! 🎉",
+      "isShownToUser": true,
+      "timestamp": 1781755834448,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781755819845,
-  "tokenUsage": 0,
+  "updatedAt": 1781755834503,
+  "tokenUsage": 2837,
   "script": "ftue-remix",
   "claudeSessionId": "b952082a-1b74-4517-9f46-d108b8dd247c"
 }
