@@ -1689,7 +1689,7 @@ export function getQuestObjective(step: QuestStep): string {
   }
 }
 
-export const MOSS_DIALOGUES: Record<QuestStep, DialogueLine[]> = {
+export const MOSS_DIALOGUES: Record<string, DialogueLine[]> = {
   intro: [
     { speaker: 'Moss', emoji: '🐸', text: 'Nothing is wrong with this place. It has simply forgotten how to keep water.' },
     { speaker: 'Moss', emoji: '🐸', text: 'Walk with me. The valley will show us where it hurts, if we let her speak.' },
@@ -1990,7 +1990,7 @@ export function updateGame(
               ? 'The rain brought hope. The land remembers.'
               : 'The valley is drinking deeply now.',
           };
-          onMilestone(0, dialogue);  // Use 0 as placeholder milestone number
+          onMilestone(0, [dialogue]);  // Use 0 as placeholder milestone number
         }
       }
     }
@@ -2029,7 +2029,7 @@ export function updateGame(
     // 92%+ tipping point: natural grass begins spreading
     if (restoration >= 92 && !gs.grassSpreadingStarted) {
       gs.grassSpreadingStarted = true;
-      if (onMilestone) onMilestone(92, { speaker: 'Moss', emoji: '🐸', text: '✓ Native grasses spreading naturally!' });
+      if (onMilestone) onMilestone(92, [{ speaker: 'Moss', emoji: '🐸', text: '✓ Native grasses spreading naturally!' }]);
     }
     if (restoration >= 92) {
       spreadNaturalGrass(gs);
