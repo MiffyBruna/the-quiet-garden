@@ -1867,7 +1867,6 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
       }
 
       // Chapter 2 intro: transition from intro to listen_quiet when dialogue finishes
-      const dialogueNowShowing = currentUI.dialogue !== null;
       if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && selectedChapter === 'meadow') {
         // Clover's opening dialogue just finished — advance to listen_quiet
         advanceQuest('listen_quiet');
