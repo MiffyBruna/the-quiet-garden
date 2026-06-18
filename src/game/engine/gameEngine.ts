@@ -1031,7 +1031,7 @@ interface GameStats {
   waterTileCount: number;
 }
 
-const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
+export const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
   {
     type: 'ant', emoji: '🐜',
     check: (_, s) => s.avgFertility >= 20,

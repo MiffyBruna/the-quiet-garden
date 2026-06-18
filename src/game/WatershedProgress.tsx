@@ -4,6 +4,7 @@
  * Replaces the old dashboard as the primary screen.
  */
 import { theme } from '../theme';
+import { WILDLIFE_CONDITIONS } from './engine/gameEngine';
 
 interface ChapterInfo {
   id: string;
@@ -200,6 +201,53 @@ export function WatershedProgress({
         {chapters.map((ch) => (
           <ChapterCard key={ch.id} chapter={ch} />
         ))}
+
+        {/* Wildlife Catalog */}
+        {discoveredWildlife.length > 0 && (
+          <div
+            style={{
+              borderRadius: theme.borderRadius.lg,
+              border: `1px solid ${c.border}`,
+              background: c.surface,
+              padding: theme.spacing.md,
+              marginTop: theme.spacing.sm,
+            }}
+          >
+            <div style={{ fontSize: theme.fontSize.md, fontWeight: 700, marginBottom: theme.spacing.md, color: c.text.primary }}>
+              🐾 Discovered Wildlife
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
+              {discoveredWildlife.map((wildlifeType) => {
+                const info = WILDLIFE_CONDITIONS.find((w) => w.type === wildlifeType);
+                if (!info) return null;
+                return (
+                  <div
+                    key={wildlifeType}
+                    style={{
+                      borderRadius: 8,
+                      border: `1px solid ${c.border}`,
+                      background: 'rgba(0,0,0,0.05)',
+                      padding: theme.spacing.sm,
+                      display: 'flex',
+                      gap: theme.spacing.sm,
+                      alignItems: 'flex-start',
+                    }}
+                  >
+                    <div style={{ fontSize: 24, minWidth: 32 }}>{info.emoji}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, textTransform: 'capitalize' }}>
+                        {wildlifeType.replace(/_/g, ' ')}
+                      </div>
+                      <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, fontStyle: 'italic', lineHeight: 1.4 }}>
+                        &ldquo;{info.wisdom}&rdquo;
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Sanctuary */}
         <div
