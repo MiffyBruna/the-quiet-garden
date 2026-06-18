@@ -489,10 +489,46 @@ export function applyPlantSeed(
   if (tile.terrain === 'rock') return { planted: false, reason: 'Cannot plant on rock.' };
   if (tile.terrain === 'bund') return { planted: false, reason: 'Plant near the bund, not on it.' };
   if (tile.terrain === 'water') return { planted: false, reason: 'Cannot plant in open water.' };
-  if (tile.plant) return { planted: false, reason: 'Something is already growing here.' };
 
   const req = PLANT_REQUIREMENTS[plantType];
   if (!req) return { planted: false, reason: 'Unknown plant.' };
+
+  // If tile already has a plant, search for nearby available positions
+  if (tile.plant) {
+    // Search for available tiles within 2 tiles in any direction
+    for (let dy = -2; dy <= 2; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        if (dx === 0 && dy === 0) continue; // Skip the original tile
+
+        const nx = tx + dx;
+        const ny = ty + dy;
+
+        const nearbyTile = getTile(gs.tiles, nx, ny);
+        if (!nearbyTile) continue;
+        if (nearbyTile.terrain === 'rock' || nearbyTile.terrain === 'bund' || nearbyTile.terrain === 'water') continue;
+        if (nearbyTile.plant) continue; // Already occupied
+        if (nx === gs.mossTX && ny === gs.mossTY) continue; // Moss is there
+
+        // Check if this tile meets plant requirements
+        if (nearbyTile.moisture >= req.moisture && nearbyTile.fertility >= req.fertility) {
+          // Plant here instead
+          setTile(gs.tiles, nx, ny, {
+            plant: { type: plantType, stage: 0, age: 0, waterStress: 0, isWilted: false },
+            isModified: true,
+          });
+
+          if (!gs.discoveredPlants.includes(plantType)) {
+            gs.discoveredPlants.push(plantType);
+          }
+
+          return { planted: true, reason: '' };
+        }
+      }
+    }
+
+    // No nearby available positions found
+    return { planted: false, reason: 'That spot is taken. No empty spaces nearby for this plant.' };
+  }
 
   if (tile.moisture < req.moisture) {
     return {
