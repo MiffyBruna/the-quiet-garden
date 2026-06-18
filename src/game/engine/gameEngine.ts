@@ -1667,8 +1667,8 @@ export function deserializeGameState(json: string): GameState | null {
     if (typeof data.inspectedCount === 'number') gs.inspectedCount = data.inspectedCount;
     if (typeof data.bundPlaced === 'boolean') gs.bundPlaced = data.bundPlaced;
     if (typeof data.rainsCount === 'number') gs.rainsCount = data.rainsCount;
-    // Don't persist completionTriggered - allow event to fire again on reload at 100%
-    // if (typeof data.completionTriggered === 'boolean') gs.completionTriggered = data.completionTriggered;
+    // Persist completion state — prevents dialogue from retriggering on reload
+    if (typeof data.completionTriggered === 'boolean') gs.completionTriggered = data.completionTriggered;
 
     // Restore game systems
     if (typeof data.fairySpawnCooldown === 'number') gs.fairySpawnCooldown = data.fairySpawnCooldown;
