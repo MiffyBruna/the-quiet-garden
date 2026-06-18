@@ -196,9 +196,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
           src="/cdn-assets/game-title.png"
           alt="The Quiet Garden"
           style={{
-            maxWidth: 'clamp(200px, 80vw, 500px)',
+            maxWidth: 'clamp(250px, 85vw, 650px)',
             height: 'auto',
-            filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
+            filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))',
+            marginBottom: '10px',
           }}
         />
 
