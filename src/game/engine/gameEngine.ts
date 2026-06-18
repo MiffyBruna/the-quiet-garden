@@ -391,7 +391,7 @@ export function applyLandscape(
   gs: GameState,
   tx: number, ty: number,
   heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null,
-  mode: 'move' | 'create_water' | 'destroy_rocks' = 'move',
+  mode: 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' = 'move',
 ): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null } {
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return { action: 'none', entity: null };
@@ -516,6 +516,15 @@ export function applyLandscape(
     const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil'];
     if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
       setTile(gs.tiles, tx, ty, { terrain: 'water', isModified: true });
+      return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
+    }
+  }
+
+  // Create rocks: turn terrain into rocks — but not if plant is on the tile
+  if (mode === 'create_rocks' && !heldEntity) {
+    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil'];
+    if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
+      setTile(gs.tiles, tx, ty, { terrain: 'rock', isModified: true });
       return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
     }
   }

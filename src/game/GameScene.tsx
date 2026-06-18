@@ -1295,6 +1295,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
           setUI((p) => ({ ...p, heldEntity: null }));
           if (currentUI.reshapeMode === 'create_water') {
             track('custom_landscape_created_water', { tx, ty });
+          } else if (currentUI.reshapeMode === 'create_rocks') {
+            track('custom_landscape_created_rocks', { tx, ty });
           } else if (currentUI.reshapeMode === 'destroy_rocks') {
             track('custom_landscape_destroyed_rocks', { tx, ty });
           } else {
@@ -2337,6 +2339,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             {[
               { mode: 'move', emoji: '↔️', label: 'Move', desc: 'Swap tiles' },
               { mode: 'create_water', emoji: '💧', label: 'Water', desc: 'Create water' },
+              { mode: 'create_rocks', emoji: '🪨', label: 'Rocks', desc: 'Create rocks' },
               { mode: 'destroy_rocks', emoji: '💥', label: 'Destroy', desc: 'Break rocks' },
             ].map((opt: any) => {
               const selected = ui.reshapeMode === opt.mode;
@@ -2344,7 +2347,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 <button
                   key={opt.mode}
                   onClick={() => {
-                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'destroy_rocks' }));
+                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' }));
                   }}
                   style={{
                     flex: 1,
