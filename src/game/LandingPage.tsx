@@ -124,7 +124,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
         }}
       />
 
-      {/* Sparkle Rain Animation */}
+      {/* Sparkle Rain Animation & Responsive Logo */}
       <style>{`
         @keyframes sparkleRain {
           0% {
@@ -153,6 +153,17 @@ export function LandingPage({ onStart }: LandingPageProps) {
           animation: sparkleRain linear forwards;
           pointer-events: none;
           box-shadow: 0 0 4px #FFD700;
+        }
+        .game-logo {
+          max-width: 450px;
+          height: auto;
+          filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+          margin-bottom: 10px;
+        }
+        @media (min-width: 768px) {
+          .game-logo {
+            max-width: 600px;
+          }
         }
       `}</style>
 
@@ -195,12 +206,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <img
           src="/cdn-assets/game-title.png"
           alt="The Quiet Garden"
-          style={{
-            maxWidth: '450px',
-            height: 'auto',
-            filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))',
-            marginBottom: '10px',
-          }}
+          className="game-logo"
         />
 
         {/* Buttons Container */}
