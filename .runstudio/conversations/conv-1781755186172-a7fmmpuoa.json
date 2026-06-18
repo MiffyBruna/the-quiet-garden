@@ -579,11 +579,40 @@
       "timestamp": 1781765985739,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1781766001501",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "MAKE IT PRIVATE",
+      "timestamp": 1781766001501,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781766006074-enwh5pscd",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781766006074,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781766009438-3khm7ekdw",
+      "role": "assistant",
+      "content": "Done! Your game is now private — it's hidden from the explore page but still accessible to anyone with your share link.",
+      "isShownToUser": true,
+      "timestamp": 1781766009509,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1781765985781,
-  "tokenUsage": 7539,
+  "updatedAt": 1781766009550,
+  "tokenUsage": 7736,
   "script": "default",
   "claudeSessionId": "382a8845-65e1-42ff-b390-ada09aeed11f"
 }
