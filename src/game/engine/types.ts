@@ -213,7 +213,7 @@ export interface UIState {
   wildlifeCount: number;
   rainCooling: boolean; // true while rain is active + cooldown — disables rain button
   heldPlant: PlantState | null; // landscape tool: plant picked up for relocation (legacy, use heldEntity)
-  heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any } | null; // reshape tool: entity picked up for relocation
+  heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null; // reshape tool: entity picked up for relocation (with optional swap source)
   previousTool: ToolType | null; // tool active before dialogue opened — restored on close
   fastDialogue: boolean;         // accessibility: skip typewriter animation
 

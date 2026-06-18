@@ -2321,7 +2321,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           </span>
           <div style={{ fontSize: 11, color: '#F0FFF0' }}>
             <div style={{ fontWeight: 700, color: '#7CCA7C' }}>Holding {ui.heldEntity.type}</div>
-            <div style={{ opacity: 0.7 }}>Tap a tile to place it</div>
+            <div style={{ opacity: 0.7 }}>Tap a tile to swap it</div>
           </div>
         </div>
       )}

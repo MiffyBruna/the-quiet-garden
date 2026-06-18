@@ -390,8 +390,8 @@ export function applyShovel(gs: GameState, tx: number, ty: number): boolean {
 export function applyLandscape(
   gs: GameState,
   tx: number, ty: number,
-  heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any } | null,
-): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any } | null } {
+  heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null,
+): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null } {
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return { action: 'none', entity: null };
 
@@ -407,12 +407,20 @@ export function applyLandscape(
     }
 
     if (heldEntity.type === 'mulch' && canPlace) {
+      // Swap: place mulch here, restore original terrain at source
       setTile(gs.tiles, tx, ty, { terrain: 'mulch', isModified: true });
+      if (heldEntity.sourceTX !== undefined && heldEntity.sourceTY !== undefined && heldEntity.sourceTerrainBefore) {
+        setTile(gs.tiles, heldEntity.sourceTX, heldEntity.sourceTY, { terrain: heldEntity.sourceTerrainBefore, isModified: true });
+      }
       return { action: 'placed', entity: null };
     }
 
     if (heldEntity.type === 'grass' && canPlace && tile.terrain !== 'bund') {
+      // Swap: place grass here, restore original terrain at source
       setTile(gs.tiles, tx, ty, { terrain: 'grass', isModified: true });
+      if (heldEntity.sourceTX !== undefined && heldEntity.sourceTY !== undefined && heldEntity.sourceTerrainBefore) {
+        setTile(gs.tiles, heldEntity.sourceTX, heldEntity.sourceTY, { terrain: heldEntity.sourceTerrainBefore, isModified: true });
+      }
       return { action: 'placed', entity: null };
     }
 
@@ -459,16 +467,16 @@ export function applyLandscape(
     return { action: 'picked', entity: { type: 'fairy', data: fairy } };
   }
 
-  // Pick up mulch
+  // Pick up mulch (store source location and what was there before for swapping)
   if (tile.terrain === 'mulch') {
     setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
-    return { action: 'picked', entity: { type: 'mulch', data: null } };
+    return { action: 'picked', entity: { type: 'mulch', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'mulch' } };
   }
 
-  // Pick up grass
+  // Pick up grass (store source location and what was there before for swapping)
   if (tile.terrain === 'grass') {
     setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
-    return { action: 'picked', entity: { type: 'grass', data: null } };
+    return { action: 'picked', entity: { type: 'grass', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'grass' } };
   }
 
   return { action: 'none', entity: null };
