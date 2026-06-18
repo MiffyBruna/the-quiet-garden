@@ -152,3 +152,82 @@ export const SEED_HIGHLIGHT: Array<{ x: number; y: number }> = [
   { x: 14, y: 17 },
   { x: 16, y: 17 },
 ];
+
+// ---------------------------------------------------------------------------
+// Chapter 2: The Meadow of Forgotten Wings
+// ---------------------------------------------------------------------------
+
+export function generateChapter2Map(): Tile[][] {
+  const rng = seededRandom(84);
+  const tiles: Tile[][] = [];
+
+  for (let y = 0; y < MAP_H; y++) {
+    const row: Tile[] = [];
+    for (let x = 0; x < MAP_W; x++) {
+      // Meadow: mostly flat, with subtle elevation variation
+      const northSouth = 1 - y / MAP_H;
+      const wave = Math.sin(x * 0.3) * 0.06;
+      const elevation = Math.max(0, Math.min(10, (northSouth * 4 + wave * 4 + rng() * 0.3)));
+
+      const r = rng();
+      let terrain: TerrainType;
+
+      // Border rocks for containment
+      if (x === 0 || x === MAP_W - 1 || y === 0 || y === MAP_H - 1) {
+        terrain = 'rock';
+      } else if (isMeadowRockCluster(x, y)) {
+        // Few scattered rock outcrops
+        terrain = 'rock';
+      } else if (r < 0.85) {
+        // Mostly grass
+        terrain = 'grass';
+      } else {
+        // Some moist soil mixed in
+        terrain = 'moist_soil';
+      }
+
+      // Meadow has better conditions than the valley
+      const baseMoisture = 35 + rng() * 20;        // 35–55%
+      const baseFertility = 30 + rng() * 20;       // 30–50%
+      const baseErosion = 30 + rng() * 15;         // 30–45%
+
+      row.push({
+        terrain,
+        moisture: baseMoisture,
+        fertility: baseFertility,
+        erosion: baseErosion,
+        elevation,
+        water: 0,
+        isModified: false,
+      });
+    }
+    tiles.push(row);
+  }
+
+  return tiles;
+}
+
+// Few rock clusters for Chapter 2 meadow
+const MEADOW_ROCK_POSITIONS: Array<[number, number]> = [
+  [6, 6], [7, 6],
+  [25, 10], [26, 10],
+  [5, 24],
+  [28, 20],
+];
+
+function isMeadowRockCluster(x: number, y: number): boolean {
+  return MEADOW_ROCK_POSITIONS.some(([rx, ry]) => rx === x && ry === y);
+}
+
+// Chapter 2 starting positions (same as Chapter 1 for now, can adjust)
+export const CHAPTER2_PLAYER_START_TX = 15;
+export const CHAPTER2_PLAYER_START_TY = 22;
+export const CHAPTER2_CLOVER_START_TX = 18;
+export const CHAPTER2_CLOVER_START_TY = 21;
+
+// Inspection highlights for "Listen to the Quiet" quest
+export const CHAPTER2_INSPECT_HIGHLIGHTS: Array<{ x: number; y: number }> = [
+  { x: 12, y: 18 },  // Grass-heavy tile
+  { x: 15, y: 20 },  // Compacted soil
+  { x: 18, y: 16 },  // Empty flower patch
+];

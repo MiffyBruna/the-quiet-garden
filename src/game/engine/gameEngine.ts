@@ -678,6 +678,56 @@ export const PLANT_REQUIREMENTS: Record<PlantType, {
     attractsWildlife: ['bee', 'hawk', 'rabbit'],
     growthRate: 0.35, // trees grow slowly — about 3× longer per stage than herbs
   },
+
+  // Chapter 2: Meadow flowers
+  camas: {
+    name: 'Camas',
+    emoji: ['🌑', '🌱', '🌿', '💙', '💙'],
+    moisture: 30,
+    fertility: 20,
+    role: 'Early bloomer for spring pollinators',
+    attractsWildlife: ['mason_bee'],
+  },
+  violet: {
+    name: 'Violet',
+    emoji: ['🌑', '🌱', '🌿', '💜', '💜'],
+    moisture: 28,
+    fertility: 18,
+    role: 'Early understory flower',
+    attractsWildlife: ['mason_bee', 'hoverfly'],
+  },
+  yarrow: {
+    name: 'Yarrow',
+    emoji: ['🌑', '🌱', '🌿', '🌻', '🌻'],
+    moisture: 25,
+    fertility: 22,
+    role: 'Mid-season favorite of many pollinators',
+    attractsWildlife: ['bumblebee', 'hoverfly'],
+  },
+  bee_balm: {
+    name: 'Bee Balm',
+    emoji: ['🌑', '🌱', '🌿', '🔴', '🔴'],
+    moisture: 35,
+    fertility: 25,
+    role: 'Vibrant mid-season pollinator magnet',
+    attractsWildlife: ['bumblebee', 'hummingbird'],
+  },
+  goldenrod: {
+    name: 'Goldenrod',
+    emoji: ['🌑', '🌱', '🌿', '💛', '💛'],
+    moisture: 28,
+    fertility: 20,
+    role: 'Late-season food for tired wings',
+    attractsWildlife: ['swallowtail', 'bumblebee'],
+  },
+  aster: {
+    name: 'Aster',
+    emoji: ['🌑', '🌱', '🌿', '💗', '💗'],
+    moisture: 26,
+    fertility: 19,
+    role: 'Late bloomer for autumn pollinators',
+    attractsWildlife: ['swallowtail', 'bumblebee'],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -1091,6 +1141,33 @@ export const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
     type: 'hawk', emoji: '🦅',
     check: (_, s) => s.restoration >= 90,
     wisdom: 'The hawk watches over everything. Its presence means the web is complete.',
+  },
+
+  // Chapter 2: Meadow pollinators
+  {
+    type: 'mason_bee', emoji: '🐝',
+    check: (gs) => gs.discoveredPlants.includes('camas') || gs.discoveredPlants.includes('violet'),
+    wisdom: 'Mason bees do not make a fuss. They simply arrive, work hard, and never complain.',
+  },
+  {
+    type: 'bumblebee', emoji: '🐝',
+    check: (gs) => gs.discoveredPlants.includes('yarrow') || gs.discoveredPlants.includes('bee_balm'),
+    wisdom: 'Bumblebees are the gentle giants of the meadow. They hum songs of abundance.',
+  },
+  {
+    type: 'swallowtail', emoji: '🦋',
+    check: (gs) => gs.discoveredPlants.includes('goldenrod') || gs.discoveredPlants.includes('aster'),
+    wisdom: 'Swallowtails carry late-season nectar on their wings, returning strength to tired flowers.',
+  },
+  {
+    type: 'hummingbird', emoji: '🌺',
+    check: (gs, s) => gs.discoveredPlants.includes('bee_balm') && s.restoration >= 60,
+    wisdom: 'Hummingbirds are flying punctuation marks—tiny exclamation points with wings.',
+  },
+  {
+    type: 'swallow', emoji: '🦅',
+    check: (_, s) => s.bloomCount >= 5 && s.restoration >= 85,
+    wisdom: 'Swallows arrive when there are enough insects in the air. They are a sign of abundance.',
   },
 ];
 
