@@ -455,6 +455,7 @@ const INITIAL_UI: UIState = {
   fastDialogue: false,
   bundMode: null,
   bundTargetTiles: [],
+  showSeedPanel: true,
 };
 
 export function GameScene({ onShowWatershed, isContinue }: {
@@ -2086,7 +2087,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
       )}
 
       {/* ── Seed selector (shown when seed tool active, no dialogue) ─────── */}
-      {ui.activeTool === 'seed' && !ui.dialogue && (
+      {ui.activeTool === 'seed' && !ui.dialogue && ui.showSeedPanel && (
         <div
           style={{
             position: 'absolute',
@@ -2100,7 +2101,24 @@ export function GameScene({ onShowWatershed, isContinue }: {
             zIndex: 35,
           }}
         >
-          <div style={{ fontSize: 10, color: '#7CCA7C', marginBottom: 6, fontWeight: 700 }}>Select seed</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700 }}>Select seed</div>
+            <button
+              onClick={() => setUI((prev) => ({ ...prev, showSeedPanel: false }))}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#7CCA7C',
+                fontSize: 16,
+                cursor: 'pointer',
+                padding: '0 2px',
+                lineHeight: 1,
+              }}
+              title="Close panel"
+            >
+              ✕
+            </button>
+          </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {(['blue_grama', 'desert_marigold', 'lupine', 'sage', 'milkweed', 'mesquite'] as PlantType[]).map((p) => {
               const req = PLANT_REQUIREMENTS[p];
@@ -2304,7 +2322,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   return;
                 }
 
-                setUI((p) => ({ ...p, activeTool: def.id, inspectedTile: null }));
+                setUI((p) => ({
+                  ...p,
+                  activeTool: def.id,
+                  inspectedTile: null,
+                  // When switching to seed tool, show the seed panel
+                  ...(def.id === 'seed' && { showSeedPanel: true }),
+                }));
                 track('custom_tool_selected', { tool: def.id });
                 RundotGameAPI.analytics.recordCustomEvent('tool_selected', { tool: def.id });
               }}

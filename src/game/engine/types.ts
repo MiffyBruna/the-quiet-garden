@@ -215,4 +215,7 @@ export interface UIState {
   // Bund placement stencil system
   bundMode: 'positioning' | 'digging' | null; // positioning: stencil follows player; digging: locked tiles
   bundTargetTiles: Array<{ x: number; y: number }>; // locked tile set after stencil is confirmed
+
+  // Seed selector panel visibility (independent from activeTool)
+  showSeedPanel: boolean; // can close panel while keeping seed tool active
 }
