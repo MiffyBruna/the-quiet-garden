@@ -522,7 +522,6 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
       // Load Chapter 2: The Meadow
       gsRef.current = createChapter2InitialState();
       setGameLoaded(false);
-      queueDialogue(CLOVER_OPENING_DIALOGUE);
       track('custom_chapter_started', { chapter: 'meadow' });
     }
   }, [selectedChapter]);
@@ -1600,7 +1599,13 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
 
     // Start intro dialogue only if actually at intro stage (not loading a saved game)
     if (gsRef.current.questStep === 'intro') {
-      queueDialogue(getQuestMossDialogue('intro'));
+      // For Chapter 2 (Meadow), show Clover's opening dialogue
+      if (selectedChapter === 'meadow') {
+        queueDialogue(CLOVER_OPENING_DIALOGUE);
+      } else {
+        // Chapter 1 (Dryland) shows Moss's opening
+        queueDialogue(getQuestMossDialogue('intro'));
+      }
     }
 
     const loop = (timestamp: number) => {
