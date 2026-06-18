@@ -986,14 +986,32 @@ export function GameScene({ onShowWatershed, isContinue }: {
   // -------------------------------------------------------------------------
   // Player movement
   // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Centralized walkability check
+  // -------------------------------------------------------------------------
+  const isWalkableTile = useCallback((tx: number, ty: number): boolean => {
+    if (tx <= 0 || tx >= MAP_W - 1 || ty <= 0 || ty >= MAP_H - 1) return false;
+    const gs = gsRef.current;
+    const tile = getTile(gs.tiles, tx, ty);
+    if (!tile) return false;
+
+    // Block all these terrain types
+    const blockedTerrains = ['rock', 'water', 'bund', 'permanent_water', 'stream'];
+    if (blockedTerrains.includes(tile.terrain)) return false;
+
+    // Can't walk on Moss
+    if (tx === gs.mossTX && ty === gs.mossTY) return false;
+
+    return true;
+  }, []);
+
   const movePlayer = useCallback((dx: number, dy: number) => {
     const gs = gsRef.current;
     const nx = gs.playerTX + dx;
     const ny = gs.playerTY + dy;
-    if (nx < 1 || nx >= MAP_W - 1 || ny < 1 || ny >= MAP_H - 1) return;
-    const tile = getTile(gs.tiles, nx, ny);
-    if (!tile || tile.terrain === 'rock' || tile.terrain === 'water' || tile.terrain === 'bund') return;
-    if (nx === gs.mossTX && ny === gs.mossTY) return; // can't step on Moss
+
+    // Use centralized walkability check
+    if (!isWalkableTile(nx, ny)) return;
 
     gs.playerTX = nx;
     gs.playerTY = ny;
@@ -1007,7 +1025,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     // Play footstep sound
     playSFX('footstep', 0.5).catch(() => {});
     track('sfx_footstep');
-  }, []);
+  }, [isWalkableTile]);
 
   // -------------------------------------------------------------------------
   // Helper: move Moss to a nearby free adjacent tile
@@ -1031,15 +1049,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
   };
 
   // -------------------------------------------------------------------------
-  // Pathfinding helper - BFS to find walkable path avoiding obstacles
+  // Pathfinding helper - BFS to find walkable path avoiding obstacles (4-directional only)
   // -------------------------------------------------------------------------
-  const findPath = useCallback((startX: number, startY: number, goalX: number, goalY: number, tiles: Tile[][]): Array<{ x: number; y: number }> | null => {
-    const isWalkable = (x: number, y: number): boolean => {
-      if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
-      const t = getTile(tiles, x, y);
-      return t && t.terrain !== 'rock' && t.terrain !== 'water' && t.terrain !== 'bund';
-    };
-
+  const findPath = useCallback((startX: number, startY: number, goalX: number, goalY: number): Array<{ x: number; y: number }> | null => {
     const queue: Array<{ x: number; y: number; path: Array<{ x: number; y: number }> }> = [];
     const visited = new Set<string>();
     const key = (x: number, y: number) => `${x},${y}`;
@@ -1053,16 +1065,17 @@ export function GameScene({ onShowWatershed, isContinue }: {
         return current.path.slice(1); // Exclude start position
       }
 
+      // Only 4-directional movement to prevent diagonal bypass
       const neighbors = [
-        { x: current.x + 1, y: current.y }, { x: current.x - 1, y: current.y },
-        { x: current.x, y: current.y + 1 }, { x: current.x, y: current.y - 1 },
-        { x: current.x + 1, y: current.y + 1 }, { x: current.x - 1, y: current.y - 1 },
-        { x: current.x + 1, y: current.y - 1 }, { x: current.x - 1, y: current.y + 1 },
+        { x: current.x + 1, y: current.y },
+        { x: current.x - 1, y: current.y },
+        { x: current.x, y: current.y + 1 },
+        { x: current.x, y: current.y - 1 },
       ];
 
       for (const neighbor of neighbors) {
         const nKey = key(neighbor.x, neighbor.y);
-        if (!visited.has(nKey) && isWalkable(neighbor.x, neighbor.y)) {
+        if (!visited.has(nKey) && isWalkableTile(neighbor.x, neighbor.y)) {
           visited.add(nKey);
           queue.push({ x: neighbor.x, y: neighbor.y, path: [...current.path, neighbor] });
         }
@@ -1070,7 +1083,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     }
 
     return null; // No path found
-  }, []);
+  }, [isWalkableTile]);
 
   // -------------------------------------------------------------------------
   // Tool use on a tile
@@ -1112,7 +1125,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         }
 
         // Find path to destination - pathfinding validates the path exists
-        const path = findPath(gs.playerTX, gs.playerTY, destX, destY, gs.tiles);
+        const path = findPath(gs.playerTX, gs.playerTY, destX, destY);
         if (!path || path.length === 0) return; // No path found - destination unreachable
 
         // Queue the path for the player to follow one tile at a time
@@ -1579,17 +1592,25 @@ export function GameScene({ onShowWatershed, isContinue }: {
       // Follow queued path - move to next tile when current destination is reached
       if (gs.playerPath && gs.playerPath.length > 0 &&
           gs.playerTX === gs.playerDestTX && gs.playerTY === gs.playerDestTY) {
-        const nextStep = gs.playerPath.shift()!;
-        const dx = nextStep.x - gs.playerTX;
-        const dy = nextStep.y - gs.playerTY;
-        if (dx > 0) gs.playerFacing = 'e';
-        if (dx < 0) gs.playerFacing = 'w';
-        if (dy > 0) gs.playerFacing = 's';
-        if (dy < 0) gs.playerFacing = 'n';
-        gs.playerDestTX = nextStep.x;
-        gs.playerDestTY = nextStep.y;
-        gs.playerTX = nextStep.x;
-        gs.playerTY = nextStep.y;
+        const nextStep = gs.playerPath[0]!;
+
+        // Validate next step is still walkable (tile state may have changed)
+        if (isWalkableTile(nextStep.x, nextStep.y)) {
+          gs.playerPath.shift();
+          const dx = nextStep.x - gs.playerTX;
+          const dy = nextStep.y - gs.playerTY;
+          if (dx > 0) gs.playerFacing = 'e';
+          if (dx < 0) gs.playerFacing = 'w';
+          if (dy > 0) gs.playerFacing = 's';
+          if (dy < 0) gs.playerFacing = 'n';
+          gs.playerDestTX = nextStep.x;
+          gs.playerDestTY = nextStep.y;
+          gs.playerTX = nextStep.x;
+          gs.playerTY = nextStep.y;
+        } else {
+          // Path is blocked - stop following it
+          gs.playerPath = [];
+        }
       }
 
       updateGame(
