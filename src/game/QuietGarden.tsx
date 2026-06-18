@@ -66,6 +66,12 @@ export function QuietGarden() {
     [],
   );
 
+  const handleSelectChapter = useCallback((chapterId: string) => {
+    setShowWatershed(false);
+    track('custom_chapter_selected', { chapter: chapterId });
+    // TODO: Implement chapter loading logic
+  }, []);
+
   if (!gameStarted) {
     return <LandingPage onStart={handleStartGame} />;
   }
@@ -83,6 +89,7 @@ export function QuietGarden() {
             setShowWatershed(false);
             track('custom_watershed_closed');
           }}
+          onSelectChapter={handleSelectChapter}
         />
       )}
     </>

@@ -103,6 +103,7 @@ interface WatershedProgressProps {
   discoveredFairies: string[];
   discoveredPlants: string[];
   onClose: () => void;
+  onSelectChapter?: (chapterId: string) => void;
 }
 
 export function WatershedProgress({
@@ -111,6 +112,7 @@ export function WatershedProgress({
   discoveredFairies,
   discoveredPlants,
   onClose,
+  onSelectChapter,
 }: WatershedProgressProps) {
   const c = theme.colors;
   const [activeTab, setActiveTab] = useState<CatalogTab>('chapters');
@@ -237,7 +239,7 @@ export function WatershedProgress({
               }}
             >
               {chapters.map((ch) => (
-                <ChapterCard key={ch.id} chapter={ch} />
+                <ChapterCard key={ch.id} chapter={ch} onSelect={onSelectChapter} />
               ))}
             </div>
 
@@ -421,17 +423,33 @@ export function WatershedProgress({
   );
 }
 
-function ChapterCard({ chapter }: { chapter: ChapterInfo }) {
+function ChapterCard({ chapter, onSelect }: { chapter: ChapterInfo; onSelect?: (chapterId: string) => void }) {
   const c = theme.colors;
-  const { locked, restoration, name, emoji, guideEmoji, guideName, gradientFrom, gradientTo, unlockAt } = chapter;
+  const { locked, restoration, name, emoji, guideEmoji, guideName, gradientFrom, gradientTo, unlockAt, id } = chapter;
 
   return (
     <div
+      onClick={() => !locked && onSelect?.(id)}
       style={{
         borderRadius: theme.borderRadius.lg,
         overflow: 'hidden',
         border: `1px solid ${c.border}`,
         opacity: locked ? 0.65 : 1,
+        cursor: locked ? 'default' : 'pointer',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        transform: !locked ? 'scale(1)' : 'scale(1)',
+      }}
+      onMouseEnter={(e) => {
+        if (!locked) {
+          (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.02)';
+          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!locked) {
+          (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
+          (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+        }
       }}
     >
       {/* Header */}
