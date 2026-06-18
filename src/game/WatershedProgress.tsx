@@ -228,11 +228,20 @@ export function WatershedProgress({
         {/* Chapters tab */}
         {activeTab === 'chapters' && (
           <>
-            {chapters.map((ch) => (
-              <ChapterCard key={ch.id} chapter={ch} />
-            ))}
+            {/* Chapters Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: theme.spacing.sm,
+              }}
+            >
+              {chapters.map((ch) => (
+                <ChapterCard key={ch.id} chapter={ch} />
+              ))}
+            </div>
 
-            {/* Wisdom Garden (compact) */}
+            {/* Wisdom Garden (compact, separate from scrollable area) */}
             <div
               style={{
                 borderRadius: theme.borderRadius.lg,
@@ -245,6 +254,7 @@ export function WatershedProgress({
                 padding: theme.spacing.sm,
                 textAlign: 'center',
                 color: sanctuaryUnlocked ? '#F0FFF0' : c.text.muted,
+                marginTop: 'auto',
               }}
             >
               <div style={{ fontSize: 24, marginBottom: 4 }}>🌺</div>
