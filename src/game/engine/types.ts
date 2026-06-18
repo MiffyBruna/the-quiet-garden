@@ -187,6 +187,9 @@ export interface GameState {
     originalTX: number;
     originalTY: number;
   };
+
+  // Pathfinding: queued path to follow
+  playerPath: Array<{ x: number; y: number }>;
 }
 
 // ---------------------------------------------------------------------------

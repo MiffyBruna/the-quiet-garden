@@ -249,6 +249,7 @@ export function createInitialGameState(): GameState {
     bundRemovalPenalty: 0,
     cinematicCam: null,
     introAnimationState: null,
+    playerPath: [],
   };
 }
 

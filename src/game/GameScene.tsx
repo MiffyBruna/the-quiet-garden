@@ -1146,18 +1146,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
         const path = findPath(gs.playerTX, gs.playerTY, destX, destY, gs.tiles);
         if (!path || path.length === 0) return; // No path found - destination unreachable
 
-        // Move directly to destination (pathfinding confirmed it's reachable)
-        const dx = destX - gs.playerTX;
-        const dy = destY - gs.playerTY;
-        if (dx > 0) gs.playerFacing = 'e';
-        if (dx < 0) gs.playerFacing = 'w';
-        if (dy > 0) gs.playerFacing = 's';
-        if (dy < 0) gs.playerFacing = 'n';
-
-        gs.playerDestTX = destX;
-        gs.playerDestTY = destY;
-        gs.playerTX = destX;
-        gs.playerTY = destY;
+        // Queue the path for the player to follow one tile at a time
+        gs.playerPath = path;
         return;
       }
 
@@ -1615,6 +1605,22 @@ export function GameScene({ onShowWatershed, isContinue }: {
       } else {
         gs.playerPX = destPX;
         gs.playerPY = destPY;
+      }
+
+      // Follow queued path - move to next tile when current destination is reached
+      if (gs.playerPath && gs.playerPath.length > 0 &&
+          gs.playerTX === gs.playerDestTX && gs.playerTY === gs.playerDestTY) {
+        const nextStep = gs.playerPath.shift()!;
+        const dx = nextStep.x - gs.playerTX;
+        const dy = nextStep.y - gs.playerTY;
+        if (dx > 0) gs.playerFacing = 'e';
+        if (dx < 0) gs.playerFacing = 'w';
+        if (dy > 0) gs.playerFacing = 's';
+        if (dy < 0) gs.playerFacing = 'n';
+        gs.playerDestTX = nextStep.x;
+        gs.playerDestTY = nextStep.y;
+        gs.playerTX = nextStep.x;
+        gs.playerTY = nextStep.y;
       }
 
       updateGame(
