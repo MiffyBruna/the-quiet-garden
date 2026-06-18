@@ -1947,6 +1947,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
             <div style={{ fontSize: 13, fontWeight: 700, color: '#7CCA7C', lineHeight: 1 }}>
               {ui.restoration}%
             </div>
+            {ui.restoration >= 100 && (
+              <div style={{ fontSize: 9, color: '#FFD700', fontWeight: 'bold' }}>
+                ✓ COMPLETE
+              </div>
+            )}
             {(() => {
               let badge = '';
               let color = '';
