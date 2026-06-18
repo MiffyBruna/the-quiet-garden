@@ -1580,7 +1580,7 @@ export function GameScene({ onShowWatershed }: {
           zIndex: 20,
           display: 'flex',
           alignItems: 'center',
-          padding: '8px 12px 0',
+          padding: '16px 12px 0',
           gap: 10,
         }}
       >
