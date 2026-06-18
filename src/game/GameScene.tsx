@@ -11,6 +11,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
 import { playMusic, isMusicEnabled } from './services/audioManager';
+import { playSFX, preloadSFX } from './services/sfxManager';
 import {
   TILE_SIZE, MAP_W, MAP_H,
   GameState, UIState, ToolType, PlantType, DialogueLine, QuestStep, Tile,
@@ -517,6 +518,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
       playMusic('/cdn-assets/soundtrack.mp3');
     }
 
+    // Preload sound effects in background
+    preloadSFX().catch((e) => {
+      console.warn('Failed to preload SFX:', e);
+    });
+
     // Save on quit
     const quitHandler = () => {
       try {
@@ -896,6 +902,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
     if (dx < 0) gs.playerFacing = 'w';
     if (dy > 0) gs.playerFacing = 's';
     if (dy < 0) gs.playerFacing = 'n';
+
+    // Play footstep sound
+    playSFX('footstep', 0.5).catch(() => {});
+    track('sfx_footstep');
   }, []);
 
   // -------------------------------------------------------------------------
@@ -1033,6 +1043,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
         const ok = applyBund(gs, tx, ty);
         if (ok) {
+          playSFX('bund', 0.6).catch(() => {});
           track('custom_bund_placed', { tx, ty });
           RundotGameAPI.analytics.recordCustomEvent('bund_placed', { tx, ty });
 
@@ -1098,6 +1109,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
         if (ok) {
           track('custom_shovel_used', { tx, ty });
           RundotGameAPI.analytics.recordCustomEvent('shovel_used', { tx, ty });
+
+          // Play undo sound when removing things
+          playSFX('undo', 0.5).catch(() => {});
         }
         return;
       }
@@ -1140,6 +1154,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
           const name = PLANT_REQUIREMENTS[currentUI.selectedSeed]?.name ?? currentUI.selectedSeed;
           track('custom_seed_planted', { plant: currentUI.selectedSeed });
           RundotGameAPI.analytics.recordCustomEvent('seed_planted', { plant: currentUI.selectedSeed });
+
+          // Play planting sound
+          playSFX('planting', 0.6).catch(() => {});
           if (gs.questStep === 'plant_seed') {
             const bothPlanted = seedSpots.every(
               ({ x, y }) => getTile(gs.tiles, x, y)?.plant != null,
@@ -1201,6 +1218,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         }
         const currentRestoration = calculateRestoration(gs);
         triggerRain(gs, currentRestoration);
+        playSFX('rain', 0.5).catch(() => {});
         track('custom_rain_called', { rains: gs.rainsCount });
 
         if (gs.questStep === 'first_rain') {
