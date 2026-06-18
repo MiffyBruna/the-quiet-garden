@@ -1062,6 +1062,48 @@ export function GameScene({ onShowWatershed, isContinue }: {
   };
 
   // -------------------------------------------------------------------------
+  // Pathfinding helper - BFS to find walkable path avoiding obstacles
+  // -------------------------------------------------------------------------
+  const findPath = useCallback((startX: number, startY: number, goalX: number, goalY: number, tiles: Tile[][]): Array<{ x: number; y: number }> | null => {
+    const isWalkable = (x: number, y: number): boolean => {
+      if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
+      const t = getTile(tiles, x, y);
+      return t && t.terrain !== 'rock' && t.terrain !== 'water' && t.terrain !== 'bund';
+    };
+
+    const queue: Array<{ x: number; y: number; path: Array<{ x: number; y: number }> }> = [];
+    const visited = new Set<string>();
+    const key = (x: number, y: number) => `${x},${y}`;
+
+    queue.push({ x: startX, y: startY, path: [{ x: startX, y: startY }] });
+    visited.add(key(startX, startY));
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      if (current.x === goalX && current.y === goalY) {
+        return current.path.slice(1); // Exclude start position
+      }
+
+      const neighbors = [
+        { x: current.x + 1, y: current.y }, { x: current.x - 1, y: current.y },
+        { x: current.x, y: current.y + 1 }, { x: current.x, y: current.y - 1 },
+        { x: current.x + 1, y: current.y + 1 }, { x: current.x - 1, y: current.y - 1 },
+        { x: current.x + 1, y: current.y - 1 }, { x: current.x - 1, y: current.y + 1 },
+      ];
+
+      for (const neighbor of neighbors) {
+        const nKey = key(neighbor.x, neighbor.y);
+        if (!visited.has(nKey) && isWalkable(neighbor.x, neighbor.y)) {
+          visited.add(nKey);
+          queue.push({ x: neighbor.x, y: neighbor.y, path: [...current.path, neighbor] });
+        }
+      }
+    }
+
+    return null; // No path found
+  }, []);
+
+  // -------------------------------------------------------------------------
   // Tool use on a tile
   // -------------------------------------------------------------------------
   const useTool = useCallback(
@@ -1100,18 +1142,23 @@ export function GameScene({ onShowWatershed, isContinue }: {
           destY = candidates[0].y;
         }
 
-        // Update facing direction based on movement direction
-        const dx = destX - gs.playerTX;
-        const dy = destY - gs.playerTY;
+        // Find path to destination, moving one tile at a time
+        const path = findPath(gs.playerTX, gs.playerTY, destX, destY, gs.tiles);
+        if (!path || path.length === 0) return; // No path found
+
+        // Move to the first step of the path
+        const nextStep = path[0]!;
+        const dx = nextStep.x - gs.playerTX;
+        const dy = nextStep.y - gs.playerTY;
         if (dx > 0) gs.playerFacing = 'e';
         if (dx < 0) gs.playerFacing = 'w';
         if (dy > 0) gs.playerFacing = 's';
         if (dy < 0) gs.playerFacing = 'n';
 
-        gs.playerDestTX = destX;
-        gs.playerDestTY = destY;
-        gs.playerTX = destX;
-        gs.playerTY = destY;
+        gs.playerDestTX = nextStep.x;
+        gs.playerDestTY = nextStep.y;
+        gs.playerTX = nextStep.x;
+        gs.playerTY = nextStep.y;
         return;
       }
 
@@ -1391,7 +1438,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         return;
       }
     },
-    [advanceQuest, queueDialogue, onShowWatershed],
+    [advanceQuest, queueDialogue, onShowWatershed, findPath],
   );
 
   // -------------------------------------------------------------------------
