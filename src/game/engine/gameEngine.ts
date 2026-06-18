@@ -314,6 +314,104 @@ export function createChapter2InitialState(): GameState {
 }
 
 // ---------------------------------------------------------------------------
+// Flower Cluster Detection (Chapter 2)
+// ---------------------------------------------------------------------------
+
+interface FlowerCluster {
+  tiles: Array<{ x: number; y: number }>;
+  hasEarlyBloom: boolean;
+  hasMidBloom: boolean;
+  hasLateBloom: boolean;
+  isValid: boolean;
+}
+
+const EARLY_BLOOMS = ['camas', 'violet'];
+const MID_BLOOMS = ['yarrow', 'bee_balm'];
+const LATE_BLOOMS = ['goldenrod', 'aster'];
+
+export function getFlowerClusters(tiles: Tile[][]): FlowerCluster[] {
+  const clusters: FlowerCluster[] = [];
+  const visited = new Set<string>();
+
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      const key = `${x},${y}`;
+      if (visited.has(key)) continue;
+
+      const tile = getTile(tiles, x, y);
+      if (!tile?.plant) continue;
+
+      // Start a new cluster from this flower
+      const clusterTiles = floodFillFlowers(tiles, x, y, visited);
+      if (clusterTiles.length >= 3) {
+        // Valid cluster has 3+ flowers
+        let hasEarlyBloom = false;
+        let hasMidBloom = false;
+        let hasLateBloom = false;
+
+        for (const { x: cx, y: cy } of clusterTiles) {
+          const t = getTile(tiles, cx, cy);
+          if (t?.plant) {
+            const type = t.plant.type;
+            if (EARLY_BLOOMS.includes(type)) hasEarlyBloom = true;
+            if (MID_BLOOMS.includes(type)) hasMidBloom = true;
+            if (LATE_BLOOMS.includes(type)) hasLateBloom = true;
+          }
+        }
+
+        clusters.push({
+          tiles: clusterTiles,
+          hasEarlyBloom,
+          hasMidBloom,
+          hasLateBloom,
+          isValid: hasEarlyBloom && hasMidBloom && hasLateBloom,
+        });
+      }
+    }
+  }
+
+  return clusters;
+}
+
+function floodFillFlowers(tiles: Tile[][], startX: number, startY: number, visited: Set<string>): Array<{ x: number; y: number }> {
+  const cluster: Array<{ x: number; y: number }> = [];
+  const queue: Array<{ x: number; y: number }> = [{ x: startX, y: startY }];
+
+  while (queue.length > 0) {
+    const { x, y } = queue.shift()!;
+    const key = `${x},${y}`;
+
+    if (visited.has(key)) continue;
+    visited.add(key);
+
+    const tile = getTile(tiles, x, y);
+    if (!tile?.plant) continue;
+
+    // Only include meadow flowers
+    if (![...EARLY_BLOOMS, ...MID_BLOOMS, ...LATE_BLOOMS].includes(tile.plant.type)) continue;
+
+    cluster.push({ x, y });
+
+    // Add neighbors (4-directional)
+    const neighbors = [
+      { x: x - 1, y },
+      { x: x + 1, y },
+      { x, y: y - 1 },
+      { x, y: y + 1 },
+    ];
+
+    for (const { x: nx, y: ny } of neighbors) {
+      const nkey = `${nx},${ny}`;
+      if (!visited.has(nkey) && inBounds(nx, ny)) {
+        queue.push({ x: nx, y: ny });
+      }
+    }
+  }
+
+  return cluster;
+}
+
+// ---------------------------------------------------------------------------
 // Tool actions
 // ---------------------------------------------------------------------------
 
