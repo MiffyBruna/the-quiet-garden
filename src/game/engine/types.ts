@@ -95,12 +95,17 @@ export type ToolType =
 // ---------------------------------------------------------------------------
 
 export type QuestStep =
-  | 'intro'          // Moss intro dialogue
-  | 'inspect_soil'   // Inspect 3 cracked soil tiles
-  | 'first_rain'     // Call gentle rain (water escapes)
-  | 'dig_bund'       // Dig a semicircular bund
-  | 'second_rain'    // Call rain again (bund catches it)
-  | 'plant_seed'     // Plant Blue Grama Grass
+  | 'intro'          // Moss intro dialogue / Clover intro dialogue
+  | 'inspect_soil'   // Inspect 3 cracked soil tiles (Ch1)
+  | 'first_rain'     // Call gentle rain (water escapes) (Ch1)
+  | 'dig_bund'       // Dig a semicircular bund (Ch1)
+  | 'second_rain'    // Call rain again (bund catches it) (Ch1)
+  | 'plant_seed'     // Plant Blue Grama Grass (Ch1)
+  | 'listen_quiet'   // Ch2: Listen to the quiet (Clover intro complete)
+  | 'early_flowers'  // Ch2: Plant early bloom flowers
+  | 'mid_flowers'    // Ch2: Plant mid-season flowers
+  | 'late_flowers'   // Ch2: Plant late-season flowers
+  | 'flower_clusters'// Ch2: Create flower clusters with mixed bloom times
   | 'free_play';     // Open exploration
 
 // ---------------------------------------------------------------------------
@@ -118,6 +123,9 @@ export interface DialogueLine {
 // ---------------------------------------------------------------------------
 
 export interface GameState {
+  // Chapter tracking
+  chapter: 'dryland' | 'meadow';  // Which chapter is being played
+
   // World
   tiles: Tile[][];   // [y][x]
 
@@ -155,6 +163,13 @@ export interface GameState {
   inspectedCount: number; // for inspect_soil step
   bundPlaced: boolean;
   rainsCount: number;     // times player has called rain
+
+  // Chapter 2 quest tracking
+  chapter2EarlyFlowerPlanted: boolean;   // Has player planted any early bloom flower?
+  chapter2MidFlowerPlanted: boolean;     // Has player planted any mid-season flower?
+  chapter2LateFlowerPlanted: boolean;    // Has player planted any late-season flower?
+  chapter2ClustersFound: number;         // Count of valid clusters discovered
+  chapter2HummingbirdSeen: boolean;      // Has hummingbird been spotted?
 
   // Highlight tiles (for objectives)
   highlightTiles: Array<{ x: number; y: number }>;

@@ -204,6 +204,7 @@ function getMoistureCap(restoration: number): number {
 export function createInitialGameState(): GameState {
   const tiles = generateChapter1Map();
   return {
+    chapter: 'dryland',
     tiles,
 
     playerTX: PLAYER_START_TX,
@@ -235,6 +236,12 @@ export function createInitialGameState(): GameState {
     bundPlaced: false,
     rainsCount: 0,
 
+    chapter2EarlyFlowerPlanted: false,
+    chapter2MidFlowerPlanted: false,
+    chapter2LateFlowerPlanted: false,
+    chapter2ClustersFound: 0,
+    chapter2HummingbirdSeen: false,
+
     highlightTiles: INSPECT_HIGHLIGHTS,
 
     discoveredWildlife: [],
@@ -260,6 +267,7 @@ export function createInitialGameState(): GameState {
 export function createChapter2InitialState(): GameState {
   const tiles = generateChapter2Map();
   return {
+    chapter: 'meadow',
     tiles,
 
     playerTX: CHAPTER2_PLAYER_START_TX,
@@ -290,6 +298,12 @@ export function createChapter2InitialState(): GameState {
     inspectedCount: 0,
     bundPlaced: false,
     rainsCount: 0,
+
+    chapter2EarlyFlowerPlanted: false,
+    chapter2MidFlowerPlanted: false,
+    chapter2LateFlowerPlanted: false,
+    chapter2ClustersFound: 0,
+    chapter2HummingbirdSeen: false,
 
     highlightTiles: CHAPTER2_INSPECT_HIGHLIGHTS,
 
@@ -409,6 +423,46 @@ function floodFillFlowers(tiles: Tile[][], startX: number, startY: number, visit
   }
 
   return cluster;
+}
+
+/**
+ * Check Chapter 2 quest progression and return the next quest step if applicable.
+ * Returns null if no progression should happen.
+ */
+export function checkChapter2QuestProgression(gs: GameState): QuestStep | null {
+  const currentStep = gs.questStep;
+
+  // Move from intro to listen_quiet once the opening dialogue completes
+  // This will be triggered by GameScene when the CLOVER_OPENING_DIALOGUE finishes
+  // (handled in GameScene when dialogue queue is empty after intro)
+
+  // listen_quiet -> early_flowers: when player plants first early bloom flower
+  if (currentStep === 'listen_quiet' && gs.chapter2EarlyFlowerPlanted) {
+    return 'early_flowers';
+  }
+
+  // early_flowers -> mid_flowers: when player plants first mid-season flower
+  if (currentStep === 'early_flowers' && gs.chapter2MidFlowerPlanted) {
+    return 'mid_flowers';
+  }
+
+  // mid_flowers -> late_flowers: when player plants first late-season flower
+  if (currentStep === 'mid_flowers' && gs.chapter2LateFlowerPlanted) {
+    return 'late_flowers';
+  }
+
+  // late_flowers -> flower_clusters: when player creates first valid flower cluster
+  if (currentStep === 'late_flowers' && gs.chapter2ClustersFound > 0) {
+    return 'flower_clusters';
+  }
+
+  // flower_clusters -> free_play: when player creates clusters with all bloom times
+  // (This is handled elsewhere when restoration reaches certain thresholds)
+  if (currentStep === 'flower_clusters' && gs.chapter2ClustersFound >= 3) {
+    return 'free_play';
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -740,6 +794,18 @@ export function applyPlantSeed(
   if (!gs.discoveredPlants.includes(plantType)) {
     gs.discoveredPlants.push(plantType);
   }
+
+  // Chapter 2 quest tracking: update plant bloom timing tracking
+  if (EARLY_BLOOMS.includes(plantType)) {
+    gs.chapter2EarlyFlowerPlanted = true;
+  }
+  if (MID_BLOOMS.includes(plantType)) {
+    gs.chapter2MidFlowerPlanted = true;
+  }
+  if (LATE_BLOOMS.includes(plantType)) {
+    gs.chapter2LateFlowerPlanted = true;
+  }
+
   return { planted: true, reason: '' };
 }
 
@@ -1816,24 +1882,38 @@ export const CLOVER_HUMMINGBIRD_DIALOGUE: DialogueLine[] = [
   { speaker: 'Clover', emoji: '🐝', text: 'Tiny exclamation marks with wings.' },
 ];
 
-/** Clover restoration milestones */
-export const CLOVER_MILESTONE_DIALOGUES: Record<number, DialogueLine> = {
-  10: { speaker: 'Clover', emoji: '🐝', text: 'It is still quiet.' },
-  10.1: { speaker: 'Clover', emoji: '🐝', text: 'But not empty quiet.' },
-  10.2: { speaker: 'Clover', emoji: '🐝', text: 'Waiting quiet.' },
-  25: { speaker: 'Clover', emoji: '🐝', text: 'The first flowers are keeping time.' },
-  40: { speaker: 'Clover', emoji: '🐝', text: 'I heard buzzing.' },
-  40.1: { speaker: 'Clover', emoji: '🐝', text: 'I am choosing to remain calm.' },
-  40.2: { speaker: 'Clover', emoji: '🐝', text: 'I am failing.' },
-  55: { speaker: 'Clover', emoji: '🐝', text: 'Different flowers. Different visitors.' },
-  55.1: { speaker: 'Clover', emoji: '🐝', text: 'That is how a meadow becomes generous.' },
-  70: { speaker: 'Clover', emoji: '🐝', text: 'The wings are returning.' },
-  70.1: { speaker: 'Clover', emoji: '🐝', text: 'Not all at once.' },
-  70.2: { speaker: 'Clover', emoji: '🐝', text: 'But enough to change the sound of the air.' },
-  85: { speaker: 'Clover', emoji: '🐝', text: 'This is no longer just grass.' },
-  85.1: { speaker: 'Clover', emoji: '🐝', text: 'This is invitation.' },
-  93: { speaker: 'Clover', emoji: '🐝', text: 'The meadow is helping itself now.' },
-  93.1: { speaker: 'Clover', emoji: '🐝', text: 'Seeds are falling. Wings are carrying news.' },
+/** Clover restoration milestones (grouped by percentage) */
+export const CLOVER_MILESTONE_DIALOGUES: Record<number, DialogueLine[]> = {
+  10: [
+    { speaker: 'Clover', emoji: '🐝', text: 'It is still quiet.' },
+    { speaker: 'Clover', emoji: '🐝', text: 'But not empty quiet.' },
+    { speaker: 'Clover', emoji: '🐝', text: 'Waiting quiet.' },
+  ],
+  25: [
+    { speaker: 'Clover', emoji: '🐝', text: 'The first flowers are keeping time.' },
+  ],
+  40: [
+    { speaker: 'Clover', emoji: '🐝', text: 'I heard buzzing.' },
+    { speaker: 'Clover', emoji: '🐝', text: 'I am choosing to remain calm.' },
+    { speaker: 'Clover', emoji: '🐝', text: 'I am failing.' },
+  ],
+  55: [
+    { speaker: 'Clover', emoji: '🐝', text: 'Different flowers. Different visitors.' },
+    { speaker: 'Clover', emoji: '🐝', text: 'That is how a meadow becomes generous.' },
+  ],
+  70: [
+    { speaker: 'Clover', emoji: '🐝', text: 'The wings are returning.' },
+    { speaker: 'Clover', emoji: '🐝', text: 'Not all at once.' },
+    { speaker: 'Clover', emoji: '🐝', text: 'But enough to change the sound of the air.' },
+  ],
+  85: [
+    { speaker: 'Clover', emoji: '🐝', text: 'This is no longer just grass.' },
+    { speaker: 'Clover', emoji: '🐝', text: 'This is invitation.' },
+  ],
+  93: [
+    { speaker: 'Clover', emoji: '🐝', text: 'The meadow is helping itself now.' },
+    { speaker: 'Clover', emoji: '🐝', text: 'Seeds are falling. Wings are carrying news.' },
+  ],
 };
 
 /** Clover completion dialogue */
@@ -1851,6 +1931,27 @@ export const CLOVER_COMPLETION_DIALOGUE: DialogueLine[] = [
   { speaker: 'Clover', emoji: '🐝', text: 'You gave time back to the meadow.' },
 ];
 
+/**
+ * Get Clover dialogue for Chapter 2 quest steps.
+ * Returns empty array if not a Chapter 2 quest step.
+ */
+export function getCloverQuestDialogue(questStep: QuestStep): DialogueLine[] {
+  switch (questStep) {
+    case 'listen_quiet':
+      return CLOVER_LISTEN_DIALOGUE;
+    case 'early_flowers':
+      return CLOVER_EARLY_FLOWERS_DIALOGUE;
+    case 'mid_flowers':
+      return CLOVER_MID_FLOWERS_DIALOGUE;
+    case 'late_flowers':
+      return CLOVER_LATE_FLOWERS_DIALOGUE;
+    case 'flower_clusters':
+      return CLOVER_CLUSTERS_DIALOGUE;
+    default:
+      return [];
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Main update tick
 // ---------------------------------------------------------------------------
@@ -1859,7 +1960,7 @@ export function updateGame(
   gs: GameState,
   dt: number,
   onUIChange?: (restoration: number, avgMoisture: number, wildlifeCount: number, questStep: QuestStep) => void,
-  onMilestone?: (milestone: number, line: DialogueLine) => void,
+  onMilestone?: (milestone: number, lines: DialogueLine[]) => void,
   onCompletion?: () => void,
   onFirstWilt?: () => void,
 ): void {
@@ -1950,13 +2051,27 @@ export function updateGame(
 
     // Check ecological milestones — every 5% plus tipping points (only in free_play)
     if (onMilestone && gs.questStep === 'free_play') {
-      const milestonePoints = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 93, 95] as const;
-      for (const pct of milestonePoints) {
-        if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
-          gs.restorationMilestonesSeen.push(pct);
-          const line = MOSS_MILESTONE_DIALOGUES[pct];
-          if (line) onMilestone(pct, line);
-          break; // Queue one at a time so lines don't pile up
+      // Chapter 2 uses different milestone points and speakers
+      if (gs.chapter === 'meadow') {
+        const milestonePoints = [10, 25, 40, 55, 70, 85, 93] as const;
+        for (const pct of milestonePoints) {
+          if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
+            gs.restorationMilestonesSeen.push(pct);
+            const lines = CLOVER_MILESTONE_DIALOGUES[pct];
+            if (lines) onMilestone(pct, lines);
+            break; // Queue one at a time so lines don't pile up
+          }
+        }
+      } else {
+        // Chapter 1: Moss milestones
+        const milestonePoints = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 93, 95] as const;
+        for (const pct of milestonePoints) {
+          if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
+            gs.restorationMilestonesSeen.push(pct);
+            const line = MOSS_MILESTONE_DIALOGUES[pct];
+            if (line) onMilestone(pct, [line]);  // Wrap in array for consistency
+            break; // Queue one at a time so lines don't pile up
+          }
         }
       }
     }
@@ -2027,6 +2142,9 @@ export function deserializeDiscoveries(gs: GameState, json: string): void {
  */
 export function serializeGameState(gs: GameState): string {
   return JSON.stringify({
+    // Chapter tracking
+    chapter: gs.chapter,
+
     // Player & world state
     playerTX: gs.playerTX,
     playerTY: gs.playerTY,
@@ -2092,7 +2210,11 @@ export function serializeGameState(gs: GameState): string {
 export function deserializeGameState(json: string): GameState | null {
   try {
     const data = JSON.parse(json);
-    const gs = createInitialGameState();
+    // Determine which initial state to use based on saved chapter
+    const gs = (data.chapter === 'meadow') ? createChapter2InitialState() : createInitialGameState();
+
+    // Restore chapter (should match what was just set above, but restore for completeness)
+    if (data.chapter) gs.chapter = data.chapter;
 
     // Restore player & world state
     gs.playerTX = data.playerTX ?? gs.playerTX;

@@ -22,10 +22,11 @@ import {
   applyBund, applyMulch, applyPlantSeed, applyShovel, applyLandscape,
   triggerRain, updateGame,
   PLANT_REQUIREMENTS, calculateRestoration, getRainCooldown,
-  getQuestObjective, getQuestMossDialogue,
+  getQuestObjective, getQuestMossDialogue, getCloverQuestDialogue,
   MOSS_COMPLETION_DIALOGUE, MOSS_LANDSCAPE_DIALOGUE, MOSS_FIRST_RESTORATION_DIALOGUE,
-  CLOVER_OPENING_DIALOGUE,
+  CLOVER_OPENING_DIALOGUE, CLOVER_COMPLETION_DIALOGUE,
   getTile,
+  checkChapter2QuestProgression, getFlowerClusters,
   serializeDiscoveries, deserializeDiscoveries,
   serializeGameState, deserializeGameState,
 } from './engine/gameEngine';
@@ -836,6 +837,26 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
         newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType, 'shovel' as ToolType])];
         break;
       }
+      case 'listen_quiet':
+        newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType, 'inspect' as ToolType])];
+        objective = 'Plant early flowers (Camas or Violet)';
+        break;
+      case 'early_flowers':
+        newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType])];
+        objective = 'Plant mid-season flowers (Yarrow or Bee Balm)';
+        break;
+      case 'mid_flowers':
+        newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType])];
+        objective = 'Plant late-season flowers (Goldenrod or Aster)';
+        break;
+      case 'late_flowers':
+        newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType])];
+        objective = 'Create flower clusters with mixed bloom times';
+        break;
+      case 'flower_clusters':
+        newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType, 'inspect' as ToolType])];
+        objective = 'Watch the meadow flourish';
+        break;
       case 'free_play':
         newTools = ['move', 'inspect', 'bund', 'mulch', 'seed', 'rain', 'talk', 'journal', 'shovel'];
         break;
@@ -858,7 +879,9 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
       };
     });
 
-    const dialogues = getQuestMossDialogue(newStep);
+    // Choose dialogue based on chapter
+    const isChapter2 = newStep.includes('flower') || newStep === 'listen_quiet';
+    const dialogues = isChapter2 ? getCloverQuestDialogue(newStep) : getQuestMossDialogue(newStep);
 
     if (newStep === 'free_play') {
       // Unlock restoration scoring now that the first bund has captured rain
@@ -958,17 +981,34 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
   // Completion event — camera pan → dialogue → landscape tool
   // -------------------------------------------------------------------------
   const triggerCompletionEvent = useCallback(() => {
-    track('custom_restoration_complete');
-    RundotGameAPI.analytics.recordCustomEvent('restoration_complete', { valley: 'chapter1' });
-
     const gs = gsRef.current;
+    track('custom_restoration_complete');
+    RundotGameAPI.analytics.recordCustomEvent('restoration_complete', { valley: gs.chapter });
 
-    // Waypoints: pan from bund → center map → seed area → player
-    const waypoints = [
-      { px: 15 * TILE_SIZE, py: 15 * TILE_SIZE }, // bund area
-      { px: 16 * TILE_SIZE, py: 16 * TILE_SIZE }, // pond area
-      { px: 16 * TILE_SIZE, py: 18 * TILE_SIZE }, // seed / plant area
-    ];
+    // Choose waypoints and dialogue based on chapter
+    let waypoints: Array<{ px: number; py: number }>;
+    let completionDialogue: DialogueLine[];
+    let questObjective: string;
+
+    if (gs.chapter === 'meadow') {
+      // Chapter 2: Meadow completion — pan to notable meadow areas
+      waypoints = [
+        { px: 10 * TILE_SIZE, py: 12 * TILE_SIZE }, // west flower clusters
+        { px: 16 * TILE_SIZE, py: 12 * TILE_SIZE }, // center meadow
+        { px: 16 * TILE_SIZE, py: 18 * TILE_SIZE }, // east flower clusters
+      ];
+      completionDialogue = CLOVER_COMPLETION_DIALOGUE;
+      questObjective = 'The meadow breathes 🐝';
+    } else {
+      // Chapter 1: Valley completion — pan from bund → center map → seed area
+      waypoints = [
+        { px: 15 * TILE_SIZE, py: 15 * TILE_SIZE }, // bund area
+        { px: 16 * TILE_SIZE, py: 16 * TILE_SIZE }, // pond area
+        { px: 16 * TILE_SIZE, py: 18 * TILE_SIZE }, // seed / plant area
+      ];
+      completionDialogue = MOSS_COMPLETION_DIALOGUE;
+      questObjective = 'The valley remembers 🌿';
+    }
 
     let wp = 0;
     gs.cinematicCam = waypoints[0] ?? null;
@@ -982,18 +1022,21 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
         // End cinematic, restore camera
         gs.cinematicCam = null;
         // Show completion dialogue
-        queueDialogue(MOSS_COMPLETION_DIALOGUE);
+        queueDialogue(completionDialogue);
         // After final dialogue clears, unlock landscape tool + show its intro
         // (We use the dialogue closing event via onDialogueEnd, which we handle
         // by checking ui state changes — simpler: delay and then unlock)
-        const totalDialogueMs = MOSS_COMPLETION_DIALOGUE.length * 4000;
+        const totalDialogueMs = completionDialogue.length * 4000;
         setTimeout(() => {
           setUI((prev) => ({
             ...prev,
             unlockedTools: [...prev.unlockedTools, 'landscape' as ToolType],
-            questObjective: 'The valley remembers 🌿',
+            questObjective,
           }));
-          queueDialogue(MOSS_LANDSCAPE_DIALOGUE);
+          // Only show landscape dialogue for Chapter 1 (Chapter 2 doesn't have it yet)
+          if (gs.chapter === 'dryland') {
+            queueDialogue(MOSS_LANDSCAPE_DIALOGUE);
+          }
           track('custom_landscape_tool_unlocked');
         }, totalDialogueMs);
       }
@@ -1661,9 +1704,9 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
         (restoration, avgMoisture, wildlifeCount, questStep) => {
           setUI((prev) => ({ ...prev, restoration, avgMoisture, wildlifeCount, questStep }));
         },
-        (_milestone, line) => {
-          // Ecological milestone — Moss comments on ecosystem recovery
-          queueDialogue([line]);
+        (_milestone, lines) => {
+          // Ecological milestone — Moss or Clover comments on ecosystem recovery
+          queueDialogue(lines);
         },
         () => {
           // 100% restoration completion - only if not already seen
@@ -1809,6 +1852,26 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
             .map(({ dx, dy }) => ({ x: gs.playerTX + dx, y: gs.playerTY + dy }))
             .filter(({ x, y }) => x > 0 && x < MAP_W - 1 && y > 0 && y < MAP_H - 1)
         : [];
+
+      // Chapter 2 quest progression: detect flower clusters and advance quests
+      if (currentUI.questStep.includes('flower') || currentUI.questStep === 'late_flowers') {
+        const clusters = getFlowerClusters(gs.tiles);
+        const validClusters = clusters.filter(c => c.isValid);
+        gs.chapter2ClustersFound = validClusters.length;
+      }
+
+      // Check for quest progression (Chapter 2)
+      const nextQuestStep = checkChapter2QuestProgression(gs);
+      if (nextQuestStep && nextQuestStep !== currentUI.questStep) {
+        advanceQuest(nextQuestStep);
+      }
+
+      // Chapter 2 intro: transition from intro to listen_quiet when dialogue finishes
+      const dialogueNowShowing = currentUI.dialogue !== null;
+      if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && selectedChapter === 'meadow') {
+        // Clover's opening dialogue just finished — advance to listen_quiet
+        advanceQuest('listen_quiet');
+      }
 
       // Moss proximity hint
       const playerNearMoss =
