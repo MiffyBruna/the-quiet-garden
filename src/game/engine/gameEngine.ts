@@ -390,9 +390,9 @@ export function applyShovel(gs: GameState, tx: number, ty: number): boolean {
 export function applyLandscape(
   gs: GameState,
   tx: number, ty: number,
-  heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null,
-  mode: 'move' | 'convert' = 'move',
-): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null } {
+  heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null,
+  mode: 'move' | 'convert_soil' | 'convert_rocks' = 'move',
+): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null } {
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return { action: 'none', entity: null };
 
@@ -422,6 +422,17 @@ export function applyLandscape(
       // Swap: place grass at destination, move destination terrain to source
       const destTerrainBefore = tile.terrain;
       setTile(gs.tiles, tx, ty, { terrain: 'grass', isModified: true });
+      if (heldEntity.sourceTX !== undefined && heldEntity.sourceTY !== undefined) {
+        // Put the destination's terrain at the source
+        setTile(gs.tiles, heldEntity.sourceTX, heldEntity.sourceTY, { terrain: destTerrainBefore, isModified: true });
+      }
+      return { action: 'placed', entity: null };
+    }
+
+    if (heldEntity.type === 'rock' && canPlace) {
+      // Swap: place rock at destination, move destination terrain to source
+      const destTerrainBefore = tile.terrain;
+      setTile(gs.tiles, tx, ty, { terrain: 'rock', isModified: true });
       if (heldEntity.sourceTX !== undefined && heldEntity.sourceTY !== undefined) {
         // Put the destination's terrain at the source
         setTile(gs.tiles, heldEntity.sourceTX, heldEntity.sourceTY, { terrain: destTerrainBefore, isModified: true });
@@ -484,12 +495,27 @@ export function applyLandscape(
     return { action: 'picked', entity: { type: 'grass', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'grass' } };
   }
 
-  // Convert mode: turn terrain into dry soil (brown) — but not if plant is on the tile
-  if (mode === 'convert' && !heldEntity) {
+  // Pick up rocks (store source location and what was there before for swapping)
+  if (tile.terrain === 'rock') {
+    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+    return { action: 'picked', entity: { type: 'rock', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'rock' } };
+  }
+
+  // Convert to soil: turn terrain into brown soil — but not if plant is on the tile
+  if (mode === 'convert_soil' && !heldEntity) {
     const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil'];
     if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
       // Set to dry_soil with low moisture (20) so it stays brown and won't upgrade to moist_soil (>45) or downgrade to cracked_soil (<14)
       setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', moisture: 20, isModified: true });
+      return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
+    }
+  }
+
+  // Convert to rocks: turn terrain into rocks — but not if plant is on the tile
+  if (mode === 'convert_rocks' && !heldEntity) {
+    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil'];
+    if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
+      setTile(gs.tiles, tx, ty, { terrain: 'rock', isModified: true });
       return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
     }
   }

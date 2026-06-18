@@ -1293,8 +1293,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           track('custom_landscape_picked');
         } else if (result.action === 'placed') {
           setUI((p) => ({ ...p, heldEntity: null }));
-          if (currentUI.reshapeMode === 'convert') {
-            track('custom_landscape_converted', { tx, ty });
+          if (currentUI.reshapeMode === 'convert_soil') {
+            track('custom_landscape_converted_soil', { tx, ty });
+          } else if (currentUI.reshapeMode === 'convert_rocks') {
+            track('custom_landscape_converted_rocks', { tx, ty });
           } else {
             track('custom_landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
             RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
@@ -2331,17 +2333,18 @@ export function GameScene({ onShowWatershed, isContinue }: {
               ✕
             </button>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {[
               { mode: 'move', emoji: '↔️', label: 'Move', desc: 'Swap tiles' },
-              { mode: 'convert', emoji: '🌱', label: 'Soil', desc: 'Turn to soil' },
+              { mode: 'convert_soil', emoji: '🌱', label: 'Soil', desc: 'Turn to soil' },
+              { mode: 'convert_rocks', emoji: '🪨', label: 'Rocks', desc: 'Turn to rocks' },
             ].map((opt: any) => {
               const selected = ui.reshapeMode === opt.mode;
               return (
                 <button
                   key={opt.mode}
                   onClick={() => {
-                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'convert' }));
+                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'convert_soil' | 'convert_rocks' }));
                   }}
                   style={{
                     flex: 1,
@@ -2393,6 +2396,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
               : ui.heldEntity.type === 'fairy' ? '✨'
               : ui.heldEntity.type === 'mulch' ? '🟫'
               : ui.heldEntity.type === 'grass' ? '🌾'
+              : ui.heldEntity.type === 'rock' ? '🪨'
               : '❓'}
           </span>
           <div style={{ fontSize: 11, color: '#F0FFF0' }}>
