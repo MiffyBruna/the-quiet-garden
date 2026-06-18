@@ -8,7 +8,7 @@ import { theme } from '../theme';
 import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS } from './engine/gameEngine';
 import type { PlantType } from './engine/types';
 
-type CatalogTab = 'plants' | 'wildlife' | 'fairies';
+type CatalogTab = 'chapters' | 'plants' | 'wildlife' | 'fairies';
 
 interface ChapterInfo {
   id: string;
