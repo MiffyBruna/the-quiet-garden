@@ -430,9 +430,11 @@ export function applyLandscape(
     }
 
     if (heldEntity.type === 'rock' && canPlace) {
-      // Swap: place rock at destination, move destination terrain to source
+      // Swap: place rock (or water if that's what was picked up) at destination, move destination terrain to source
       const destTerrainBefore = tile.terrain;
-      setTile(gs.tiles, tx, ty, { terrain: 'rock', isModified: true });
+      // Determine what terrain to place based on what was originally picked up
+      const terrainToPlace = heldEntity.sourceTerrainBefore ?? 'rock';
+      setTile(gs.tiles, tx, ty, { terrain: terrainToPlace, isModified: true });
       if (heldEntity.sourceTX !== undefined && heldEntity.sourceTY !== undefined) {
         // Put the destination's terrain at the source
         setTile(gs.tiles, heldEntity.sourceTX, heldEntity.sourceTY, { terrain: destTerrainBefore, isModified: true });
@@ -501,6 +503,12 @@ export function applyLandscape(
     return { action: 'picked', entity: { type: 'rock', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'rock' } };
   }
 
+  // Pick up water (store source location and what was there before for swapping)
+  if (tile.terrain === 'water') {
+    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+    return { action: 'picked', entity: { type: 'rock', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'water' } };
+  }
+
   // Convert to soil: turn terrain into brown soil — but not if plant is on the tile
   if (mode === 'convert_soil' && !heldEntity) {
     const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil'];
@@ -513,7 +521,7 @@ export function applyLandscape(
 
   // Convert to rocks: turn terrain into rocks — but not if plant is on the tile
   if (mode === 'convert_rocks' && !heldEntity) {
-    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil'];
+    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil', 'water'];
     if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
       setTile(gs.tiles, tx, ty, { terrain: 'rock', isModified: true });
       return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
