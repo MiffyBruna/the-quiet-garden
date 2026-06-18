@@ -529,11 +529,11 @@ export function applyLandscape(
     }
   }
 
-  // Destroy rocks: remove rocks (turn them into dry soil) — but not if plant is on the tile
+  // Destroy rocks or evaporate water: remove rocks/water (turn them into dry soil) — but not if plant is on the tile
   if (mode === 'destroy_rocks' && !heldEntity) {
-    if (tile.terrain === 'rock' && !tile.plant) {
+    if ((tile.terrain === 'rock' || tile.terrain === 'water') && !tile.plant) {
       setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
-      return { action: 'placed', entity: null }; // use 'placed' to indicate destruction happened
+      return { action: 'placed', entity: null }; // use 'placed' to indicate destruction/evaporation happened
     }
   }
 
