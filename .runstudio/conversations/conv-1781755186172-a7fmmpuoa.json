@@ -519,10 +519,71 @@
       "metadata": {
         "toolName": "Bash"
       }
+    },
+    {
+      "id": "user-1781765970818",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "CAN WE UNDEPLOY MY ENTRY",
+      "timestamp": 1781765970818,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781765977102-c7aedzr4f",
+      "role": "assistant",
+      "content": "I'll check what options are available for undeploying your game.",
+      "isShownToUser": true,
+      "timestamp": 1781765977385,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781765977766-lsy2p219e",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781765977766,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781765977889-cv7yqy5np",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781765977889,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781765981131-72xvmjkfq",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781765981131,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781765984652-stfux9uho",
+      "role": "assistant",
+      "content": "Based on the available commands, **there's no explicit \"undeploy\" option** to completely remove your game from the platform. However, you have these alternatives:\n\n1. **Make it private** — Hide it from the public explore page while keeping it accessible via your share link:\n   ```bash\n   rundot game set-private\n   ```\n\n2. **Make it public again** — If you changed your mind and want to list it in explore:\n   ```bash\n   rundot game set-public\n   ```\n\nIf you're looking to completely delete or remove your game entry entirely, that's not available through the CLI. If you need that level of removal, you'd need to contact RUN.game support directly.\n\nWhich option works for you?",
+      "isShownToUser": true,
+      "timestamp": 1781765985739,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1781765727462,
-  "tokenUsage": 6500,
-  "script": "default"
+  "updatedAt": 1781765985781,
+  "tokenUsage": 7539,
+  "script": "default",
+  "claudeSessionId": "382a8845-65e1-42ff-b390-ada09aeed11f"
 }
