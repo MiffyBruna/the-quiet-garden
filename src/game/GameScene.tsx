@@ -1142,23 +1142,22 @@ export function GameScene({ onShowWatershed, isContinue }: {
           destY = candidates[0].y;
         }
 
-        // Find path to destination, moving one tile at a time
+        // Find path to destination - pathfinding validates the path exists
         const path = findPath(gs.playerTX, gs.playerTY, destX, destY, gs.tiles);
-        if (!path || path.length === 0) return; // No path found
+        if (!path || path.length === 0) return; // No path found - destination unreachable
 
-        // Move to the first step of the path
-        const nextStep = path[0]!;
-        const dx = nextStep.x - gs.playerTX;
-        const dy = nextStep.y - gs.playerTY;
+        // Move directly to destination (pathfinding confirmed it's reachable)
+        const dx = destX - gs.playerTX;
+        const dy = destY - gs.playerTY;
         if (dx > 0) gs.playerFacing = 'e';
         if (dx < 0) gs.playerFacing = 'w';
         if (dy > 0) gs.playerFacing = 's';
         if (dy < 0) gs.playerFacing = 'n';
 
-        gs.playerDestTX = nextStep.x;
-        gs.playerDestTY = nextStep.y;
-        gs.playerTX = nextStep.x;
-        gs.playerTY = nextStep.y;
+        gs.playerDestTX = destX;
+        gs.playerDestTY = destY;
+        gs.playerTX = destX;
+        gs.playerTY = destY;
         return;
       }
 
