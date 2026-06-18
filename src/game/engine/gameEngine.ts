@@ -11,6 +11,10 @@ import {
   PLAYER_START_TX, PLAYER_START_TY,
   MOSS_START_TX, MOSS_START_TY,
   INSPECT_HIGHLIGHTS,
+  generateChapter2Map,
+  CHAPTER2_PLAYER_START_TX, CHAPTER2_PLAYER_START_TY,
+  CHAPTER2_CLOVER_START_TX, CHAPTER2_CLOVER_START_TY,
+  CHAPTER2_INSPECT_HIGHLIGHTS,
 } from './mapGen';
 
 // ---------------------------------------------------------------------------
@@ -232,6 +236,62 @@ export function createInitialGameState(): GameState {
     rainsCount: 0,
 
     highlightTiles: INSPECT_HIGHLIGHTS,
+
+    discoveredWildlife: [],
+    discoveredFairies: [],
+    discoveredPlants: [],
+    discoveredGuideNotes: [],
+
+    bundCenterTX: 15,
+    bundCenterTY: 15,
+    firstBundActivated: false,
+    restorationMilestonesSeen: [],
+    completionTriggered: false,
+    workingBundCount: 0,
+    firstWiltSeen: false,
+    grassSpreadingStarted: false,
+    bundRemovalPenalty: 0,
+    cinematicCam: null,
+    introAnimationState: null,
+    playerPath: [],
+  };
+}
+
+export function createChapter2InitialState(): GameState {
+  const tiles = generateChapter2Map();
+  return {
+    tiles,
+
+    playerTX: CHAPTER2_PLAYER_START_TX,
+    playerTY: CHAPTER2_PLAYER_START_TY,
+    playerPX: CHAPTER2_PLAYER_START_TX * TILE_SIZE,
+    playerPY: CHAPTER2_PLAYER_START_TY * TILE_SIZE,
+    playerDestTX: CHAPTER2_PLAYER_START_TX,
+    playerDestTY: CHAPTER2_PLAYER_START_TY,
+    playerFacing: 's',
+
+    entities: [],
+    fairies: [],
+    fairySpawnCooldown: 0,
+
+    mossTX: CHAPTER2_CLOVER_START_TX,
+    mossTY: CHAPTER2_CLOVER_START_TY,
+
+    isRaining: false,
+    rainTimer: 0,
+    rainDrops: [],
+    lastRestorationBeforeRain: 0,
+
+    tick: 0,
+    lastPhysicsTick: 0,
+    lastGrowthTick: 0,
+
+    questStep: 'intro',
+    inspectedCount: 0,
+    bundPlaced: false,
+    rainsCount: 0,
+
+    highlightTiles: CHAPTER2_INSPECT_HIGHLIGHTS,
 
     discoveredWildlife: [],
     discoveredFairies: [],
@@ -1549,6 +1609,149 @@ export const MOSS_LANDSCAPE_DIALOGUE: DialogueLine[] = [
 export function getQuestMossDialogue(step: QuestStep): DialogueLine[] {
   return MOSS_DIALOGUES[step] ?? [];
 }
+
+// ---------------------------------------------------------------------------
+// Chapter 2: Clover the Bee Dialogue
+// ---------------------------------------------------------------------------
+
+/** Clover opening scene dialogue */
+export const CLOVER_OPENING_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Ah! Good. You came.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'I was beginning to worry I had imagined footsteps.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Welcome to the meadow.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'It looks green, doesn\'t it?' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Very green. Very polite. Very… empty.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Listen.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'No buzzing.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'No wings.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'A meadow can be green and still be hungry.' },
+];
+
+/** Quest 1: Listen to the Quiet */
+export const CLOVER_LISTEN_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'You see it now, yes?' },
+  { speaker: 'Clover', emoji: '🐝', text: 'The meadow has leaves.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'But it has no table set for the small hungry ones.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Let\'s start with breakfast.' },
+];
+
+/** Quest 2: Breakfast Flowers (Early blooms) */
+export const CLOVER_EARLY_FLOWERS_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Early flowers are breakfast.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'When the first bees wake, they do not need a lecture.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'They need nectar.' },
+];
+
+export const CLOVER_EARLY_FLOWERS_SPROUT: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Oh!' },
+  { speaker: 'Clover', emoji: '🐝', text: 'That is small.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Small is acceptable.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Small is how everything begins.' },
+];
+
+export const CLOVER_EARLY_MATURE: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Look! Mason bees!' },
+  { speaker: 'Clover', emoji: '🐝', text: 'They do not make a fuss.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'They simply arrive, work hard, and pretend they were never worried.' },
+];
+
+/** Quest 3: Lunch Flowers (Mid-season blooms) */
+export const CLOVER_MID_FLOWERS_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Breakfast is kind.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'But a meadow cannot stop feeding everyone by noon.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'We need lunch flowers.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Something for the middle of the season, when wings are everywhere and everyone is terribly busy.' },
+];
+
+export const CLOVER_YARROW_BLOOM: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Yarrow is very popular.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Almost too popular.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'I respect it.' },
+];
+
+export const CLOVER_BEE_BALM_BLOOM: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Bee Balm!' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Dramatic. Bright. Absolutely impossible to ignore.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Hummingbirds love that sort of thing.' },
+];
+
+/** Quest 4: Supper Flowers (Late-season blooms) */
+export const CLOVER_LATE_FLOWERS_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Now comes the part people forget.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Late flowers.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'When the air cools and everyone thinks the work is done…' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Someone is still hungry.' },
+];
+
+export const CLOVER_GOLDENROD_BLOOM: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Goldenrod gets blamed for many things.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Mostly by people who do not understand ragweed.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Tragic.' },
+];
+
+export const CLOVER_ASTER_BLOOM: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Aster is a little star for tired wings.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Late-season flowers are kindness with petals.' },
+];
+
+/** Quest 5: Make Flower Clusters */
+export const CLOVER_CLUSTERS_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Pollinators are small.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'They should not have to cross a whole meadow for one sip.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Plant flowers close enough that a tired bee can make good choices.' },
+];
+
+export const CLOVER_FIRST_CLUSTER: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Yes! A little dining room.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Tiny. Fragrant. Excellent service.' },
+];
+
+export const CLOVER_ALL_CLUSTERS: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'The meadow is beginning to remember its schedule.' },
+];
+
+/** Quest 6: Hummingbird visit */
+export const CLOVER_HUMMINGBIRD_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Did you see that?' },
+  { speaker: 'Clover', emoji: '🐝', text: 'No, no, do not blink.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Hummingbirds are basically flying punctuation.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Tiny exclamation marks with wings.' },
+];
+
+/** Clover restoration milestones */
+export const CLOVER_MILESTONE_DIALOGUES: Record<number, DialogueLine> = {
+  10: { speaker: 'Clover', emoji: '🐝', text: 'It is still quiet.' },
+  10.1: { speaker: 'Clover', emoji: '🐝', text: 'But not empty quiet.' },
+  10.2: { speaker: 'Clover', emoji: '🐝', text: 'Waiting quiet.' },
+  25: { speaker: 'Clover', emoji: '🐝', text: 'The first flowers are keeping time.' },
+  40: { speaker: 'Clover', emoji: '🐝', text: 'I heard buzzing.' },
+  40.1: { speaker: 'Clover', emoji: '🐝', text: 'I am choosing to remain calm.' },
+  40.2: { speaker: 'Clover', emoji: '🐝', text: 'I am failing.' },
+  55: { speaker: 'Clover', emoji: '🐝', text: 'Different flowers. Different visitors.' },
+  55.1: { speaker: 'Clover', emoji: '🐝', text: 'That is how a meadow becomes generous.' },
+  70: { speaker: 'Clover', emoji: '🐝', text: 'The wings are returning.' },
+  70.1: { speaker: 'Clover', emoji: '🐝', text: 'Not all at once.' },
+  70.2: { speaker: 'Clover', emoji: '🐝', text: 'But enough to change the sound of the air.' },
+  85: { speaker: 'Clover', emoji: '🐝', text: 'This is no longer just grass.' },
+  85.1: { speaker: 'Clover', emoji: '🐝', text: 'This is invitation.' },
+  93: { speaker: 'Clover', emoji: '🐝', text: 'The meadow is helping itself now.' },
+  93.1: { speaker: 'Clover', emoji: '🐝', text: 'Seeds are falling. Wings are carrying news.' },
+};
+
+/** Clover completion dialogue */
+export const CLOVER_COMPLETION_DIALOGUE: DialogueLine[] = [
+  { speaker: 'Clover', emoji: '🐝', text: 'Listen.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Do you hear it?' },
+  { speaker: 'Clover', emoji: '🐝', text: 'That is not noise.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'That is the meadow answering.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'A meadow is not a carpet.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'It is a calendar.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Breakfast for the early wings.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Lunch for the busy ones.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'Supper for those who arrive late.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'You did not just plant flowers.' },
+  { speaker: 'Clover', emoji: '🐝', text: 'You gave time back to the meadow.' },
+];
 
 // ---------------------------------------------------------------------------
 // Main update tick

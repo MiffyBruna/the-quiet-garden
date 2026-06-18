@@ -18,11 +18,13 @@ import {
 } from './engine/types';
 import {
   createInitialGameState,
+  createChapter2InitialState,
   applyBund, applyMulch, applyPlantSeed, applyShovel, applyLandscape,
   triggerRain, updateGame,
   PLANT_REQUIREMENTS, calculateRestoration, getRainCooldown,
   getQuestObjective, getQuestMossDialogue,
   MOSS_COMPLETION_DIALOGUE, MOSS_LANDSCAPE_DIALOGUE, MOSS_FIRST_RESTORATION_DIALOGUE,
+  CLOVER_OPENING_DIALOGUE,
   getTile,
   serializeDiscoveries, deserializeDiscoveries,
   serializeGameState, deserializeGameState,
@@ -516,10 +518,12 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
 
   // Reset game state when chapter selection changes
   useEffect(() => {
-    if (selectedChapter && selectedChapter !== 'dryland') {
-      // TODO: Implement loading logic for other chapters (meadow, forest, wetland, coastal)
-      // For now, just show that chapter was selected
-      console.log('Chapter selected:', selectedChapter);
+    if (selectedChapter === 'meadow') {
+      // Load Chapter 2: The Meadow
+      gsRef.current = createChapter2InitialState();
+      setGameLoaded(false);
+      queueDialogue(CLOVER_OPENING_DIALOGUE);
+      track('custom_chapter_started', { chapter: 'meadow' });
     }
   }, [selectedChapter]);
 
