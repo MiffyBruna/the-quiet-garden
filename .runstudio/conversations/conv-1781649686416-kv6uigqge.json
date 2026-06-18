@@ -17952,11 +17952,24 @@
       "timestamp": 1781746517721,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "1781746520513-r5rrzoxri",
+      "role": "system",
+      "content": "Compacting project...",
+      "isShownToUser": true,
+      "timestamp": 1781746520513,
+      "type": "compaction",
+      "metadata": {
+        "compaction": {
+          "trigger": "auto"
+        }
+      }
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781746517766,
-  "tokenUsage": 151706,
+  "updatedAt": 1781746597957,
+  "tokenUsage": 0,
   "script": "ftue-remix",
   "claudeSessionId": "5f46bc18-cd62-42b1-ad7d-6639eb14e05e"
 }
