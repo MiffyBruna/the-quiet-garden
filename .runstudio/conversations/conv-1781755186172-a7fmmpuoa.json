@@ -608,11 +608,49 @@
       "timestamp": 1781766009509,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1781766131556",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "I AM WONDERING WHY THE IMAGES BREAK WHEN WE DEPLOY, ARE WE NOT ALLOWED TO USE PNGS OR IS IT BECAUSE THEY ARE NOT THE RIGHT SIZE",
+      "timestamp": 1781766131556,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781766139686-z45yu45dx",
+      "role": "assistant",
+      "content": "Let me check what the requirements are for images on the platform.",
+      "isShownToUser": true,
+      "timestamp": 1781766139722,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781766140045-uwt4n8phb",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781766140045,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781766144396-vhb3qurrl",
+      "role": "assistant",
+      "content": "PNGs are totally fine! The issue is likely **how** the images are being loaded. On RUN.game, there are two different ways to handle images depending on their size:\n\n**Small images (<100KB):** Go in the `public/` folder\n```tsx\n<img src=\"/my-image.png\" alt=\"...\" />\n```\n\n**Large images (>100KB):** Go in `public/cdn-assets/` and must use the SDK:\n```tsx\nimport RundotGameAPI from '@series-inc/rundot-game-sdk/api';\n\nconst imageBlob = RundotGameAPI.cdn.fetchAssets('my-image.png');\n<img src={imageBlob} alt=\"...\" />\n```\n\nTo help you fix this, I need to know:\n1. **Which images are breaking?** (Which files/scenes?)\n2. **How are you currently loading them?** (Direct path, import statement, etc.)\n\nI can then show you the correct way to load them!",
+      "isShownToUser": true,
+      "timestamp": 1781766146694,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1781766009550,
-  "tokenUsage": 7736,
+  "updatedAt": 1781766146814,
+  "tokenUsage": 8605,
   "script": "default",
   "claudeSessionId": "382a8845-65e1-42ff-b390-ada09aeed11f"
 }
