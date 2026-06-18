@@ -550,9 +550,11 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
           const saved = await RundotGameAPI.appStorage.getItem('quiet-garden-save');
           if (saved) {
             const deserialized = deserializeGameState(saved);
-            if (deserialized) {
+            // Only load the save if it's actually a Chapter 1 save
+            if (deserialized && deserialized.chapter === 'dryland') {
               gsRef.current = deserialized;
             }
+            // If it's a Chapter 2 save, just use the fresh Chapter 1 state we created above
           }
           const discoveries = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
           if (discoveries) {
