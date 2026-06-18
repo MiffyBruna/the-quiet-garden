@@ -539,6 +539,31 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
           setGameLoaded(true);
         }
       })();
+    } else {
+      // Return to Chapter 1: The Dryland
+      gsRef.current = createInitialGameState();
+      setGameLoaded(false);
+      track('custom_chapter_started', { chapter: 'dryland' });
+      // Load saved game state if continuing
+      (async () => {
+        try {
+          const saved = await RundotGameAPI.appStorage.getItem('quiet-garden-save');
+          if (saved) {
+            const deserialized = deserializeGameState(saved);
+            if (deserialized) {
+              gsRef.current = deserialized;
+            }
+          }
+          const discoveries = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
+          if (discoveries) {
+            deserializeDiscoveries(gsRef.current, discoveries);
+          }
+        } catch (e) {
+          console.warn('Failed to load game state:', e);
+        } finally {
+          setGameLoaded(true);
+        }
+      })();
     }
   }, [selectedChapter]);
 
