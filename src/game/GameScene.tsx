@@ -574,6 +574,56 @@ export function GameScene({ onShowWatershed, isContinue }: {
     setMusicVolumeState(settings.musicVolume);
   }, []);
 
+  // Sync UI state to loaded game state (especially quest progression)
+  useEffect(() => {
+    if (gameLoaded && isContinue) {
+      const gs = gsRef.current;
+      const questStep = gs.questStep;
+      const objective = getQuestObjective(questStep);
+
+      // Rebuild highlights and tools based on loaded quest step
+      const highlights: typeof gs.highlightTiles = [];
+      let unlockedTools: ToolType[] = ['move', 'talk', 'journal'];
+
+      switch (questStep) {
+        case 'inspect_soil':
+          highlights.push(...INSPECT_HIGHLIGHTS);
+          unlockedTools.push('inspect');
+          break;
+        case 'first_rain':
+          unlockedTools.push('rain');
+          break;
+        case 'dig_bund':
+          unlockedTools.push('bund', 'shovel');
+          break;
+        case 'second_rain':
+          unlockedTools.push('rain');
+          break;
+        case 'plant_seed': {
+          const bcx = gs.bundCenterTX;
+          const bcy = gs.bundCenterTY;
+          highlights.push({ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 });
+          unlockedTools.push('seed', 'mulch', 'shovel');
+          break;
+        }
+        case 'free_play':
+          unlockedTools = ['move', 'inspect', 'bund', 'mulch', 'seed', 'rain', 'talk', 'journal', 'shovel'];
+          break;
+      }
+
+      gs.highlightTiles = highlights;
+      setUI((prev) => ({
+        ...prev,
+        questStep,
+        questObjective: objective,
+        unlockedTools,
+        restoration: Math.round(calculateRestoration(gs)),
+        avgMoisture: Math.round(gs.tiles.flat().reduce((sum, t) => sum + t.moisture, 0) / (gs.tiles.flat().length || 1)),
+        wildlifeCount: gs.discoveredWildlife.length,
+      }));
+    }
+  }, [gameLoaded, isContinue]);
+
   // Typewriter effect — animate dialogue text unless fast mode is on
   useEffect(() => {
     if (typewriterRef.current) {
