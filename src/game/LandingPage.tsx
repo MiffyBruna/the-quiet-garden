@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { playMusic, loadAudioSettings, toggleMusic, setMusicVolume } from './services/audioManager';
+import { loadCdnAsset } from './services/assetLoader';
 
 interface LandingPageProps {
   onStart: (isContinue: boolean) => void;
@@ -24,14 +25,29 @@ export function LandingPage({ onStart }: LandingPageProps) {
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const [isMusicOn, setIsMusicOn] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(70);
+  const [landingBgUrl, setLandingBgUrl] = useState<string>('');
+  const [gameTitleUrl, setGameTitleUrl] = useState<string>('');
+  const [btnStartUrl, setBtnStartUrl] = useState<string>('');
 
   useEffect(() => {
     (async () => {
       try {
+        // Load save data
         const save = await RundotGameAPI.appStorage.getItem('quiet-garden-save');
         setSaveExists(!!save);
+
+        // Load assets from CDN
+        const [bgUrl, titleUrl, btnUrl] = await Promise.all([
+          loadCdnAsset('landing-bg.png'),
+          loadCdnAsset('game-title.png'),
+          loadCdnAsset('btn-start.png'),
+        ]);
+
+        setLandingBgUrl(bgUrl);
+        setGameTitleUrl(titleUrl);
+        setBtnStartUrl(btnUrl);
       } catch (e) {
-        console.warn('Failed to check for save:', e);
+        console.warn('Failed to load landing page resources:', e);
         setSaveExists(false);
       } finally {
         setLoading(false);
@@ -46,7 +62,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
     setMusicVolumeState(settings.musicVolume);
 
     if (settings.musicEnabled) {
-      playMusic('/cdn-assets/soundtrack.mp3', settings.musicVolume);
+      playMusic('soundtrack.mp3', settings.musicVolume);
       RundotGameAPI.analytics.recordCustomEvent('landing_music_started');
     }
 
@@ -120,7 +136,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       style={{
         width: '100vw',
         height: '100vh',
-        backgroundImage: 'url(/cdn-assets/landing-bg.png)',
+        backgroundImage: landingBgUrl ? `url(${landingBgUrl})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
@@ -218,11 +234,13 @@ export function LandingPage({ onStart }: LandingPageProps) {
         }}
       >
         {/* Title Image */}
-        <img
-          src="/cdn-assets/game-title.png"
-          alt="The Quiet Garden"
-          className="game-logo"
-        />
+        {gameTitleUrl && (
+          <img
+            src={gameTitleUrl}
+            alt="The Quiet Garden"
+            className="game-logo"
+          />
+        )}
 
         {/* Buttons Container */}
         <div
@@ -262,15 +280,17 @@ export function LandingPage({ onStart }: LandingPageProps) {
               e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-            <img
-              src="/cdn-assets/btn-start.png"
-              alt={saveExists ? 'New Game' : 'Start'}
-              style={{
-                width: '100%',
-                height: 'auto',
-                display: 'block',
-              }}
-            />
+            {btnStartUrl && (
+              <img
+                src={btnStartUrl}
+                alt={saveExists ? 'New Game' : 'Start'}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  display: 'block',
+                }}
+              />
+            )}
           </button>
 
           {/* Continue & Audio Settings Buttons */}

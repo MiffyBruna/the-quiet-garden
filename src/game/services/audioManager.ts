@@ -1,6 +1,7 @@
 /**
  * Audio Manager — handles game soundtrack and sound effects
  */
+import { loadCdnAsset } from './assetLoader';
 
 interface AudioSettings {
   musicVolume: number; // 0-100
@@ -67,12 +68,21 @@ export function playMusic(src: string, volume?: number): void {
     audioInstance = null;
   }
 
-  audioInstance = new Audio(src);
-  audioInstance.loop = true;
-  audioInstance.volume = (volume ?? currentSettings.musicVolume) / 100;
-  audioInstance.play().catch((e) => {
-    console.warn('Failed to play music:', e);
-  });
+  (async () => {
+    try {
+      // Load audio from CDN - handle both full paths and filenames
+      const filename = src.startsWith('/') ? src.replace('/cdn-assets/', '') : src;
+      const audioUrl = await loadCdnAsset(filename);
+      audioInstance = new Audio(audioUrl);
+      audioInstance.loop = true;
+      audioInstance.volume = (volume ?? currentSettings.musicVolume) / 100;
+      audioInstance.play().catch((e) => {
+        console.warn('Failed to play music:', e);
+      });
+    } catch (e) {
+      console.warn('Failed to load music:', e);
+    }
+  })();
 }
 
 /**
@@ -103,7 +113,7 @@ export function setMusicVolume(volume: number): void {
 export function toggleMusic(enabled: boolean): void {
   saveAudioSettings({ musicEnabled: enabled });
   if (enabled && audioInstance === null) {
-    playMusic('/cdn-assets/soundtrack.mp3');
+    playMusic('soundtrack.mp3');
   } else if (!enabled) {
     stopMusic();
   }

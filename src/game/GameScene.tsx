@@ -12,6 +12,7 @@ import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
 import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, loadAudioSettings } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
+import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import {
   TILE_SIZE, MAP_W, MAP_H,
   GameState, UIState, ToolType, PlantType, PlantState, DialogueLine, QuestStep, Tile,
@@ -106,9 +107,15 @@ const spriteCache: Record<string, HTMLImageElement> = {};
 function loadSprite(path: string): HTMLImageElement | null {
   if (spriteCache[path]) return spriteCache[path];
   const img = new Image();
-  img.src = path;
-  img.onerror = () => console.warn(`Failed to load sprite: ${path}`);
-  img.onload = () => console.log(`Loaded sprite: ${path}`);
+
+  // Load sprite from CDN assets using the SDK
+  const filename = path.replace('/sprites/', '');
+  loadCdnAsset(filename).then(blobUrl => {
+    img.src = blobUrl;
+  }).catch(e => {
+    console.warn(`Failed to load sprite: ${path}`, e);
+  });
+
   spriteCache[path] = img;
   return img;
 }
@@ -127,6 +134,13 @@ const playerSpriteWalk = {
   left: ["walk_left_1t.png", "walk_left_2t.png"],
   right: ["walk_right_1t.png", "walk_right_2t.png"]
 };
+
+// List of all sprite filenames for preloading
+const SPRITE_FILENAMES = [
+  ...Object.values(playerSpriteIdle),
+  ...Object.values(playerSpriteWalk).flat(),
+  'moss-portrait.png',
+];
 
 function getPlayerSprite(facing: string, isMoving: boolean, tick: number): HTMLImageElement | null {
   let spriteName = '';
@@ -512,7 +526,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const safeArea = getSafeArea();
   const [frogHeight, setFrogHeight] = useState<number>(280);
   const [gameLoaded, setGameLoaded] = useState(false);
-
+  const [mossPresentationUrl, setMossPresentationUrl] = useState<string>('');
 
   // Calculate frog height based on screen size
   useEffect(() => {
@@ -548,6 +562,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
         if (discoveries) {
           deserializeDiscoveries(gsRef.current, discoveries);
         }
+
+        // Load moss portrait
+        try {
+          const portraitUrl = await loadCdnAsset('moss-portrait.png');
+          setMossPresentationUrl(portraitUrl);
+        } catch (e) {
+          console.warn('Failed to load moss portrait:', e);
+        }
       } catch (e) {
         console.warn('Failed to load game state:', e);
       } finally {
@@ -557,8 +579,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
     // Ensure music is playing in the game
     if (isMusicEnabled()) {
-      playMusic('/cdn-assets/soundtrack.mp3');
+      playMusic('soundtrack.mp3');
     }
+
+    // Preload sprites and other assets in background
+    preloadCdnAssets(SPRITE_FILENAMES).catch((e) => {
+      console.warn('Failed to preload sprites:', e);
+    });
 
     // Preload sound effects in background
     preloadSFX().catch((e) => {
@@ -2189,9 +2216,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
       })()}
 
       {/* Moss portrait — smoothly scales with screen size */}
-      {ui.dialogue && frogHeight > 100 && (
+      {ui.dialogue && frogHeight > 100 && mossPresentationUrl && (
         <img
-          src="/moss-portrait.png"
+          src={mossPresentationUrl}
           alt=""
           style={{
             position: 'fixed',
