@@ -489,46 +489,10 @@ export function applyPlantSeed(
   if (tile.terrain === 'rock') return { planted: false, reason: 'Cannot plant on rock.' };
   if (tile.terrain === 'bund') return { planted: false, reason: 'Plant near the bund, not on it.' };
   if (tile.terrain === 'water') return { planted: false, reason: 'Cannot plant in open water.' };
+  if (tile.plant) return { planted: false, reason: 'Something is already growing here.' };
 
   const req = PLANT_REQUIREMENTS[plantType];
   if (!req) return { planted: false, reason: 'Unknown plant.' };
-
-  // If tile already has a plant, search for nearby available positions
-  if (tile.plant) {
-    // Search for available tiles within 2 tiles in any direction
-    for (let dy = -2; dy <= 2; dy++) {
-      for (let dx = -2; dx <= 2; dx++) {
-        if (dx === 0 && dy === 0) continue; // Skip the original tile
-
-        const nx = tx + dx;
-        const ny = ty + dy;
-
-        const nearbyTile = getTile(gs.tiles, nx, ny);
-        if (!nearbyTile) continue;
-        if (nearbyTile.terrain === 'rock' || nearbyTile.terrain === 'bund' || nearbyTile.terrain === 'water') continue;
-        if (nearbyTile.plant) continue; // Already occupied
-        if (nx === gs.mossTX && ny === gs.mossTY) continue; // Moss is there
-
-        // Check if this tile meets plant requirements
-        if (nearbyTile.moisture >= req.moisture && nearbyTile.fertility >= req.fertility) {
-          // Plant here instead
-          setTile(gs.tiles, nx, ny, {
-            plant: { type: plantType, stage: 0, age: 0, waterStress: 0, isWilted: false },
-            isModified: true,
-          });
-
-          if (!gs.discoveredPlants.includes(plantType)) {
-            gs.discoveredPlants.push(plantType);
-          }
-
-          return { planted: true, reason: '' };
-        }
-      }
-    }
-
-    // No nearby available positions found
-    return { planted: false, reason: 'That spot is taken. No empty spaces nearby for this plant.' };
-  }
 
   if (tile.moisture < req.moisture) {
     return {
@@ -552,6 +516,37 @@ export function applyPlantSeed(
     gs.discoveredPlants.push(plantType);
   }
   return { planted: true, reason: '' };
+}
+
+// Move Moss off a plant tile to a nearby empty tile
+export function moveMossOffPlant(gs: GameState): boolean {
+  const mossTile = getTile(gs.tiles, gs.mossTX, gs.mossTY);
+  if (!mossTile?.plant) return false; // Moss is not on a plant
+
+  // Search in expanding rings for an empty tile
+  for (let radius = 1; radius <= 3; radius++) {
+    for (let dy = -radius; dy <= radius; dy++) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        // Only check tiles on the current radius perimeter
+        if (Math.abs(dx) !== radius && Math.abs(dy) !== radius) continue;
+
+        const nx = gs.mossTX + dx;
+        const ny = gs.mossTY + dy;
+
+        const tile = getTile(gs.tiles, nx, ny);
+        if (!tile) continue;
+        if (tile.terrain === 'rock' || tile.terrain === 'water') continue;
+        if (tile.plant) continue;
+
+        // Move Moss here
+        gs.mossTX = nx;
+        gs.mossTY = ny;
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -1483,6 +1478,8 @@ export function updateGame(
     const restoration = calculateRestoration(gs);
     const firstWilt = growPlants(gs, restoration);
     if (firstWilt && onFirstWilt) onFirstWilt();
+    // If Moss ends up on a plant, move them to an empty tile
+    moveMossOffPlant(gs);
     // 92%+ tipping point: natural grass begins spreading
     if (restoration >= 92 && !gs.grassSpreadingStarted) {
       gs.grassSpreadingStarted = true;
@@ -1736,6 +1733,9 @@ export function deserializeGameState(json: string): GameState | null {
     }
     gs.mossTX = data.mossTX ?? gs.mossTX;
     gs.mossTY = data.mossTY ?? gs.mossTY;
+
+    // Ensure Moss isn't left on a plant tile
+    moveMossOffPlant(gs);
 
     return gs;
   } catch (e) {
