@@ -18,15 +18,12 @@ import {
 } from './engine/types';
 import {
   createInitialGameState,
-  createChapter2InitialState,
   applyBund, applyMulch, applyPlantSeed, applyShovel, applyLandscape,
   triggerRain, updateGame,
   PLANT_REQUIREMENTS, calculateRestoration, getRainCooldown,
-  getQuestObjective, getQuestMossDialogue, getCloverQuestDialogue,
+  getQuestObjective, getQuestMossDialogue,
   MOSS_COMPLETION_DIALOGUE, MOSS_LANDSCAPE_DIALOGUE, MOSS_FIRST_RESTORATION_DIALOGUE,
-  CLOVER_OPENING_DIALOGUE, CLOVER_COMPLETION_DIALOGUE,
   getTile,
-  checkChapter2QuestProgression, getFlowerClusters,
   serializeDiscoveries, deserializeDiscoveries,
   serializeGameState, deserializeGameState,
 } from './engine/gameEngine';
@@ -405,7 +402,7 @@ function renderFrame(
     ctx.fillText(entity.emoji, sx, sy);
   }
 
-  // --- Draw Moss (Chapter 1) or Clover (Chapter 2) ---
+  // --- Draw Moss ---
   {
     const sx = gs.mossTX * T - camX;
     const sy = gs.mossTY * T - camY;
@@ -413,16 +410,14 @@ function renderFrame(
     ctx.font = `${T - 2}px serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const character = gs.chapter === 'meadow' ? '🌿' : '🐸';
-    ctx.fillText(character, sx + T / 2, sy + T / 2 + bob);
+    ctx.fillText('🐸', sx + T / 2, sy + T / 2 + bob);
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
     ctx.fillRect(sx + T / 2 - 20, sy - 4, 40, 13);
     ctx.fillStyle = '#fff';
     ctx.font = '8px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const characterName = gs.chapter === 'meadow' ? 'Clover' : 'Moss';
-    ctx.fillText(characterName, sx + T / 2, sy + 2);
+    ctx.fillText('Moss', sx + T / 2, sy + 2);
 
     // Speech bubble above Moss when player is nearby
     if (showMossHint) {
@@ -503,10 +498,9 @@ const INITIAL_UI: UIState = {
   reshapeMode: 'move',
 };
 
-export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
+export function GameScene({ onShowWatershed, isContinue }: {
   onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[]) => void;
   isContinue: boolean;
-  selectedChapter?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gsRef = useRef<GameState>(createInitialGameState());
@@ -519,55 +513,6 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
   const [frogHeight, setFrogHeight] = useState<number>(280);
   const [gameLoaded, setGameLoaded] = useState(false);
 
-  // Reset game state when chapter selection changes
-  useEffect(() => {
-    if (selectedChapter === 'meadow') {
-      // Load Chapter 2: The Meadow
-      gsRef.current = createChapter2InitialState();
-      setGameLoaded(false);
-      track('custom_chapter_started', { chapter: 'meadow' });
-      // Immediately load discoveries and mark as ready
-      (async () => {
-        try {
-          const discoveries = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
-          if (discoveries) {
-            deserializeDiscoveries(gsRef.current, discoveries);
-          }
-        } catch (e) {
-          console.warn('Failed to load discoveries:', e);
-        } finally {
-          setGameLoaded(true);
-        }
-      })();
-    } else {
-      // Return to Chapter 1: The Dryland
-      gsRef.current = createInitialGameState();
-      setGameLoaded(false);
-      track('custom_chapter_started', { chapter: 'dryland' });
-      // Load saved game state if continuing
-      (async () => {
-        try {
-          const saved = await RundotGameAPI.appStorage.getItem('quiet-garden-save');
-          if (saved) {
-            const deserialized = deserializeGameState(saved);
-            // Only load the save if it's actually a Chapter 1 save
-            if (deserialized && deserialized.chapter === 'dryland') {
-              gsRef.current = deserialized;
-            }
-            // If it's a Chapter 2 save, just use the fresh Chapter 1 state we created above
-          }
-          const discoveries = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
-          if (discoveries) {
-            deserializeDiscoveries(gsRef.current, discoveries);
-          }
-        } catch (e) {
-          console.warn('Failed to load game state:', e);
-        } finally {
-          setGameLoaded(true);
-        }
-      })();
-    }
-  }, [selectedChapter]);
 
   // Calculate frog height based on screen size
   useEffect(() => {
@@ -921,9 +866,8 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
       };
     });
 
-    // Choose dialogue based on chapter
-    const isChapter2 = newStep.includes('flower') || newStep === 'listen_quiet';
-    const dialogues = isChapter2 ? getCloverQuestDialogue(newStep) : getQuestMossDialogue(newStep);
+    // Get quest dialogue
+    const dialogues = getQuestMossDialogue(newStep);
 
     if (newStep === 'free_play') {
       // Unlock restoration scoring now that the first bund has captured rain
@@ -1027,30 +971,14 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
     track('custom_restoration_complete');
     RundotGameAPI.analytics.recordCustomEvent('restoration_complete', { valley: gs.chapter });
 
-    // Choose waypoints and dialogue based on chapter
-    let waypoints: Array<{ px: number; py: number }>;
-    let completionDialogue: DialogueLine[];
-    let questObjective: string;
-
-    if (gs.chapter === 'meadow') {
-      // Chapter 2: Meadow completion — pan to notable meadow areas
-      waypoints = [
-        { px: 10 * TILE_SIZE, py: 12 * TILE_SIZE }, // west flower clusters
-        { px: 16 * TILE_SIZE, py: 12 * TILE_SIZE }, // center meadow
-        { px: 16 * TILE_SIZE, py: 18 * TILE_SIZE }, // east flower clusters
-      ];
-      completionDialogue = CLOVER_COMPLETION_DIALOGUE;
-      questObjective = 'The meadow breathes 🐝';
-    } else {
-      // Chapter 1: Valley completion — pan from bund → center map → seed area
-      waypoints = [
-        { px: 15 * TILE_SIZE, py: 15 * TILE_SIZE }, // bund area
-        { px: 16 * TILE_SIZE, py: 16 * TILE_SIZE }, // pond area
-        { px: 16 * TILE_SIZE, py: 18 * TILE_SIZE }, // seed / plant area
-      ];
-      completionDialogue = MOSS_COMPLETION_DIALOGUE;
-      questObjective = 'The valley remembers 🌿';
-    }
+    // Valley completion — pan from bund → center map → seed area
+    const waypoints: Array<{ px: number; py: number }> = [
+      { px: 15 * TILE_SIZE, py: 15 * TILE_SIZE }, // bund area
+      { px: 16 * TILE_SIZE, py: 16 * TILE_SIZE }, // pond area
+      { px: 16 * TILE_SIZE, py: 18 * TILE_SIZE }, // seed / plant area
+    ];
+    const completionDialogue = MOSS_COMPLETION_DIALOGUE;
+    const questObjective = 'The valley remembers 🌿';
 
     let wp = 0;
     gs.cinematicCam = waypoints[0] ?? null;
@@ -1075,10 +1003,7 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
             unlockedTools: [...prev.unlockedTools, 'landscape' as ToolType],
             questObjective,
           }));
-          // Only show landscape dialogue for Chapter 1 (Chapter 2 doesn't have it yet)
-          if (gs.chapter === 'dryland') {
-            queueDialogue(MOSS_LANDSCAPE_DIALOGUE);
-          }
+          queueDialogue(MOSS_LANDSCAPE_DIALOGUE);
           track('custom_landscape_tool_unlocked');
         }, totalDialogueMs);
       }
@@ -1467,24 +1392,13 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
       }
 
       if (tool === 'talk') {
-        // Show dialogue based on chapter
-        if (gs.chapter === 'meadow') {
-          // Chapter 2: Clover dialogue
-          const dialogues = getCloverQuestDialogue(gs.questStep);
-          queueDialogue(dialogues.length > 0 ? dialogues : [{
-            speaker: 'Clover', emoji: '🌿',
-            text: 'The meadow remembers when life thrived here.',
-          }]);
-          track('custom_clover_talked');
-        } else {
-          // Chapter 1: Moss dialogue
-          let dialogues = (ui.unlockedTools.includes('landscape') || gs.completionTriggered) ? MOSS_LANDSCAPE_DIALOGUE : getQuestMossDialogue(gs.questStep);
-          queueDialogue(dialogues.length > 0 ? dialogues : [{
-            speaker: 'Moss', emoji: '🐸',
-            text: 'The valley heals slowly, like memory. Each action reaches forward in time.',
-          }]);
-          track('custom_moss_talked');
-        }
+        // Moss dialogue
+        let dialogues = (ui.unlockedTools.includes('landscape') || gs.completionTriggered) ? MOSS_LANDSCAPE_DIALOGUE : getQuestMossDialogue(gs.questStep);
+        queueDialogue(dialogues.length > 0 ? dialogues : [{
+          speaker: 'Moss', emoji: '🐸',
+          text: 'The valley heals slowly, like memory. Each action reaches forward in time.',
+        }]);
+        track('custom_moss_talked');
         return;
       }
 
@@ -1695,13 +1609,7 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
 
     // Start intro dialogue only if actually at intro stage (not loading a saved game)
     if (gsRef.current.questStep === 'intro') {
-      // For Chapter 2 (Meadow), show Clover's opening dialogue
-      if (selectedChapter === 'meadow') {
-        queueDialogue(CLOVER_OPENING_DIALOGUE);
-      } else {
-        // Chapter 1 (Dryland) shows Moss's opening
-        queueDialogue(getQuestMossDialogue('intro'));
-      }
+      queueDialogue(getQuestMossDialogue('intro'));
     }
 
     const loop = (timestamp: number) => {
@@ -1906,24 +1814,6 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
             .filter(({ x, y }) => x > 0 && x < MAP_W - 1 && y > 0 && y < MAP_H - 1)
         : [];
 
-      // Chapter 2 quest progression: detect flower clusters and advance quests
-      if (currentUI.questStep.includes('flower') || currentUI.questStep === 'late_flowers') {
-        const clusters = getFlowerClusters(gs.tiles);
-        const validClusters = clusters.filter(c => c.isValid);
-        gs.chapter2ClustersFound = validClusters.length;
-      }
-
-      // Check for quest progression (Chapter 2)
-      const nextQuestStep = checkChapter2QuestProgression(gs);
-      if (nextQuestStep && nextQuestStep !== currentUI.questStep) {
-        advanceQuest(nextQuestStep);
-      }
-
-      // Chapter 2 intro: transition from intro to listen_quiet when dialogue finishes
-      if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && selectedChapter === 'meadow') {
-        // Clover's opening dialogue just finished — advance to listen_quiet
-        advanceQuest('listen_quiet');
-      }
 
       // Moss proximity hint
       const playerNearMoss =
@@ -2053,7 +1943,7 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
             THE QUIET GARDEN
           </div>
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 1, lineHeight: 1 }}>
-            {selectedChapter === 'meadow' ? 'Ch.2: The Meadow of Forgotten Wings' : 'Ch.1: The Valley That Forgot the Rain'}
+            The Valley That Forgot the Rain
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2, flexWrap: 'wrap' }}>
             <div
@@ -2602,33 +2492,23 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
                   track('custom_rain_called', { rains: gs.rainsCount });
                   RundotGameAPI.analytics.recordCustomEvent('rain_called', { rains: gs.rainsCount });
 
-                  if (gs.chapter === 'meadow') {
-                    // Chapter 2: Show Clover's rain message
+                  // Show Moss's rain messages
+                  if (gs.questStep === 'first_rain') {
+                    setTimeout(() => {
+                      queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'The rain came. But the valley could not hold it.' }]);
+                      advanceQuest('dig_bund');
+                    }, 6000);
+                  } else if (gs.questStep === 'second_rain') {
+                    setTimeout(() => {
+                      queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'Do not chase the rain. Invite it to stay.' }]);
+                      advanceQuest('plant_seed');
+                    }, 6000);
+                  } else {
                     const restorationVal = calculateRestoration(gs);
                     if (restorationVal > 0) {
                       setTimeout(() => {
-                        queueDialogue([{ speaker: 'Clover', emoji: '🌿', text: `The rain falls. The meadow drinks deeply. ${restorationVal}% restored.` }]);
+                        queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: `Moisture rises. The valley remembers a little more. ${restorationVal}% restored.` }]);
                       }, 4000);
-                    }
-                  } else {
-                    // Chapter 1: Show Moss's rain messages
-                    if (gs.questStep === 'first_rain') {
-                      setTimeout(() => {
-                        queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'The rain came. But the valley could not hold it.' }]);
-                        advanceQuest('dig_bund');
-                      }, 6000);
-                    } else if (gs.questStep === 'second_rain') {
-                      setTimeout(() => {
-                        queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: 'Do not chase the rain. Invite it to stay.' }]);
-                        advanceQuest('plant_seed');
-                      }, 6000);
-                    } else {
-                      const restorationVal = calculateRestoration(gs);
-                      if (restorationVal > 0) {
-                        setTimeout(() => {
-                          queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: `Moisture rises. The valley remembers a little more. ${restorationVal}% restored.` }]);
-                        }, 4000);
-                      }
                     }
                   }
                   return;
@@ -2636,31 +2516,21 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
 
                 if (def.id === 'talk') {
                   const gs = gsRef.current;
-                  if (gs.chapter === 'meadow') {
-                    // Chapter 2: Clover dialogue
-                    const dialogues = getCloverQuestDialogue(gs.questStep);
-                    queueDialogue(dialogues.length > 0 ? dialogues : [{
-                      speaker: 'Clover', emoji: '🌿',
-                      text: 'The meadow remembers when life thrived here.',
-                    }]);
-                    track('custom_clover_talked');
+                  // Moss dialogue
+                  if (gs.questStep === 'intro') {
+                    advanceQuest('inspect_soil');
+                    queueDialogue([
+                      ...getQuestMossDialogue('intro'),
+                      ...getQuestMossDialogue('inspect_soil'),
+                    ]);
                   } else {
-                    // Chapter 1: Moss dialogue
-                    if (gs.questStep === 'intro') {
-                      advanceQuest('inspect_soil');
-                      queueDialogue([
-                        ...getQuestMossDialogue('intro'),
-                        ...getQuestMossDialogue('inspect_soil'),
-                      ]);
-                    } else {
-                      const dialogues = getQuestMossDialogue(gs.questStep);
-                      queueDialogue(dialogues.length > 0 ? dialogues : [{
-                        speaker: 'Moss', emoji: '🐸',
-                        text: 'The valley heals slowly, like memory. Each action reaches forward in time.',
-                      }]);
-                    }
-                    track('custom_moss_talked');
+                    const dialogues = getQuestMossDialogue(gs.questStep);
+                    queueDialogue(dialogues.length > 0 ? dialogues : [{
+                      speaker: 'Moss', emoji: '🐸',
+                      text: 'The valley heals slowly, like memory. Each action reaches forward in time.',
+                    }]);
                   }
+                  track('custom_moss_talked');
                   return;
                 }
 
@@ -2745,7 +2615,7 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
             >
               <span style={{ fontSize: 18, lineHeight: '1' }}>{def.emoji}</span>
               <span style={{ fontSize: 7, color: active ? '#7CCA7C' : 'rgba(240,255,240,0.6)', textAlign: 'center', lineHeight: '1' }}>
-                {def.id === 'talk' ? (gsRef.current.chapter === 'meadow' ? 'Clover' : 'Moss') : def.label}
+                {def.label}
               </span>
             </button>
           );

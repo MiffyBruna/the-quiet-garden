@@ -8,7 +8,7 @@ import { theme } from '../theme';
 import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS } from './engine/gameEngine';
 import type { PlantType } from './engine/types';
 
-type CatalogTab = 'chapters' | 'plants' | 'wildlife' | 'fairies';
+type CatalogTab = 'plants' | 'wildlife' | 'fairies';
 
 // Hide scrollbar while keeping scroll functionality
 const scrollbarHiddenStyles = `
@@ -21,81 +21,6 @@ const scrollbarHiddenStyles = `
   }
 `;
 
-interface ChapterInfo {
-  id: string;
-  name: string;
-  emoji: string;
-  restoration: number;
-  locked: boolean;
-  unlockAt: string;
-  gradientFrom: string;
-  gradientTo: string;
-  guideEmoji: string;
-  guideName: string;
-}
-
-const CHAPTERS: ChapterInfo[] = [
-  {
-    id: 'dryland',
-    name: 'The Valley That Forgot the Rain',
-    emoji: '🏜️',
-    restoration: -1, // filled in from props
-    locked: false,
-    unlockAt: '',
-    gradientFrom: '#C4935A',
-    gradientTo: '#A07040',
-    guideEmoji: '🐸',
-    guideName: 'Moss',
-  },
-  {
-    id: 'meadow',
-    name: 'The Meadow of Forgotten Wings',
-    emoji: '🌸',
-    restoration: 0,
-    locked: true,
-    unlockAt: 'Restore Ch.1 to 80%',
-    gradientFrom: '#7B9E4A',
-    gradientTo: '#5A7A30',
-    guideEmoji: '🐝',
-    guideName: 'Clover',
-  },
-  {
-    id: 'forest',
-    name: 'The Forest That Feeds Itself',
-    emoji: '🌳',
-    restoration: 0,
-    locked: true,
-    unlockAt: 'Restore Ch.2 to 80%',
-    gradientFrom: '#3A6B3A',
-    gradientTo: '#2A5A2A',
-    guideEmoji: '🦊',
-    guideName: 'Rowan',
-  },
-  {
-    id: 'wetland',
-    name: 'The Wetland That Remembers',
-    emoji: '🦆',
-    restoration: 0,
-    locked: true,
-    unlockAt: 'Restore Ch.3 to 80%',
-    gradientFrom: '#4A7A8A',
-    gradientTo: '#2A5A6A',
-    guideEmoji: '🦦',
-    guideName: 'Ripple',
-  },
-  {
-    id: 'coastal',
-    name: 'The Coastal Dunes',
-    emoji: '🐚',
-    restoration: 0,
-    locked: true,
-    unlockAt: 'Restore Ch.4 to 80%',
-    gradientFrom: '#C4A040',
-    gradientTo: '#A08020',
-    guideEmoji: '🐦',
-    guideName: 'Sable',
-  },
-];
 
 interface WatershedProgressProps {
   chapter1Restoration: number;
@@ -103,7 +28,6 @@ interface WatershedProgressProps {
   discoveredFairies: string[];
   discoveredPlants: string[];
   onClose: () => void;
-  onSelectChapter?: (chapterId: string) => void;
 }
 
 export function WatershedProgress({
@@ -112,25 +36,9 @@ export function WatershedProgress({
   discoveredFairies,
   discoveredPlants,
   onClose,
-  onSelectChapter,
 }: WatershedProgressProps) {
   const c = theme.colors;
-  const [activeTab, setActiveTab] = useState<CatalogTab>('chapters');
-
-  const chapters = CHAPTERS.map((ch) => {
-    if (ch.id === 'dryland') {
-      return { ...ch, restoration: chapter1Restoration };
-    }
-    // Unlock Chapter 2 when Chapter 1 reaches 80%+
-    if (ch.id === 'meadow') {
-      return { ...ch, locked: chapter1Restoration < 80 };
-    }
-    // Future chapters locked for now
-    return ch;
-  });
-
-  const overallRestoration = Math.round(chapter1Restoration / 5);
-  const sanctuaryUnlocked = chapter1Restoration >= 100;
+  const [activeTab, setActiveTab] = useState<CatalogTab>('plants');
 
   return (
     <div
@@ -159,14 +67,14 @@ export function WatershedProgress({
       >
         <span style={{ fontSize: 24 }}>🌿</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: theme.fontSize.md }}>Watershed Progress</div>
+          <div style={{ fontWeight: 700, fontSize: theme.fontSize.md }}>The Valley That Forgot the Rain</div>
           <div style={{ fontSize: theme.fontSize.xs, opacity: 0.7 }}>
-            Five chapters · One living world
+            Restoration Progress
           </div>
         </div>
         <div style={{ textAlign: 'right', marginRight: 8 }}>
-          <div style={{ fontSize: theme.fontSize.lg, fontWeight: 700 }}>{overallRestoration}%</div>
-          <div style={{ fontSize: 10, opacity: 0.65 }}>overall</div>
+          <div style={{ fontSize: theme.fontSize.lg, fontWeight: 700 }}>{chapter1Restoration}%</div>
+          <div style={{ fontSize: 10, opacity: 0.65 }}>restored</div>
         </div>
         <button
           onClick={onClose}
@@ -195,7 +103,6 @@ export function WatershedProgress({
         }}
       >
         {[
-          { id: 'chapters' as CatalogTab, emoji: '📖', label: 'Chapters', count: 1, total: 5 },
           { id: 'plants' as CatalogTab, emoji: '🌱', label: 'Plants', count: discoveredPlants.length, total: 5 },
           { id: 'wildlife' as CatalogTab, emoji: '🐾', label: 'Wildlife', count: discoveredWildlife.length, total: 10 },
           { id: 'fairies' as CatalogTab, emoji: '✨', label: 'Fairies', count: discoveredFairies.length, total: 5 },
@@ -235,53 +142,6 @@ export function WatershedProgress({
           minHeight: 0,
         }}
       >
-        {/* Chapters tab */}
-        {activeTab === 'chapters' && (
-          <>
-            {/* Chapters Grid */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr',
-                gap: theme.spacing.sm,
-              }}
-            >
-              {chapters.map((ch) => (
-                <ChapterCard key={ch.id} chapter={ch} onSelect={onSelectChapter} />
-              ))}
-            </div>
-
-            {/* Wisdom Garden (compact, separate from scrollable area) */}
-            <div
-              style={{
-                borderRadius: theme.borderRadius.lg,
-                border: sanctuaryUnlocked
-                  ? `1px solid rgba(124, 202, 124, 0.5)`
-                  : `1px dashed ${c.border}`,
-                background: sanctuaryUnlocked
-                  ? 'linear-gradient(160deg, #1a3a1a, #2E5E2E)'
-                  : 'transparent',
-                padding: theme.spacing.sm,
-                textAlign: 'center',
-                color: sanctuaryUnlocked ? '#F0FFF0' : c.text.muted,
-                marginTop: 'auto',
-              }}
-            >
-              <div style={{ fontSize: 24, marginBottom: 4 }}>🌺</div>
-              <div style={{ fontSize: theme.fontSize.sm, fontWeight: 700 }}>Wisdom Garden</div>
-              {sanctuaryUnlocked ? (
-                <div style={{ fontSize: 10, opacity: 0.85, marginTop: 4, fontStyle: 'italic' }}>
-                  &ldquo;Nothing thrives alone.&rdquo;
-                </div>
-              ) : (
-                <div style={{ fontSize: 10, marginTop: 4, opacity: 0.65 }}>
-                  Complete Ch.1 to unlock.
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
         {/* Catalog View (switches based on active tab) */}
         {activeTab === 'wildlife' && discoveredWildlife.length > 0 && (
           <div
@@ -431,90 +291,5 @@ export function WatershedProgress({
   );
 }
 
-function ChapterCard({ chapter, onSelect }: { chapter: ChapterInfo; onSelect?: (chapterId: string) => void }) {
-  const c = theme.colors;
-  const { locked, restoration, name, emoji, guideEmoji, guideName, gradientFrom, gradientTo, unlockAt, id } = chapter;
-
-  return (
-    <div
-      onClick={() => !locked && onSelect?.(id)}
-      style={{
-        borderRadius: theme.borderRadius.lg,
-        overflow: 'hidden',
-        border: `1px solid ${c.border}`,
-        opacity: locked ? 0.65 : 1,
-        cursor: locked ? 'default' : 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        transform: !locked ? 'scale(1)' : 'scale(1)',
-      }}
-      onMouseEnter={(e) => {
-        if (!locked) {
-          (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.02)';
-          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!locked) {
-          (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
-          (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-        }
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
-          color: '#F0FFF0',
-          padding: `${theme.spacing.sm}px ${theme.spacing.md}px`,
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 10,
-        }}
-      >
-        <span style={{ fontSize: 28, minWidth: 32, flexShrink: 0 }}>{emoji}</span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 700, fontSize: theme.fontSize.sm, lineHeight: 1.3 }}>{name}</div>
-          <div style={{ fontSize: 10, opacity: 0.75, marginTop: 2 }}>
-            {guideEmoji} {guideName}
-          </div>
-        </div>
-        <div style={{ textAlign: 'right', minWidth: 45, flexShrink: 0 }}>
-          <div style={{ fontWeight: 700, fontSize: theme.fontSize.md }}>
-            {locked ? '🔒' : `${restoration}%`}
-          </div>
-          <div style={{ fontSize: 9, opacity: 0.75 }}>{locked ? 'Locked' : 'restored'}</div>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      {!locked && (
-        <div style={{ height: 5, background: 'rgba(0,0,0,0.1)' }}>
-          <div
-            style={{
-              height: '100%',
-              width: `${Math.max(0, restoration)}%`,
-              background: '#7CCA7C',
-              transition: 'width 0.5s ease',
-            }}
-          />
-        </div>
-      )}
-
-      {/* Unlock hint */}
-      {locked && (
-        <div
-          style={{
-            padding: `6px ${theme.spacing.md}px`,
-            background: c.surface,
-            fontSize: 11,
-            color: c.text.muted,
-          }}
-        >
-          {unlockAt}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default WatershedProgress;
