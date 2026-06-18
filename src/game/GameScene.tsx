@@ -1580,7 +1580,7 @@ export function GameScene({ onShowWatershed }: {
           zIndex: 20,
           display: 'flex',
           alignItems: 'center',
-          padding: '0 12px',
+          padding: '8px 12px 0',
           gap: 10,
         }}
       >
@@ -1730,7 +1730,9 @@ export function GameScene({ onShowWatershed }: {
                 borderRadius: 12,
                 padding: 14,
                 paddingRight: 14,
-                minHeight: 120,
+                height: 160,
+                display: 'flex',
+                flexDirection: 'column',
               }}
               onClick={handleDialogueInput}
             >
@@ -1783,7 +1785,7 @@ export function GameScene({ onShowWatershed }: {
           alt=""
           style={{
             position: 'fixed',
-            bottom: 120 + Math.max(0, 150 - frogHeight),
+            bottom: 160 + Math.max(0, 140 - frogHeight),
             right: 8,
             height: frogHeight,
             width: 'auto',
