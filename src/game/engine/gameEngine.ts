@@ -391,6 +391,7 @@ export function applyLandscape(
   gs: GameState,
   tx: number, ty: number,
   heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null,
+  mode: 'move' | 'convert' = 'move',
 ): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null } {
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return { action: 'none', entity: null };
@@ -477,6 +478,15 @@ export function applyLandscape(
   if (tile.terrain === 'grass') {
     setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
     return { action: 'picked', entity: { type: 'grass', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'grass' } };
+  }
+
+  // Convert mode: turn terrain into soil
+  if (mode === 'convert' && !heldEntity) {
+    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil'];
+    if (convertibleTerrains.includes(tile.terrain)) {
+      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+      return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
+    }
   }
 
   return { action: 'none', entity: null };

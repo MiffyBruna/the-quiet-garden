@@ -494,6 +494,8 @@ const INITIAL_UI: UIState = {
   bundMode: null,
   bundTargetTiles: [],
   showSeedPanel: true,
+  showReshapeMenu: false,
+  reshapeMode: 'move',
 };
 
 export function GameScene({ onShowWatershed, isContinue }: {
@@ -1285,14 +1287,18 @@ export function GameScene({ onShowWatershed, isContinue }: {
       }
 
       if (tool === 'landscape') {
-        const result = applyLandscape(gs, tx, ty, currentUI.heldEntity);
+        const result = applyLandscape(gs, tx, ty, currentUI.heldEntity, currentUI.reshapeMode);
         if (result.action === 'picked') {
           setUI((p) => ({ ...p, heldEntity: result.entity }));
           track('custom_landscape_picked');
         } else if (result.action === 'placed') {
           setUI((p) => ({ ...p, heldEntity: null }));
-          track('custom_landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
-          RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
+          if (currentUI.reshapeMode === 'convert') {
+            track('custom_landscape_converted', { tx, ty });
+          } else {
+            track('custom_landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
+            RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
+          }
         }
         return;
       }
@@ -2292,6 +2298,76 @@ export function GameScene({ onShowWatershed, isContinue }: {
         </div>
       )}
 
+      {/* ── Reshape Tool Menu ─────────────────────────────────────────────── */}
+      {ui.activeTool === 'landscape' && ui.showReshapeMenu && !ui.dialogue && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: TOOLBAR_H + safeArea.bottom + 8,
+            left: 8,
+            right: 8,
+            background: 'rgba(20,35,20,0.94)',
+            borderRadius: 12,
+            border: '1px solid rgba(124,202,124,0.3)',
+            padding: 10,
+            zIndex: 35,
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700 }}>Reshape Tool</div>
+            <button
+              onClick={() => setUI((prev) => ({ ...prev, showReshapeMenu: false }))}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#7CCA7C',
+                fontSize: 16,
+                cursor: 'pointer',
+                padding: '0 2px',
+                lineHeight: 1,
+              }}
+              title="Close menu"
+            >
+              ✕
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {[
+              { mode: 'move', emoji: '↔️', label: 'Move', desc: 'Swap tiles' },
+              { mode: 'convert', emoji: '🌱', label: 'Soil', desc: 'Turn to soil' },
+            ].map((opt: any) => {
+              const selected = ui.reshapeMode === opt.mode;
+              return (
+                <button
+                  key={opt.mode}
+                  onClick={() => {
+                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'convert' }));
+                  }}
+                  style={{
+                    flex: 1,
+                    background: selected ? '#2E6B2E' : 'rgba(255,255,255,0.07)',
+                    border: `1px solid ${selected ? '#7CCA7C' : 'rgba(255,255,255,0.15)'}`,
+                    borderRadius: 8,
+                    padding: '6px 8px',
+                    color: '#F0FFF0',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 2,
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>{opt.emoji}</span>
+                  <span style={{ fontWeight: 600 }}>{opt.label}</span>
+                  <span style={{ fontSize: 8, opacity: 0.6 }}>{opt.desc}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Landscape held-entity indicator ───────────────────────────────── */}
       {ui.activeTool === 'landscape' && ui.heldEntity && !ui.dialogue && (
         <div
@@ -2466,6 +2542,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   inspectedTile: null,
                   // When switching to seed tool, show the seed panel
                   ...(def.id === 'seed' && { showSeedPanel: true }),
+                  // When switching to landscape tool, show the reshape menu
+                  ...(def.id === 'landscape' && { showReshapeMenu: true }),
                 }));
                 track('custom_tool_selected', { tool: def.id });
                 RundotGameAPI.analytics.recordCustomEvent('tool_selected', { tool: def.id });

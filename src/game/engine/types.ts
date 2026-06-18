@@ -223,4 +223,8 @@ export interface UIState {
 
   // Seed selector panel visibility (independent from activeTool)
   showSeedPanel: boolean; // can close panel while keeping seed tool active
+
+  // Reshape tool menu
+  showReshapeMenu: boolean; // reshape tool mode selector
+  reshapeMode: 'move' | 'convert'; // move = swap tiles, convert = turn to soil
 }
