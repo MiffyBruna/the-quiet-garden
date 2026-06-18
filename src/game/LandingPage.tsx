@@ -175,15 +175,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
           box-shadow: 0 0 4px #FFD700;
         }
         .game-logo {
-          max-width: 450px;
+          max-width: clamp(300px, 90vw, 600px);
           height: auto;
           filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
           margin-bottom: 10px;
-        }
-        @media (min-width: 768px) {
-          .game-logo {
-            max-width: 600px;
-          }
         }
       `}</style>
 
@@ -359,7 +354,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              🔊 Audio
+              Audio
             </button>
           </div>
         </div>
