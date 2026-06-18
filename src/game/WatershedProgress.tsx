@@ -10,6 +10,17 @@ import type { PlantType } from './engine/types';
 
 type CatalogTab = 'chapters' | 'plants' | 'wildlife' | 'fairies';
 
+// Hide scrollbar while keeping scroll functionality
+const scrollbarHiddenStyles = `
+  .content-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .content-scroll::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
 interface ChapterInfo {
   id: string;
   name: string;
@@ -123,6 +134,7 @@ export function WatershedProgress({
         overflowY: 'auto',
       }}
     >
+      <style>{scrollbarHiddenStyles}</style>
       {/* Header */}
       <div
         style={{
@@ -201,6 +213,7 @@ export function WatershedProgress({
 
       {/* Content area */}
       <div
+        className="content-scroll"
         style={{
           flex: 1,
           padding: theme.spacing.md,
