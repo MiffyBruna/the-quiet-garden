@@ -217,7 +217,7 @@ export function WatershedProgress({
               <ChapterCard key={ch.id} chapter={ch} />
             ))}
 
-            {/* Sanctuary (only in chapters tab) */}
+            {/* Wisdom Garden (compact) */}
             <div
               style={{
                 borderRadius: theme.borderRadius.lg,
@@ -227,25 +227,23 @@ export function WatershedProgress({
                 background: sanctuaryUnlocked
                   ? 'linear-gradient(160deg, #1a3a1a, #2E5E2E)'
                   : 'transparent',
-                padding: theme.spacing.lg,
+                padding: theme.spacing.sm,
                 textAlign: 'center',
                 color: sanctuaryUnlocked ? '#F0FFF0' : c.text.muted,
               }}
             >
-              <div style={{ fontSize: 36, marginBottom: 6 }}>🌺</div>
-              <div style={{ fontSize: theme.fontSize.md, fontWeight: 700 }}>The Sanctuary Garden</div>
+              <div style={{ fontSize: 24, marginBottom: 4 }}>🌺</div>
+              <div style={{ fontSize: theme.fontSize.sm, fontWeight: 700 }}>Wisdom Garden</div>
               {sanctuaryUnlocked ? (
-                <div style={{ fontSize: theme.fontSize.sm, opacity: 0.85, marginTop: 6, fontStyle: 'italic' }}>
+                <div style={{ fontSize: 10, opacity: 0.85, marginTop: 4, fontStyle: 'italic' }}>
                   &ldquo;Nothing thrives alone.&rdquo;
                 </div>
               ) : (
-                <div style={{ fontSize: theme.fontSize.sm, marginTop: 6, opacity: 0.65 }}>
-                  Complete Ch.1 to begin unlocking the sanctuary.
+                <div style={{ fontSize: 10, marginTop: 4, opacity: 0.65 }}>
+                  Complete Ch.1 to unlock.
                 </div>
               )}
             </div>
-
-            <div style={{ height: theme.spacing.xl }} />
           </>
         )}
 
