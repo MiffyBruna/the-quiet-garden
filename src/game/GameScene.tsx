@@ -1884,6 +1884,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
         }
         @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
         .dialogue-cursor { animation: blink 0.65s step-end infinite; }
+        /* Hide scrollbar but keep scrolling */
+        .toolbar-scroll {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+        .toolbar-scroll::-webkit-scrollbar {
+          display: none;  /* Chrome, Safari and Opera */
+        }
       `}</style>
 
       {/* ── Top HUD ──────────────────────────────────────────────────────── */}
@@ -2320,7 +2328,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700 }}>Reshape Tool</div>
             <button
-              onClick={() => setUI((prev) => ({ ...prev, showReshapeMenu: false }))}
+              onClick={() => {
+                track('custom_reshape_menu_closed');
+                setUI((prev) => ({ ...prev, showReshapeMenu: false }));
+              }}
               style={{
                 background: 'none',
                 border: 'none',
@@ -2347,6 +2358,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 <button
                   key={opt.mode}
                   onClick={() => {
+                    track('custom_reshape_mode_selected', { mode: opt.mode });
                     setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' }));
                   }}
                   style={{
@@ -2412,6 +2424,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
       {/* ── Tool Belt — hidden while any dialogue is on screen ──────────── */}
       {!ui.dialogue && (
       <div
+        className="toolbar-scroll"
         style={{
           position: 'absolute',
           bottom: safeArea.bottom,
