@@ -20,6 +20,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
   const [saveExists, setSaveExists] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const [isMusicOn, setIsMusicOn] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(70);
@@ -277,10 +278,57 @@ export function LandingPage({ onStart }: LandingPageProps) {
             />
           </button>
 
-          {/* Continue Button (text-based, only if save exists) */}
-          {saveExists && (
+          {/* Continue & Audio Settings Buttons */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 'clamp(8px, 2vw, 12px)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              flexWrap: 'wrap',
+            }}
+          >
+            {saveExists && (
+              <button
+                onClick={handleContinue}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '8px 20px',
+                  fontSize: 'clamp(11px, 3vw, 13px)',
+                  fontWeight: 'bold',
+                  color: '#D4AF37',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.textShadow = '0 0 8px rgba(255, 215, 0, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.textShadow = 'none';
+                }}
+                onTouchStart={(e) => {
+                  e.currentTarget.style.transform = 'scale(0.98)';
+                }}
+                onTouchEnd={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                Continue
+              </button>
+            )}
+
+            {/* Audio Settings Button */}
             <button
-              onClick={handleContinue}
+              onClick={() => {
+                setShowAudioSettings(true);
+                RundotGameAPI.analytics.recordCustomEvent('landing_audio_settings_opened');
+              }}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -292,14 +340,17 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
+                opacity: 0.75,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05)';
                 e.currentTarget.style.textShadow = '0 0 8px rgba(255, 215, 0, 0.5)';
+                e.currentTarget.style.opacity = '1';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'scale(1)';
                 e.currentTarget.style.textShadow = 'none';
+                e.currentTarget.style.opacity = '0.75';
               }}
               onTouchStart={(e) => {
                 e.currentTarget.style.transform = 'scale(0.98)';
@@ -308,78 +359,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              Continue
+              🔊 Audio
             </button>
-          )}
+          </div>
         </div>
-      </div>
-
-      {/* Audio Controls */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          zIndex: 50,
-          display: 'flex',
-          gap: '12px',
-          alignItems: 'center',
-          background: 'rgba(0, 0, 0, 0.3)',
-          padding: '8px 12px',
-          borderRadius: '4px',
-          backdropFilter: 'blur(2px)',
-        }}
-      >
-        {/* Music Toggle Button */}
-        <button
-          onClick={() => {
-            toggleMusic(!isMusicOn);
-            setIsMusicOn(!isMusicOn);
-            RundotGameAPI.analytics.recordCustomEvent('landing_music_toggled', {
-              enabled: String(!isMusicOn),
-            });
-          }}
-          style={{
-            background: 'transparent',
-            border: '1px solid #D4AF37',
-            color: '#D4AF37',
-            padding: '6px 12px',
-            borderRadius: '3px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-          }}
-        >
-          {isMusicOn ? '🔊' : '🔇'}
-        </button>
-
-        {/* Volume Slider */}
-        {isMusicOn && (
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={musicVolume}
-            onChange={(e) => {
-              const newVolume = parseInt(e.target.value);
-              setMusicVolumeState(newVolume);
-              setMusicVolume(newVolume);
-            }}
-            style={{
-              width: '80px',
-              cursor: 'pointer',
-              accentColor: '#D4AF37',
-            }}
-            title="Music Volume"
-          />
-        )}
       </div>
 
       {/* New Game Confirmation Dialog */}
@@ -495,6 +478,167 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 New Game
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Audio Settings Modal */}
+      {showAudioSettings && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100,
+            padding: '20px',
+          }}
+          onClick={() => setShowAudioSettings(false)}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #2C1810 0%, #3A2817 100%)',
+              border: '4px solid #D4AF37',
+              borderRadius: '8px',
+              padding: '30px',
+              maxWidth: '90vw',
+              width: '320px',
+              textAlign: 'center',
+              color: '#fff',
+              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.5)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              style={{
+                fontSize: '24px',
+                margin: '0 0 25px 0',
+                color: '#D4AF37',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              🔊 Audio Settings
+            </h2>
+
+            {/* Music Toggle */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '20px',
+                padding: '12px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '6px',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  color: '#D4AF37',
+                }}
+              >
+                Music
+              </span>
+              <button
+                onClick={() => {
+                  toggleMusic(!isMusicOn);
+                  setIsMusicOn(!isMusicOn);
+                  RundotGameAPI.analytics.recordCustomEvent('audio_settings_music_toggled', {
+                    enabled: String(!isMusicOn),
+                  });
+                }}
+                style={{
+                  background: isMusicOn ? '#D4AF37' : '#8B7355',
+                  border: 'none',
+                  color: '#2C1810',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                {isMusicOn ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            {/* Volume Slider */}
+            {isMusicOn && (
+              <div
+                style={{
+                  marginBottom: '20px',
+                  padding: '12px',
+                  background: 'rgba(0, 0, 0, 0.2)',
+                  borderRadius: '6px',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#D4AF37',
+                    marginBottom: '10px',
+                  }}
+                >
+                  Volume: {musicVolume}%
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={musicVolume}
+                  onChange={(e) => {
+                    const newVolume = parseInt(e.target.value);
+                    setMusicVolumeState(newVolume);
+                    setMusicVolume(newVolume);
+                  }}
+                  style={{
+                    width: '100%',
+                    cursor: 'pointer',
+                    accentColor: '#D4AF37',
+                  }}
+                  title="Music Volume"
+                />
+              </div>
+            )}
+
+            {/* Close Button */}
+            <button
+              onClick={() => setShowAudioSettings(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                backgroundColor: '#D4AF37',
+                color: '#2C1810',
+                border: '2px solid #8B7355',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#FFD700';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#D4AF37';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
