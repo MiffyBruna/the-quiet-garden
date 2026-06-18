@@ -391,7 +391,7 @@ export function applyLandscape(
   gs: GameState,
   tx: number, ty: number,
   heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null,
-  mode: 'move' | 'convert_soil' | 'convert_rocks' = 'move',
+  mode: 'move' | 'create_water' | 'destroy_rocks' = 'move',
 ): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null } {
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return { action: 'none', entity: null };
@@ -511,22 +511,20 @@ export function applyLandscape(
     }
   }
 
-  // Convert to soil: turn terrain into brown soil — but not if plant is on the tile
-  if (mode === 'convert_soil' && !heldEntity) {
-    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil'];
+  // Create water: turn terrain into water — but not if plant is on the tile
+  if (mode === 'create_water' && !heldEntity) {
+    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil'];
     if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
-      // Set to dry_soil with low moisture (20) so it stays brown and won't upgrade to moist_soil (>45) or downgrade to cracked_soil (<14)
-      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', moisture: 20, isModified: true });
+      setTile(gs.tiles, tx, ty, { terrain: 'water', isModified: true });
       return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
     }
   }
 
-  // Convert to rocks: turn terrain into rocks — but not if plant is on the tile
-  if (mode === 'convert_rocks' && !heldEntity) {
-    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil', 'water'];
-    if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
-      setTile(gs.tiles, tx, ty, { terrain: 'rock', isModified: true });
-      return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
+  // Destroy rocks: remove rocks (turn them into dry soil) — but not if plant is on the tile
+  if (mode === 'destroy_rocks' && !heldEntity) {
+    if (tile.terrain === 'rock' && !tile.plant) {
+      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+      return { action: 'placed', entity: null }; // use 'placed' to indicate destruction happened
     }
   }
 

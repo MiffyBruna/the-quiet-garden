@@ -1293,10 +1293,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           track('custom_landscape_picked');
         } else if (result.action === 'placed') {
           setUI((p) => ({ ...p, heldEntity: null }));
-          if (currentUI.reshapeMode === 'convert_soil') {
-            track('custom_landscape_converted_soil', { tx, ty });
-          } else if (currentUI.reshapeMode === 'convert_rocks') {
-            track('custom_landscape_converted_rocks', { tx, ty });
+          if (currentUI.reshapeMode === 'create_water') {
+            track('custom_landscape_created_water', { tx, ty });
+          } else if (currentUI.reshapeMode === 'destroy_rocks') {
+            track('custom_landscape_destroyed_rocks', { tx, ty });
           } else {
             track('custom_landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
             RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
@@ -2336,15 +2336,15 @@ export function GameScene({ onShowWatershed, isContinue }: {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {[
               { mode: 'move', emoji: '↔️', label: 'Move', desc: 'Swap tiles' },
-              { mode: 'convert_soil', emoji: '🌱', label: 'Soil', desc: 'Turn to soil' },
-              { mode: 'convert_rocks', emoji: '🪨', label: 'Rocks', desc: 'Turn to rocks' },
+              { mode: 'create_water', emoji: '💧', label: 'Water', desc: 'Create water' },
+              { mode: 'destroy_rocks', emoji: '💥', label: 'Destroy', desc: 'Break rocks' },
             ].map((opt: any) => {
               const selected = ui.reshapeMode === opt.mode;
               return (
                 <button
                   key={opt.mode}
                   onClick={() => {
-                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'convert_soil' | 'convert_rocks' }));
+                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'destroy_rocks' }));
                   }}
                   style={{
                     flex: 1,

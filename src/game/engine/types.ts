@@ -226,5 +226,5 @@ export interface UIState {
 
   // Reshape tool menu
   showReshapeMenu: boolean; // reshape tool mode selector
-  reshapeMode: 'move' | 'convert_soil' | 'convert_rocks'; // move = swap tiles, convert_soil = turn to soil, convert_rocks = turn to rocks
+  reshapeMode: 'move' | 'create_water' | 'destroy_rocks'; // move = swap tiles, create_water = turn to water, destroy_rocks = remove rocks
 }
