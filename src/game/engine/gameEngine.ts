@@ -459,54 +459,56 @@ export function applyLandscape(
     return { action: 'none', entity: heldEntity }; // can't place here, keep holding
   }
 
-  // Not holding — try to pick up entities
-  // Pick up mature+ plants
-  if (tile.plant && tile.plant.stage >= 3) {
-    const picked = { ...tile.plant };
-    setTile(gs.tiles, tx, ty, { plant: undefined, isModified: true });
-    return { action: 'picked', entity: { type: 'plant', data: picked } };
-  }
+  // Not holding — try to pick up entities (only in move mode)
+  if (mode === 'move' && !heldEntity) {
+    // Pick up mature+ plants
+    if (tile.plant && tile.plant.stage >= 3) {
+      const picked = { ...tile.plant };
+      setTile(gs.tiles, tx, ty, { plant: undefined, isModified: true });
+      return { action: 'picked', entity: { type: 'plant', data: picked } };
+    }
 
-  // Pick up animals
-  const animal = gs.entities.find(e =>
-    Math.abs(e.px - (tx * TILE_SIZE + TILE_SIZE / 2)) < TILE_SIZE / 2 &&
-    Math.abs(e.py - (ty * TILE_SIZE + TILE_SIZE / 2)) < TILE_SIZE / 2
-  );
-  if (animal) {
-    return { action: 'picked', entity: { type: 'animal', data: animal } };
-  }
+    // Pick up animals
+    const animal = gs.entities.find(e =>
+      Math.abs(e.px - (tx * TILE_SIZE + TILE_SIZE / 2)) < TILE_SIZE / 2 &&
+      Math.abs(e.py - (ty * TILE_SIZE + TILE_SIZE / 2)) < TILE_SIZE / 2
+    );
+    if (animal) {
+      return { action: 'picked', entity: { type: 'animal', data: animal } };
+    }
 
-  // Pick up fairies
-  const fairy = gs.fairies.find(f =>
-    Math.abs(f.px - (tx * TILE_SIZE + TILE_SIZE / 2)) < TILE_SIZE &&
-    Math.abs(f.py - (ty * TILE_SIZE)) < TILE_SIZE
-  );
-  if (fairy) {
-    return { action: 'picked', entity: { type: 'fairy', data: fairy } };
-  }
+    // Pick up fairies
+    const fairy = gs.fairies.find(f =>
+      Math.abs(f.px - (tx * TILE_SIZE + TILE_SIZE / 2)) < TILE_SIZE &&
+      Math.abs(f.py - (ty * TILE_SIZE)) < TILE_SIZE
+    );
+    if (fairy) {
+      return { action: 'picked', entity: { type: 'fairy', data: fairy } };
+    }
 
-  // Pick up mulch (store source location and what was there before for swapping)
-  if (tile.terrain === 'mulch') {
-    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
-    return { action: 'picked', entity: { type: 'mulch', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'mulch' } };
-  }
+    // Pick up mulch (store source location and what was there before for swapping)
+    if (tile.terrain === 'mulch') {
+      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+      return { action: 'picked', entity: { type: 'mulch', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'mulch' } };
+    }
 
-  // Pick up grass (store source location and what was there before for swapping)
-  if (tile.terrain === 'grass') {
-    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
-    return { action: 'picked', entity: { type: 'grass', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'grass' } };
-  }
+    // Pick up grass (store source location and what was there before for swapping)
+    if (tile.terrain === 'grass') {
+      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+      return { action: 'picked', entity: { type: 'grass', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'grass' } };
+    }
 
-  // Pick up rocks (store source location and what was there before for swapping)
-  if (tile.terrain === 'rock') {
-    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
-    return { action: 'picked', entity: { type: 'rock', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'rock' } };
-  }
+    // Pick up rocks (store source location and what was there before for swapping)
+    if (tile.terrain === 'rock') {
+      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+      return { action: 'picked', entity: { type: 'rock', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'rock' } };
+    }
 
-  // Pick up water (store source location and what was there before for swapping)
-  if (tile.terrain === 'water') {
-    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
-    return { action: 'picked', entity: { type: 'rock', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'water' } };
+    // Pick up water (store source location and what was there before for swapping)
+    if (tile.terrain === 'water') {
+      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+      return { action: 'picked', entity: { type: 'rock', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'water' } };
+    }
   }
 
   // Convert to soil: turn terrain into brown soil — but not if plant is on the tile
