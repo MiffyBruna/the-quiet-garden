@@ -524,6 +524,19 @@ export function GameScene({ onShowWatershed, isContinue, selectedChapter }: {
       gsRef.current = createChapter2InitialState();
       setGameLoaded(false);
       track('custom_chapter_started', { chapter: 'meadow' });
+      // Immediately load discoveries and mark as ready
+      (async () => {
+        try {
+          const discoveries = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
+          if (discoveries) {
+            deserializeDiscoveries(gsRef.current, discoveries);
+          }
+        } catch (e) {
+          console.warn('Failed to load discoveries:', e);
+        } finally {
+          setGameLoaded(true);
+        }
+      })();
     }
   }, [selectedChapter]);
 
