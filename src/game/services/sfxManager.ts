@@ -152,11 +152,39 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
     if (url) {
       const audio = new Audio(url);
       audio.volume = volume;
-      audio.play().catch((e) => {
-        console.warn(`Failed to play SFX ${sfxType}:`, e);
-      });
 
-      RundotGameAPI.analytics.recordCustomEvent('sfx_played', { type: sfxType });
+      // Wait for the audio to be loadable before playing
+      return new Promise<void>((resolve) => {
+        const handleCanPlay = () => {
+          audio.removeEventListener('canplay', handleCanPlay);
+          audio.removeEventListener('error', handleError);
+          audio.play().catch((e) => {
+            console.warn(`Failed to play SFX ${sfxType}:`, e);
+          });
+          RundotGameAPI.analytics.recordCustomEvent('sfx_played', { type: sfxType });
+          resolve();
+        };
+
+        const handleError = () => {
+          audio.removeEventListener('canplay', handleCanPlay);
+          audio.removeEventListener('error', handleError);
+          console.warn(`Failed to load SFX ${sfxType}: ${url}`);
+          resolve();
+        };
+
+        audio.addEventListener('canplay', handleCanPlay);
+        audio.addEventListener('error', handleError);
+
+        // Timeout after 5 seconds
+        const timeout = setTimeout(() => {
+          audio.removeEventListener('canplay', handleCanPlay);
+          audio.removeEventListener('error', handleError);
+          audio.play().catch(() => {});
+          resolve();
+        }, 5000);
+
+        audio.addEventListener('canplay', () => clearTimeout(timeout), { once: true });
+      });
     }
   } catch (e) {
     console.warn(`Error playing SFX ${sfxType}:`, e);
