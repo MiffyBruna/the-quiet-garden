@@ -113,21 +113,37 @@ function loadSprite(path: string): HTMLImageElement | null {
   return img;
 }
 
+// Sprite animation system - 4 directions
+const playerSpriteIdle = {
+  down: "idle_downt.png",
+  up: "idle_upt.png",
+  left: "walk_left_1t.png",  // Use first walk frame as idle for left/right
+  right: "walk_right_1t.png"
+};
+
+const playerSpriteWalk = {
+  down: ["walk_down_1t.png", "walk_down_2t.png"],
+  up: ["walk_up_1t.png", "walk_up_2t.png"],
+  left: ["walk_left_1t.png", "walk_left_2t.png"],
+  right: ["walk_right_1t.png", "walk_right_2t.png"]
+};
+
 function getPlayerSprite(facing: string, isMoving: boolean, tick: number): HTMLImageElement | null {
   let spriteName = '';
 
   if (isMoving) {
-    // Alternate between 2 frames every 300ms
-    const frameIndex = Math.floor((tick * 16) / 300) % 2; // tick is in frames, ~16ms per frame
-    const direction = facing === 'e' ? 'right' : facing === 'w' ? 'left' : facing === 'n' ? 'up' : 'down';
-    spriteName = `walk_${direction}_${frameIndex + 1}`;
+    // Alternate between 2 frames every 180ms for smooth walking
+    const frameIndex = Math.floor((tick * 16) / 180) % 2;
+    const direction = (facing === 'e' ? 'right' : facing === 'w' ? 'left' : facing === 'n' ? 'up' : 'down') as keyof typeof playerSpriteWalk;
+    const frames = playerSpriteWalk[direction];
+    spriteName = frames[frameIndex]!;
   } else {
-    // Idle - only have up/down sprites, use down for left/right
-    const direction = facing === 'n' ? 'up' : 'down';
-    spriteName = `idle_${direction}`;
+    // Idle - use proper idle sprite for each direction
+    const direction = (facing === 'e' ? 'right' : facing === 'w' ? 'left' : facing === 'n' ? 'up' : 'down') as keyof typeof playerSpriteIdle;
+    spriteName = playerSpriteIdle[direction];
   }
 
-  const path = `/sprites/${spriteName}t.png`;
+  const path = `/sprites/${spriteName}`;
   return loadSprite(path);
 }
 
@@ -452,12 +468,16 @@ function renderFrame(
     // Draw sprite
     const sprite = getPlayerSprite(gs.playerFacing, isMoving, tick);
     if (sprite && sprite.complete && sprite.naturalWidth > 0) {
-      // Sprite is loaded and ready - draw it centered on the tile
-      const spriteWidth = 32;
-      const spriteHeight = 32;
-      const spriteX = sx + T / 2 - spriteWidth / 2;
-      const spriteY = sy + T / 2 - spriteHeight / 2;
-      ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight);
+      // Sprite is loaded and ready
+      // Display size for all frames
+      const spriteDisplayWidth = 32;
+      const spriteDisplayHeight = 32;
+      // Anchor at feet (bottom center)
+      const spriteX = sx + T / 2 - spriteDisplayWidth / 2;
+      const spriteY = sy + T - spriteDisplayHeight;
+      ctx.imageSmoothingEnabled = false; // Pixelated rendering
+      ctx.drawImage(sprite, spriteX, spriteY, spriteDisplayWidth, spriteDisplayHeight);
+      ctx.imageSmoothingEnabled = true; // Re-enable for other elements
     } else {
       // Fallback: draw simple shape if sprite not loaded
       drawPlayerShapeFallback(ctx, sx, sy, T, tick, isMoving);
