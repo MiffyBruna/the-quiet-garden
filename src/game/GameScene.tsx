@@ -1370,7 +1370,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
       if (tool === 'talk') {
         // After completion, always show landscape dialogue instead of regular quest dialogue
-        let dialogues = ui.unlockedTools.includes('landscape') ? MOSS_LANDSCAPE_DIALOGUE : getQuestMossDialogue(gs.questStep);
+        let dialogues = (ui.unlockedTools.includes('landscape') || gs.completionTriggered) ? MOSS_LANDSCAPE_DIALOGUE : getQuestMossDialogue(gs.questStep);
         queueDialogue(dialogues.length > 0 ? dialogues : [{
           speaker: 'Moss', emoji: '🐸',
           text: 'The valley heals slowly, like memory. Each action reaches forward in time.',
