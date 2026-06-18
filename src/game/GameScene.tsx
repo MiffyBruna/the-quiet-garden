@@ -14,7 +14,7 @@ import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, loadAudioSettin
 import { playSFX, preloadSFX } from './services/sfxManager';
 import {
   TILE_SIZE, MAP_W, MAP_H,
-  GameState, UIState, ToolType, PlantType, DialogueLine, QuestStep, Tile,
+  GameState, UIState, ToolType, PlantType, PlantState, DialogueLine, QuestStep, Tile,
 } from './engine/types';
 import {
   createInitialGameState,
@@ -647,6 +647,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
         }
         case 'free_play':
           unlockedTools = ['move', 'inspect', 'bund', 'mulch', 'seed', 'rain', 'talk', 'journal', 'shovel'];
+          // Add landscape tool if game was completed
+          if (gs.completionTriggered) {
+            unlockedTools.push('landscape');
+          }
           break;
       }
 
@@ -1024,7 +1028,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
     // Play footstep sound
     playSFX('footstep', 0.5).catch(() => {});
-    track('sfx_footstep');
+    track('custom_sfx_footstep');
   }, [isWalkableTile]);
 
   // -------------------------------------------------------------------------
@@ -1109,8 +1113,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
           ].filter(({ x, y }) => isWalkableTile(x, y));
 
           if (neighbors.length === 0) return; // No adjacent walkable tile
-          tx = neighbors[0].x;
-          ty = neighbors[0].y;
+          tx = neighbors[0]!.x;
+          ty = neighbors[0]!.y;
         }
 
         let destX = tx, destY = ty;
@@ -1674,9 +1678,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
           originalTY: gs.mossTY,
           playerOriginalTX: gs.playerTX,
           playerOriginalTY: gs.playerTY,
-        } as any;
-        track('cinematic_intro_animation', {});
-        RundotGameAPI.analytics.recordCustomEvent('cinematic_intro_animation', {});
+        };
+        track('custom_cinematic_intro_animation', {});
+        RundotGameAPI.analytics.recordCustomEvent('custom_cinematic_intro_animation', {});
       }
       introDialogueWasShownRef.current = dialogueNowShowing;
 
@@ -2307,7 +2311,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         >
           <span style={{ fontSize: 22 }}>
             {ui.heldEntity.type === 'plant'
-              ? PLANT_REQUIREMENTS[ui.heldEntity.data.type]?.emoji[ui.heldEntity.data.stage] ?? '🌿'
+              ? PLANT_REQUIREMENTS[(ui.heldEntity.data as PlantState).type]?.emoji[(ui.heldEntity.data as PlantState).stage] ?? '🌿'
               : ui.heldEntity.type === 'animal' ? '🦌'
               : ui.heldEntity.type === 'fairy' ? '✨'
               : ui.heldEntity.type === 'mulch' ? '🟫'

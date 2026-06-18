@@ -186,6 +186,8 @@ export interface GameState {
     targetTY: number;
     originalTX: number;
     originalTY: number;
+    playerOriginalTX: number;
+    playerOriginalTY: number;
   };
 
   // Pathfinding: queued path to follow
