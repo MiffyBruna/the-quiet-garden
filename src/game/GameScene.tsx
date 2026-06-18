@@ -1584,8 +1584,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
     resize();
     window.addEventListener('resize', resize);
 
-    // Start intro dialogue
-    queueDialogue(getQuestMossDialogue('intro'));
+    // Start intro dialogue only if actually at intro stage (not loading a saved game)
+    if (gsRef.current.questStep === 'intro') {
+      queueDialogue(getQuestMossDialogue('intro'));
+    }
 
     const loop = (timestamp: number) => {
       const dt = Math.min(50, timestamp - (lastTimeRef.current || timestamp));
