@@ -2340,7 +2340,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
               { mode: 'move', emoji: '↔️', label: 'Move', desc: 'Swap tiles' },
               { mode: 'create_water', emoji: '💧', label: 'Water', desc: 'Create water' },
               { mode: 'create_rocks', emoji: '🪨', label: 'Rocks', desc: 'Create rocks' },
-              { mode: 'destroy_rocks', emoji: '💥', label: 'Destroy', desc: 'Break rocks' },
+              { mode: 'destroy_rocks', emoji: '💥', label: 'Destroy', desc: 'Break rocks/water' },
             ].map((opt: any) => {
               const selected = ui.reshapeMode === opt.mode;
               return (
