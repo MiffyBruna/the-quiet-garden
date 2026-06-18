@@ -1630,8 +1630,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
           queueDialogue([line]);
         },
         () => {
-          // 100% restoration completion
-          triggerCompletionEvent();
+          // 100% restoration completion - only if not already seen
+          const currentUI = uiRef.current;
+          if (!currentUI.unlockedTools.includes('landscape')) {
+            triggerCompletionEvent();
+          }
         },
         () => {
           // First plant wilt — show Moss tutorial once
