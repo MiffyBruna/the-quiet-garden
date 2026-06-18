@@ -1032,8 +1032,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
     gs.playerDestTY = ny;
     if (dx > 0) gs.playerFacing = 'e';
     if (dx < 0) gs.playerFacing = 'w';
-    if (dy < 0) gs.playerFacing = 's';  // Swapped: down on screen = negative Y
-    if (dy > 0) gs.playerFacing = 'n';  // Swapped: up on screen = positive Y
+    if (dy > 0) gs.playerFacing = 's';
+    if (dy < 0) gs.playerFacing = 'n';
 
     // Play footstep sound
     playSFX('footstep', 0.5).catch(() => {});
