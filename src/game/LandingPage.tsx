@@ -39,7 +39,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
   useEffect(() => {
     const generateSparkles = () => {
       const newSparkles: Sparkle[] = [];
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 150; i++) {
         newSparkles.push({
           id: Math.random(),
           left: Math.random() * 100,
@@ -156,16 +156,26 @@ export function LandingPage({ onStart }: LandingPageProps) {
         }
       `}</style>
 
-      {sparkles.map((sparkle) => (
-        <div
-          key={sparkle.id}
-          className="sparkle-particle"
-          style={{
-            left: `${sparkle.left}%`,
-            animation: `sparkleRain ${sparkle.duration}s linear ${sparkle.delay}s forwards`,
-          }}
-        />
-      ))}
+      {/* Sparkle container with clip to hide top accumulation */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          clipPath: 'inset(8% 0 0 0)',
+          pointerEvents: 'none',
+        }}
+      >
+        {sparkles.map((sparkle) => (
+          <div
+            key={sparkle.id}
+            className="sparkle-particle"
+            style={{
+              left: `${sparkle.left}%`,
+              animation: `sparkleRain ${sparkle.duration}s linear ${sparkle.delay}s forwards`,
+            }}
+          />
+        ))}
+      </div>
 
       {/* Content */}
       <div
@@ -246,9 +256,8 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <button
               onClick={handleContinue}
               style={{
-                background: 'rgba(0, 0, 0, 0.08)',
-                border: '1px solid #D4AF37',
-                borderRadius: '3px',
+                background: 'transparent',
+                border: 'none',
                 padding: '8px 20px',
                 fontSize: 'clamp(11px, 3vw, 13px)',
                 fontWeight: 'bold',
@@ -257,17 +266,14 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                backdropFilter: 'blur(1px)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.12)';
                 e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 0 8px rgba(255, 215, 0, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 8px rgba(255, 215, 0, 0.5)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.08)';
                 e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.textShadow = 'none';
               }}
               onTouchStart={(e) => {
                 e.currentTarget.style.transform = 'scale(0.98)';
