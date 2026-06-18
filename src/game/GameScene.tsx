@@ -100,6 +100,59 @@ function tileBaseColor(tile: Tile): string {
 // Dialogue text formatting with bold quest hints
 // ---------------------------------------------------------------------------
 
+// Sprite cache for player character
+const spriteCache: Record<string, HTMLImageElement> = {};
+
+function loadSprite(path: string): HTMLImageElement | null {
+  if (spriteCache[path]) return spriteCache[path];
+  const img = new Image();
+  img.src = path;
+  spriteCache[path] = img;
+  return img;
+}
+
+function getPlayerSprite(facing: string, isMoving: boolean, tick: number): HTMLImageElement | null {
+  let spriteName = 'idle';
+
+  if (isMoving) {
+    // Alternate between 2 frames every 300ms
+    const frameIndex = Math.floor((tick * 16) / 300) % 2; // tick is in frames, ~16ms per frame
+    spriteName = `walk_${facing === 'e' ? 'right' : facing === 'w' ? 'left' : facing === 'n' ? 'up' : 'down'}_${frameIndex + 1}`;
+  } else {
+    spriteName = `idle_${facing === 'n' ? 'up' : 'down'}`;
+  }
+
+  return loadSprite(`/sprites/${spriteName}t.png`);
+}
+
+// Fallback drawing function (stashed old sprite code in case we need to revert)
+function drawPlayerShapeFallback(ctx: CanvasRenderingContext2D, sx: number, sy: number, T: number, tick: number, isMoving: boolean): void {
+  const cx = sx + T / 2;
+  const cy = sy + T / 2;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(cx, sy + T - 3, 7, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#4A7A52';
+  ctx.fillRect(cx - 5, cy - 1, 10, 10);
+
+  ctx.fillStyle = '#D4A882';
+  ctx.beginPath();
+  ctx.arc(cx, cy - 5, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#5C3D2E';
+  ctx.fillRect(cx - 7, cy - 10, 14, 3);
+  ctx.fillRect(cx - 4, cy - 16, 9, 7);
+
+  const walkBob = isMoving ? Math.abs(Math.sin(tick * 0.25)) * 2 : 0;
+  ctx.fillStyle = '#5C3D2E';
+  ctx.fillRect(cx - 5, cy + 7 + walkBob, 4, 4);
+  ctx.fillRect(cx + 1, cy + 7 - walkBob + 2, 4, 4);
+}
+
 function renderDialogueText(text: string): React.ReactNode {
   // List of quest-related phrases to highlight in bold
   const boldPhrases = [
@@ -388,31 +441,21 @@ function renderFrame(
   if (!gs.cinematicCam) {
     const sx = Math.round(gs.playerPX - camX);
     const sy = Math.round(gs.playerPY - camY);
-    const cx = sx + T / 2;
-    const cy = sy + T / 2;
+    const isMoving = gs.playerPX !== gs.playerDestTX * TILE_SIZE || gs.playerPY !== gs.playerDestTY * TILE_SIZE;
 
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.beginPath();
-    ctx.ellipse(cx, sy + T - 3, 7, 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#4A7A52';
-    ctx.fillRect(cx - 5, cy - 1, 10, 10);
-
-    ctx.fillStyle = '#D4A882';
-    ctx.beginPath();
-    ctx.arc(cx, cy - 5, 6, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#5C3D2E';
-    ctx.fillRect(cx - 7, cy - 10, 14, 3);
-    ctx.fillRect(cx - 4, cy - 16, 9, 7);
-
-    const walkBob = gs.playerPX !== gs.playerDestTX * TILE_SIZE || gs.playerPY !== gs.playerDestTY * TILE_SIZE
-      ? Math.abs(Math.sin(tick * 0.25)) * 2 : 0;
-    ctx.fillStyle = '#5C3D2E';
-    ctx.fillRect(cx - 5, cy + 7 + walkBob, 4, 4);
-    ctx.fillRect(cx + 1, cy + 7 - walkBob + 2, 4, 4);
+    // Draw sprite
+    const sprite = getPlayerSprite(gs.playerFacing, isMoving, tick);
+    if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+      // Sprite is loaded and ready - draw it centered on the tile
+      const spriteWidth = 32;
+      const spriteHeight = 32;
+      const spriteX = sx + T / 2 - spriteWidth / 2;
+      const spriteY = sy + T / 2 - spriteHeight / 2;
+      ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight);
+    } else {
+      // Fallback: draw simple shape if sprite not loaded
+      drawPlayerShapeFallback(ctx, sx, sy, T, tick, isMoving);
+    }
   }
 
   // --- Rain ---
