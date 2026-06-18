@@ -35961,10 +35961,41 @@
       "timestamp": 1781765456565,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1781765832922",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "CAN WE UNDEPLOY MY ENTRY",
+      "timestamp": 1781765832922,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781765835622-fz510fx08",
+      "role": "system",
+      "content": "Compacting project...",
+      "isShownToUser": true,
+      "timestamp": 1781765835622,
+      "type": "compaction",
+      "metadata": {
+        "compaction": {
+          "trigger": "auto"
+        }
+      }
+    },
+    {
+      "id": "1781765832931-fx2v5voc5",
+      "role": "assistant",
+      "content": "Prompt is too long",
+      "isShownToUser": true,
+      "timestamp": 1781765837823,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781765456567,
+  "updatedAt": 1781765837825,
   "tokenUsage": 52481,
   "script": "ftue-remix",
   "claudeSessionId": "08e0c7c0-d4cc-4159-a80b-b6afeb34c225"
