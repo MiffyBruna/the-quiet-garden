@@ -18,7 +18,7 @@ import {
   createInitialGameState,
   applyBund, applyMulch, applyPlantSeed, applyShovel, applyLandscape,
   triggerRain, updateGame,
-  PLANT_REQUIREMENTS, calculateRestoration,
+  PLANT_REQUIREMENTS, calculateRestoration, getRainCooldown,
   getQuestObjective, getQuestMossDialogue,
   MOSS_COMPLETION_DIALOGUE, MOSS_LANDSCAPE_DIALOGUE, MOSS_FIRST_RESTORATION_DIALOGUE,
   getTile,
@@ -446,6 +446,7 @@ const INITIAL_UI: UIState = {
   wildlifeCount: 0,
   rainCooling: false,
   heldPlant: null,
+  heldEntity: null,
   previousTool: null,
   fastDialogue: false,
   bundMode: null,
@@ -1042,14 +1043,14 @@ export function GameScene({ onShowWatershed }: {
       }
 
       if (tool === 'landscape') {
-        const result = applyLandscape(gs, tx, ty, currentUI.heldPlant);
+        const result = applyLandscape(gs, tx, ty, currentUI.heldEntity);
         if (result.action === 'picked') {
-          setUI((p) => ({ ...p, heldPlant: result.plant }));
+          setUI((p) => ({ ...p, heldEntity: result.entity }));
           track('custom_landscape_picked');
         } else if (result.action === 'placed') {
-          setUI((p) => ({ ...p, heldPlant: null }));
-          track('custom_landscape_placed', { tx, ty });
-          RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty });
+          setUI((p) => ({ ...p, heldEntity: null }));
+          track('custom_landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
+          RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
         }
         return;
       }
@@ -1499,7 +1500,7 @@ export function GameScene({ onShowWatershed }: {
       // Imperative cursor — keeps React style clean and lets the loop override for Moss
       if (currentUI.dialogue) {
         canvas.style.cursor = 'default';
-      } else if (currentUI.activeTool === 'landscape' && currentUI.heldPlant) {
+      } else if (currentUI.activeTool === 'landscape' && currentUI.heldEntity) {
         canvas.style.cursor = 'grabbing';
       } else if (showMossHint) {
         canvas.style.cursor = 'pointer';
@@ -1906,8 +1907,8 @@ export function GameScene({ onShowWatershed }: {
         </div>
       )}
 
-      {/* ── Landscape held-plant indicator ───────────────────────────────── */}
-      {ui.activeTool === 'landscape' && ui.heldPlant && !ui.dialogue && (
+      {/* ── Landscape held-entity indicator ───────────────────────────────── */}
+      {ui.activeTool === 'landscape' && ui.heldEntity && !ui.dialogue && (
         <div
           style={{
             position: 'absolute',
@@ -1925,11 +1926,17 @@ export function GameScene({ onShowWatershed }: {
           }}
         >
           <span style={{ fontSize: 22 }}>
-            {PLANT_REQUIREMENTS[ui.heldPlant.type]?.emoji[ui.heldPlant.stage] ?? '🌿'}
+            {ui.heldEntity.type === 'plant'
+              ? PLANT_REQUIREMENTS[ui.heldEntity.data.type]?.emoji[ui.heldEntity.data.stage] ?? '🌿'
+              : ui.heldEntity.type === 'animal' ? '🦌'
+              : ui.heldEntity.type === 'fairy' ? '✨'
+              : ui.heldEntity.type === 'mulch' ? '🟫'
+              : ui.heldEntity.type === 'grass' ? '🌾'
+              : '❓'}
           </span>
           <div style={{ fontSize: 11, color: '#F0FFF0' }}>
-            <div style={{ fontWeight: 700, color: '#7CCA7C' }}>Holding plant</div>
-            <div style={{ opacity: 0.7 }}>Tap an empty tile to place it</div>
+            <div style={{ fontWeight: 700, color: '#7CCA7C' }}>Holding {ui.heldEntity.type}</div>
+            <div style={{ opacity: 0.7 }}>Tap a tile to place it</div>
           </div>
         </div>
       )}
@@ -1968,9 +1975,11 @@ export function GameScene({ onShowWatershed }: {
 
                 if (def.id === 'rain') {
                   const gs = gsRef.current;
+                  const restoration = calculateRestoration(gs);
                   triggerRain(gs);
                   setUI((p) => ({ ...p, rainCooling: true }));
-                  setTimeout(() => setUI((p) => ({ ...p, rainCooling: false })), 15000);
+                  const cooldown = getRainCooldown(restoration);
+                  setTimeout(() => setUI((p) => ({ ...p, rainCooling: false })), cooldown);
                   track('custom_rain_called', { rains: gs.rainsCount });
                   RundotGameAPI.analytics.recordCustomEvent('rain_called', { rains: gs.rainsCount });
                   if (gs.questStep === 'first_rain') {

@@ -71,6 +71,22 @@ export function getDryingMultiplier(restoration: number): number {
   return 0.05;
 }
 
+/** Rain cooldown scales with restoration. Early game: precious rain with long cooldown; late game: quick succession. */
+export function getRainCooldown(restoration: number): number {
+  // Cooldown in milliseconds
+  if (restoration < 1) return 45000;   // 45s: Starting out
+  if (restoration < 10) return 40000;  // 40s
+  if (restoration < 20) return 35000;  // 35s
+  if (restoration < 30) return 30000;  // 30s
+  if (restoration < 40) return 25000;  // 25s
+  if (restoration < 50) return 20000;  // 20s
+  if (restoration < 60) return 15000;  // 15s
+  if (restoration < 70) return 12000;  // 12s
+  if (restoration < 80) return 10000;  // 10s
+  if (restoration < 90) return 8000;   // 8s
+  return 6000;                         // 6s: Final push to 100%
+}
+
 /** Working bunds reduce drying. 0 bunds = faster drying; 10+ bunds = strong retention. */
 function getBundRetentionModifier(workingBundCount: number): number {
   if (workingBundCount <= 0) return 1.30;
@@ -115,6 +131,15 @@ function getMulchModifier(terrain: import('./types').TerrainType): number {
   return terrain === 'mulch' ? 0.75 : 1.00;
 }
 
+/** Plant growth speed depends on tile moisture. Dry plants grow slowly; moist plants grow faster. */
+function getGrowthSpeedMultiplier(tileMoisture: number): number {
+  if (tileMoisture < 20) return 0.6;    // Water stress dominates — very slow
+  if (tileMoisture < 30) return 1.0;    // Minimum threshold
+  if (tileMoisture < 60) return 1.3;    // Optimal range
+  if (tileMoisture < 80) return 1.25;   // Good
+  return 1.15;                          // Slight saturation penalty
+}
+
 /** Count bund tiles currently holding moisture ≥ 25 (proxy for "bunds that have caught water"). */
 function countWorkingBunds(gs: GameState): number {
   let count = 0;
@@ -127,28 +152,32 @@ function countWorkingBunds(gs: GameState): number {
   return count;
 }
 
-/** Calculate water retention multiplier based on mulched/bundt tile coverage. */
-function getWaterRetentionModifier(tiles: import('./types').Tile[][]): number {
-  let mulchBundCount = 0;
-  let totalSoilCount = 0;
+/** Localized moisture retention based on proximity to bunds, mulch, and mature plants. */
+function getLocalMoistureRetention(tiles: Tile[][], x: number, y: number, restoration: number): number {
+  if (restoration >= 70) return 1.0; // At high restoration, global moisture floor is sufficient
 
-  for (let y = 0; y < MAP_H; y++) {
-    for (let x = 0; x < MAP_W; x++) {
-      const tile = getTile(tiles, x, y);
-      if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') continue;
+  // Count support infrastructure within 3-tile radius
+  let supportCount = 0;
+  for (let dy = -3; dy <= 3; dy++) {
+    for (let dx = -3; dx <= 3; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const tile = getTile(tiles, x + dx, y + dy);
+      if (!tile) continue;
 
-      totalSoilCount++;
-      if (tile.terrain === 'mulch' || tile.terrain === 'bund') {
-        mulchBundCount++;
-      }
+      // Count bunds, mulch, and mature plants
+      if (tile.terrain === 'bund' && tile.moisture >= 25) supportCount++;
+      else if (tile.terrain === 'mulch') supportCount++;
+      else if (tile.plant && tile.plant.stage >= 3) supportCount++;
     }
   }
 
-  if (totalSoilCount === 0) return 1.0;
-
-  // Coverage from 0% (1.0× drying) to 100% (0.6× drying)
-  const coverage = mulchBundCount / totalSoilCount;
-  return 1.0 - (coverage * 0.4);
+  // Graduated retention bonus: more support = slower drying
+  // 0 support: 1.0× (normal drying)
+  // 1-2 support: 0.95× (5% less drying)
+  // 3+ support: 0.90× (10% less drying)
+  if (supportCount >= 3) return 0.90;
+  if (supportCount >= 1) return 0.95;
+  return 1.0;
 }
 
 /**
@@ -285,32 +314,88 @@ export function applyShovel(gs: GameState, tx: number, ty: number): boolean {
 export function applyLandscape(
   gs: GameState,
   tx: number, ty: number,
-  heldPlant: import('./types').PlantState | null,
-): { action: 'picked' | 'placed' | 'none'; plant: import('./types').PlantState | null } {
+  heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any } | null,
+): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass'; data: any } | null } {
   const tile = getTile(gs.tiles, tx, ty);
-  if (!tile) return { action: 'none', plant: null };
+  if (!tile) return { action: 'none', entity: null };
 
-  // If holding a plant, try to place it here
-  if (heldPlant) {
-    if (
-      tile.terrain !== 'rock' && tile.terrain !== 'water' &&
-      tile.terrain !== 'bund' && !tile.plant &&
-      !(tx === gs.mossTX && ty === gs.mossTY)
-    ) {
-      setTile(gs.tiles, tx, ty, { plant: { ...heldPlant }, isModified: true });
-      return { action: 'placed', plant: null };
+  const TILE_SIZE = 16;
+
+  // If holding an entity, try to place it
+  if (heldEntity) {
+    const canPlace = tile.terrain !== 'rock' && tile.terrain !== 'water' && !tile.plant && !(tx === gs.mossTX && ty === gs.mossTY);
+
+    if (heldEntity.type === 'plant' && canPlace && tile.terrain !== 'bund') {
+      setTile(gs.tiles, tx, ty, { plant: { ...heldEntity.data }, isModified: true });
+      return { action: 'placed', entity: null };
     }
-    return { action: 'none', plant: heldPlant }; // can't place here, keep holding
+
+    if (heldEntity.type === 'mulch' && canPlace) {
+      setTile(gs.tiles, tx, ty, { terrain: 'mulch', isModified: true });
+      return { action: 'placed', entity: null };
+    }
+
+    if (heldEntity.type === 'grass' && canPlace && tile.terrain !== 'bund') {
+      setTile(gs.tiles, tx, ty, { terrain: 'grass', isModified: true });
+      return { action: 'placed', entity: null };
+    }
+
+    if (heldEntity.type === 'animal' && canPlace) {
+      const animal = heldEntity.data as any;
+      animal.px = tx * TILE_SIZE + TILE_SIZE / 2;
+      animal.py = ty * TILE_SIZE + TILE_SIZE / 2;
+      return { action: 'placed', entity: null };
+    }
+
+    if (heldEntity.type === 'fairy' && canPlace) {
+      const fairy = heldEntity.data as any;
+      fairy.px = tx * TILE_SIZE + TILE_SIZE / 2;
+      fairy.py = ty * TILE_SIZE - 4;
+      return { action: 'placed', entity: null };
+    }
+
+    return { action: 'none', entity: heldEntity }; // can't place here, keep holding
   }
 
-  // Not holding — try to pick up a mature+ plant
+  // Not holding — try to pick up entities
+  // Pick up mature+ plants
   if (tile.plant && tile.plant.stage >= 3) {
     const picked = { ...tile.plant };
     setTile(gs.tiles, tx, ty, { plant: undefined, isModified: true });
-    return { action: 'picked', plant: picked };
+    return { action: 'picked', entity: { type: 'plant', data: picked } };
   }
 
-  return { action: 'none', plant: null };
+  // Pick up animals
+  const animal = gs.entities.find(e =>
+    Math.abs(e.px - (tx * TILE_SIZE + TILE_SIZE / 2)) < TILE_SIZE / 2 &&
+    Math.abs(e.py - (ty * TILE_SIZE + TILE_SIZE / 2)) < TILE_SIZE / 2
+  );
+  if (animal) {
+    return { action: 'picked', entity: { type: 'animal', data: animal } };
+  }
+
+  // Pick up fairies
+  const fairy = gs.fairies.find(f =>
+    Math.abs(f.px - (tx * TILE_SIZE + TILE_SIZE / 2)) < TILE_SIZE &&
+    Math.abs(f.py - (ty * TILE_SIZE)) < TILE_SIZE
+  );
+  if (fairy) {
+    return { action: 'picked', entity: { type: 'fairy', data: fairy } };
+  }
+
+  // Pick up mulch
+  if (tile.terrain === 'mulch') {
+    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+    return { action: 'picked', entity: { type: 'mulch', data: null } };
+  }
+
+  // Pick up grass
+  if (tile.terrain === 'grass') {
+    setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
+    return { action: 'picked', entity: { type: 'grass', data: null } };
+  }
+
+  return { action: 'none', entity: null };
 }
 
 export function applyPlantSeed(
@@ -534,7 +619,6 @@ export function simulateWater(gs: GameState, restoration: number): void {
   }
 
   // Step 3: update terrain based on moisture, apply floor + cap + decay
-  const waterRetentionMod = getWaterRetentionModifier(tiles);
   for (let y = 1; y < MAP_H - 1; y++) {
     for (let x = 1; x < MAP_W - 1; x++) {
       const tile = getTile(tiles, x, y);
@@ -548,14 +632,15 @@ export function simulateWater(gs: GameState, restoration: number): void {
 
       // Moisture decay — combined formula:
       //   base × restoration_curve × bund_count_modifier × plant_modifier
-      //   × nearby_plant_cluster × mulch_modifier × erosion_drying × water_retention
+      //   × nearby_plant_cluster × mulch_modifier × erosion_drying × local_water_retention
       // High erosion = cracked soil = much faster drying
-      // High mulch/bund coverage = better water retention
+      // Local moisture retention: tiles near bunds/mulch/plants dry slower
       const plantMod = getPlantRetentionModifier(tile.plant);
       const nearbyMod = getNearbyPlantModifier(tiles, x, y);
       const mulchMod = getMulchModifier(tile.terrain);
       const erosionMod = 1 + (tile.erosion / 100) * 2.0;  // 0-100 erosion → 1.0-3.0× drying rate
-      const finalRate = 0.025 * restorationMult * bundMod * plantMod * nearbyMod * mulchMod * erosionMod * waterRetentionMod;
+      const localRetentionMod = getLocalMoistureRetention(tiles, x, y, restoration);
+      const finalRate = 0.025 * restorationMult * bundMod * plantMod * nearbyMod * mulchMod * erosionMod * localRetentionMod;
       tile.moisture = Math.max(
         moistureFloor,
         Math.min(moistureCap, tile.moisture - finalRate),
@@ -670,7 +755,9 @@ export function growPlants(gs: GameState, restoration: number): boolean {
       if (tile.moisture < req.moisture * 0.7) continue;
       if (tile.fertility < req.fertility * 0.7) continue;
 
-      plant.age += req.growthRate ?? 1;
+      // Growth speed depends on moisture level
+      const growthMult = getGrowthSpeedMultiplier(tile.moisture);
+      plant.age += (req.growthRate ?? 1) * growthMult;
       if (plant.age >= GROWTH_TICKS_PER_STAGE) {
         plant.stage = (plant.stage + 1) as PlantStage;
         plant.age = 0;
