@@ -1100,6 +1100,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
           destY = candidates[0].y;
         }
 
+        // Update facing direction based on movement direction
+        const dx = destX - gs.playerTX;
+        const dy = destY - gs.playerTY;
+        if (dx > 0) gs.playerFacing = 'e';
+        if (dx < 0) gs.playerFacing = 'w';
+        if (dy > 0) gs.playerFacing = 's';
+        if (dy < 0) gs.playerFacing = 'n';
+
         gs.playerDestTX = destX;
         gs.playerDestTY = destY;
         gs.playerTX = destX;
