@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, loadAudioSettings } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import {
   TILE_SIZE, MAP_W, MAP_H,
@@ -553,6 +553,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const [tileInfoFading, setTileInfoFading] = useState(false);
   const [displayedTileInfo, setDisplayedTileInfo] = useState<UIState['inspectedTile'] | null>(null);
 
+  // Audio settings modal
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
+  const [isMusicOn, setIsMusicOn] = useState(true);
+  const [musicVolume, setMusicVolumeState] = useState(70);
+
   // Intro animation: track if dialogue was shown last frame
   const introDialogueWasShownRef = useRef(false);
 
@@ -561,6 +566,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
   // Keep uiRef in sync
   useEffect(() => { uiRef.current = ui; }, [ui]);
+
+  // Initialize audio settings
+  useEffect(() => {
+    const settings = loadAudioSettings();
+    setIsMusicOn(settings.musicEnabled);
+    setMusicVolumeState(settings.musicVolume);
+  }, []);
 
   // Typewriter effect — animate dialogue text unless fast mode is on
   useEffect(() => {
@@ -1705,24 +1717,52 @@ export function GameScene({ onShowWatershed, isContinue }: {
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 1, lineHeight: 1 }}>
             Ch.1: The Valley That Forgot the Rain
           </div>
-          <div
-            key={ui.questStep}
-            className="quest-objective"
-            style={{
-              fontSize: 9,
-              color: '#F0FFF0',
-              marginTop: 2,
-              padding: '2px 6px',
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: 4,
-              display: 'inline-block',
-              maxWidth: '100%',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            ▸ {ui.questObjective}
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2, flexWrap: 'wrap' }}>
+            <div
+              key={ui.questStep}
+              className="quest-objective"
+              style={{
+                fontSize: 9,
+                color: '#F0FFF0',
+                padding: '2px 6px',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: 4,
+                display: 'inline-block',
+                maxWidth: '100%',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              ▸ {ui.questObjective}
+            </div>
+            <button
+              onClick={() => {
+                setShowAudioSettings(true);
+                track('custom_audio_settings_opened');
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                color: '#7CCA7C',
+                padding: '2px 6px',
+                borderRadius: 4,
+                cursor: 'pointer',
+                fontSize: 8,
+                fontWeight: 'bold',
+                transition: 'all 0.15s ease',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              }}
+            >
+              Audio
+            </button>
           </div>
         </div>
 
@@ -2240,6 +2280,165 @@ export function GameScene({ onShowWatershed, isContinue }: {
           );
         })}
       </div>
+      )}
+
+      {/* Audio Settings Modal */}
+      {showAudioSettings && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 200,
+            padding: '20px',
+          }}
+          onClick={() => setShowAudioSettings(false)}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #0a3d0a 0%, #1a5a1a 100%)',
+              border: '2px solid #7CCA7C',
+              borderRadius: '8px',
+              padding: '24px',
+              maxWidth: '90vw',
+              width: '300px',
+              textAlign: 'center',
+              color: '#fff',
+              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.5)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              style={{
+                fontSize: '18px',
+                margin: '0 0 20px 0',
+                color: '#7CCA7C',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              Audio Settings
+            </h2>
+
+            {/* Music Toggle */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '16px',
+                padding: '12px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '6px',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  color: '#7CCA7C',
+                }}
+              >
+                Music
+              </span>
+              <button
+                onClick={() => {
+                  toggleMusic(!isMusicOn);
+                  setIsMusicOn(!isMusicOn);
+                  track('custom_game_music_toggled');
+                }}
+                style={{
+                  background: isMusicOn ? '#7CCA7C' : '#4a6d4a',
+                  border: 'none',
+                  color: '#0a3d0a',
+                  padding: '6px 14px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                {isMusicOn ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            {/* Volume Slider */}
+            {isMusicOn && (
+              <div
+                style={{
+                  marginBottom: '20px',
+                  padding: '12px',
+                  background: 'rgba(0, 0, 0, 0.2)',
+                  borderRadius: '6px',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    color: '#7CCA7C',
+                    marginBottom: '10px',
+                  }}
+                >
+                  Volume: {musicVolume}%
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={musicVolume}
+                  onChange={(e) => {
+                    const newVolume = parseInt(e.target.value);
+                    setMusicVolumeState(newVolume);
+                    setMusicVolume(newVolume);
+                  }}
+                  style={{
+                    width: '100%',
+                    cursor: 'pointer',
+                    accentColor: '#7CCA7C',
+                  }}
+                  title="Music Volume"
+                />
+              </div>
+            )}
+
+            {/* Close Button */}
+            <button
+              onClick={() => setShowAudioSettings(false)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                backgroundColor: '#7CCA7C',
+                color: '#0a3d0a',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#9FDF9F';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#7CCA7C';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
