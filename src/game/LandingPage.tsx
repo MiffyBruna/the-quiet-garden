@@ -8,10 +8,18 @@ interface LandingPageProps {
   onStart: (isContinue: boolean) => void;
 }
 
+interface Sparkle {
+  id: number;
+  left: number;
+  delay: number;
+  duration: number;
+}
+
 export function LandingPage({ onStart }: LandingPageProps) {
   const [saveExists, setSaveExists] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
+  const [sparkles, setSparkles] = useState<Sparkle[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -25,6 +33,26 @@ export function LandingPage({ onStart }: LandingPageProps) {
         setLoading(false);
       }
     })();
+  }, []);
+
+  // Generate sparkles on mount and periodically
+  useEffect(() => {
+    const generateSparkles = () => {
+      const newSparkles: Sparkle[] = [];
+      for (let i = 0; i < 20; i++) {
+        newSparkles.push({
+          id: Math.random(),
+          left: Math.random() * 100,
+          delay: Math.random() * 2,
+          duration: 2 + Math.random() * 1,
+        });
+      }
+      setSparkles(newSparkles);
+    };
+
+    generateSparkles();
+    const interval = setInterval(generateSparkles, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleContinue = () => {
@@ -96,6 +124,48 @@ export function LandingPage({ onStart }: LandingPageProps) {
         }}
       />
 
+      {/* Sparkle Rain Animation */}
+      <style>{`
+        @keyframes sparkleRain {
+          0% {
+            transform: translateY(-100vh) scale(1);
+            opacity: 0;
+          }
+          5% {
+            opacity: 1;
+          }
+          95% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) scale(0.3);
+            opacity: 0;
+          }
+        }
+        .sparkle-particle {
+          position: absolute;
+          top: 0;
+          width: 2px;
+          height: 2px;
+          background: radial-gradient(circle, #FFE6B0 0%, #FFD700 100%);
+          border-radius: 50%;
+          filter: drop-shadow(0 0 2px #FFD700);
+          animation: sparkleRain linear forwards;
+          pointer-events: none;
+        }
+      `}</style>
+
+      {sparkles.map((sparkle) => (
+        <div
+          key={sparkle.id}
+          className="sparkle-particle"
+          style={{
+            left: `${sparkle.left}%`,
+            animation: `sparkleRain ${sparkle.duration}s linear ${sparkle.delay}s forwards`,
+          }}
+        />
+      ))}
+
       {/* Content */}
       <div
         style={{
@@ -142,19 +212,19 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 cursor: 'pointer',
                 padding: 0,
                 maxWidth: '100%',
-                transition: 'transform 0.15s ease, filter 0.15s ease',
+                transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease',
                 filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.filter = 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))';
+                e.currentTarget.style.transform = 'scale(1.08)';
+                e.currentTarget.style.filter = 'drop-shadow(0 6px 12px rgba(255, 215, 0, 0.3))';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'scale(1)';
                 e.currentTarget.style.filter = 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))';
               }}
               onTouchStart={(e) => {
-                e.currentTarget.style.transform = 'scale(0.98)';
+                e.currentTarget.style.transform = 'scale(0.96)';
               }}
               onTouchEnd={(e) => {
                 e.currentTarget.style.transform = 'scale(1)';
@@ -181,19 +251,19 @@ export function LandingPage({ onStart }: LandingPageProps) {
               cursor: 'pointer',
               padding: 0,
               maxWidth: '100%',
-              transition: 'transform 0.15s ease, filter 0.15s ease',
-              filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
+              transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease',
+              filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.filter = 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))';
+              e.currentTarget.style.transform = 'scale(1.08)';
+              e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(255, 215, 0, 0.4))';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.filter = 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))';
+              e.currentTarget.style.filter = 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))';
             }}
             onTouchStart={(e) => {
-              e.currentTarget.style.transform = 'scale(0.98)';
+              e.currentTarget.style.transform = 'scale(0.96)';
             }}
             onTouchEnd={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
