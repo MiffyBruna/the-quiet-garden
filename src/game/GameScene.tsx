@@ -1100,8 +1100,18 @@ export function GameScene({ onShowWatershed, isContinue }: {
       if (gs.introAnimationState) return;
 
       if (tool === 'move') {
-        const tile = getTile(gs.tiles, tx, ty);
-        if (!tile || tile.terrain === 'rock' || tile.terrain === 'water' || tile.terrain === 'bund') return;
+        // Use centralized walkability check
+        if (!isWalkableTile(tx, ty)) {
+          // Clicked a blocked tile - try to find nearest adjacent walkable tile
+          const neighbors = [
+            { x: tx + 1, y: ty }, { x: tx - 1, y: ty },
+            { x: tx, y: ty + 1 }, { x: tx, y: ty - 1 },
+          ].filter(({ x, y }) => isWalkableTile(x, y));
+
+          if (neighbors.length === 0) return; // No adjacent walkable tile
+          tx = neighbors[0].x;
+          ty = neighbors[0].y;
+        }
 
         let destX = tx, destY = ty;
 
@@ -1112,11 +1122,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             { x: tx, y: ty - 1 }, { x: tx, y: ty + 1 },
             { x: tx - 1, y: ty - 1 }, { x: tx + 1, y: ty - 1 },
             { x: tx - 1, y: ty + 1 }, { x: tx + 1, y: ty + 1 },
-          ].filter(({ x, y }) => {
-            if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
-            const t = getTile(gs.tiles, x, y);
-            return t && t.terrain !== 'rock' && t.terrain !== 'water' && t.terrain !== 'bund';
-          });
+          ].filter(({ x, y }) => isWalkableTile(x, y));
           // Prefer candidate with the smallest X distance from player (horizontal bias)
           candidates.sort((a, b) => Math.abs(a.x - gs.playerTX) - Math.abs(b.x - gs.playerTX));
           if (!candidates[0]) return;
@@ -1409,7 +1415,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         return;
       }
     },
-    [advanceQuest, queueDialogue, onShowWatershed, findPath],
+    [advanceQuest, queueDialogue, onShowWatershed, findPath, isWalkableTile],
   );
 
   // -------------------------------------------------------------------------
