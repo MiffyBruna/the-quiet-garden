@@ -1518,9 +1518,13 @@ export function updateGame(
     }
 
     // 100% completion (once only)
-    if (onCompletion && !gs.completionTriggered && restoration >= 100) {
-      gs.completionTriggered = true;
-      onCompletion();
+    if (restoration >= 100) {
+      console.log(`Restoration at 100%: triggered=${gs.completionTriggered}, onCompletion=${!!onCompletion}`);
+      if (onCompletion && !gs.completionTriggered) {
+        console.log('Triggering completion event');
+        gs.completionTriggered = true;
+        onCompletion();
+      }
     }
   }
 }

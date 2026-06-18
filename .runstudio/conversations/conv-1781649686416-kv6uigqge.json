@@ -25794,11 +25794,177 @@
       "timestamp": 1781755556534,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1781755662456",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "ok now i noticed that i have 100 percent restored and it didnt trigger the ending chapter event",
+      "timestamp": 1781755662456,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781755671272-jdl5pkldi",
+      "role": "assistant",
+      "content": "Let me find the completion trigger code to see why it's not firing at 100%:",
+      "isShownToUser": true,
+      "timestamp": 1781755671529,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781755672334-wk5eefmir",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781755672334,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781755675950-xvtaehwy2",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781755675950,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781755679618-6k1o3oj3q",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781755679618,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781755684227-b2myndbma",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781755684227,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781755686686-s2jq95209",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781755686686,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781755690684-w86ajjiha",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781755690684,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781755694576-ogqt01z7y",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781755694576,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781755696790-bj3fd67kc",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781755696790,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781755699388-vyn11ay60",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781755699388,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781755705510-a9bbthz1y",
+      "role": "assistant",
+      "content": "Looking at the code, the completion event should trigger when `restoration >= 100`. Let me check if the restoration value being shown is actually 100 or just rounded to 100. Let me also verify the completion flag isn't already set. Can you check:\n\n1. **Open browser console** (F12) and look for these analytics events:\n   - `restoration_complete` - should appear when 100% is reached\n   - Any error messages\n\n2. **In the meantime**, let me verify the completion trigger is working by checking if `completionTriggered` might already be true:",
+      "isShownToUser": true,
+      "timestamp": 1781755706951,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781755707148-a97hs1quc",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781755707148,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781755710404-so6lai9kz",
+      "role": "assistant",
+      "content": "Let me add debug logging to help identify the issue:",
+      "isShownToUser": true,
+      "timestamp": 1781755710638,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781755711739-s73xn7sjc",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781755711739,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781755714486-2g52kej9q",
+      "role": "assistant",
+      "content": "Now try to reach 100% restoration again and check the browser console (F12 → Console). You should see debug logs like:\n\n- `\"Restoration at 100%: triggered=false, onCompletion=true\"` - when hitting 100%\n- `\"Triggering completion event\"` - when the event fires\n\nThis will help us identify:\n1. **Is restoration actually hitting 100%?** - The first log will appear\n2. **Has it already been triggered once?** - The `triggered=` value will show\n3. **Is the callback available?** - The `onCompletion=` value will show\n\nPlease share what console messages you see when reaching 100%! 🔍",
+      "isShownToUser": true,
+      "timestamp": 1781755715873,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781649686416,
-  "updatedAt": 1781755556591,
-  "tokenUsage": 99688,
+  "updatedAt": 1781755715944,
+  "tokenUsage": 102619,
   "script": "ftue-remix",
   "claudeSessionId": "b952082a-1b74-4517-9f46-d108b8dd247c"
 }
