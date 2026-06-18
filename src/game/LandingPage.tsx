@@ -1,5 +1,5 @@
 /**
- * Landing Page — welcome screen with Continue/Start options
+ * Landing Page — welcome screen with Continue/Start options using pixel art assets
  */
 import { useState, useEffect } from 'react';
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
@@ -44,7 +44,6 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
   const confirmNewGame = () => {
     RundotGameAPI.analytics.recordCustomEvent('landing_newgame_confirmed');
-    // Clear the save
     RundotGameAPI.appStorage.removeItem('quiet-garden-save');
     onStart(false);
   };
@@ -73,7 +72,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       style={{
         width: '100vw',
         height: '100vh',
-        backgroundImage: 'url(/cdn-assets/landing-bg.jpg)',
+        backgroundImage: 'url(/cdn-assets/landing-bg.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
@@ -87,12 +86,12 @@ export function LandingPage({ onStart }: LandingPageProps) {
         position: 'relative',
       }}
     >
-      {/* Overlay for better text readability */}
+      {/* Subtle overlay for readability */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(0, 0, 0, 0.3)',
+          background: 'rgba(0, 0, 0, 0.15)',
           pointerEvents: 'none',
         }}
       />
@@ -106,49 +105,31 @@ export function LandingPage({ onStart }: LandingPageProps) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '40px',
-          maxWidth: '500px',
+          gap: 'clamp(30px, 8vw, 60px)',
+          maxWidth: '95vw',
           width: '100%',
         }}
       >
-        {/* Title */}
-        <div
+        {/* Title Image */}
+        <img
+          src="/cdn-assets/game-title.png"
+          alt="The Quiet Garden"
           style={{
-            textAlign: 'center',
-            color: '#fff',
-            textShadow: '2px 2px 8px rgba(0, 0, 0, 0.7)',
+            maxWidth: 'clamp(200px, 80vw, 500px)',
+            height: 'auto',
+            filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
           }}
-        >
-          <h1
-            style={{
-              fontSize: 'clamp(28px, 8vw, 48px)',
-              margin: '0 0 10px 0',
-              fontWeight: 'bold',
-              letterSpacing: '2px',
-            }}
-          >
-            The Quiet Garden
-          </h1>
-          <p
-            style={{
-              fontSize: 'clamp(12px, 4vw, 16px)',
-              margin: 0,
-              opacity: 0.9,
-              fontStyle: 'italic',
-            }}
-          >
-            Restore a forgotten watershed
-          </p>
-        </div>
+        />
 
-        {/* Buttons */}
+        {/* Buttons Container */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px',
+            gap: 'clamp(15px, 5vw, 25px)',
+            alignItems: 'center',
             width: '100%',
-            alignItems: 'stretch',
+            maxWidth: '400px',
           }}
         >
           {/* Continue Button (only if save exists) */}
@@ -156,31 +137,38 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <button
               onClick={handleContinue}
               style={{
-                padding: '16px 32px',
-                fontSize: 'clamp(14px, 4vw, 20px)',
-                fontWeight: 'bold',
-                backgroundColor: '#8B7355',
-                color: '#fff',
-                border: '3px solid #5D4E37',
-                borderRadius: '8px',
+                background: 'none',
+                border: 'none',
                 cursor: 'pointer',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                transition: 'all 0.2s ease',
+                padding: 0,
+                maxWidth: '100%',
+                transition: 'transform 0.15s ease, filter 0.15s ease',
+                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#A0826D';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.4)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.filter = 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#8B7355';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.filter = 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))';
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.transform = 'scale(0.98)';
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              Continue
+              <img
+                src="/cdn-assets/btn-continue.png"
+                alt="Continue"
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  display: 'block',
+                }}
+              />
             </button>
           )}
 
@@ -188,31 +176,38 @@ export function LandingPage({ onStart }: LandingPageProps) {
           <button
             onClick={handleNewGame}
             style={{
-              padding: '16px 32px',
-              fontSize: 'clamp(14px, 4vw, 20px)',
-              fontWeight: 'bold',
-              backgroundColor: '#D4AF37',
-              color: '#2C1810',
-              border: '3px solid #8B7355',
-              borderRadius: '8px',
+              background: 'none',
+              border: 'none',
               cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-              transition: 'all 0.2s ease',
+              padding: 0,
+              maxWidth: '100%',
+              transition: 'transform 0.15s ease, filter 0.15s ease',
+              filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#FFD700';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.4)';
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.filter = 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#D4AF37';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.filter = 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))';
+            }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.transform = 'scale(0.98)';
+            }}
+            onTouchEnd={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-            {saveExists ? 'New Game' : 'Start'}
+            <img
+              src="/cdn-assets/btn-start.png"
+              alt={saveExists ? 'New Game' : 'Start'}
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+                display: 'block',
+              }}
+            />
           </button>
         </div>
       </div>
@@ -223,7 +218,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0, 0, 0, 0.7)',
+            background: 'rgba(0, 0, 0, 0.8)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -234,28 +229,32 @@ export function LandingPage({ onStart }: LandingPageProps) {
           <div
             style={{
               background: '#2C1810',
-              border: '3px solid #D4AF37',
-              borderRadius: '12px',
+              border: '4px solid #D4AF37',
+              borderRadius: '8px',
               padding: '30px',
-              maxWidth: '400px',
+              maxWidth: '90vw',
+              width: '350px',
               textAlign: 'center',
               color: '#fff',
+              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.5)',
             }}
           >
             <h2
               style={{
                 fontSize: '24px',
-                margin: '0 0 20px 0',
+                margin: '0 0 15px 0',
                 color: '#D4AF37',
+                fontFamily: 'Georgia, serif',
               }}
             >
               Start New Game?
             </h2>
             <p
               style={{
-                fontSize: '16px',
-                margin: '0 0 30px 0',
-                opacity: 0.9,
+                fontSize: '14px',
+                margin: '0 0 25px 0',
+                opacity: 0.85,
+                lineHeight: '1.4',
               }}
             >
               Your progress will be lost. Are you sure?
@@ -263,7 +262,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <div
               style={{
                 display: 'flex',
-                gap: '15px',
+                gap: '12px',
                 justifyContent: 'center',
               }}
             >
@@ -271,19 +270,22 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 onClick={() => setShowNewGameConfirm(false)}
                 style={{
                   padding: '10px 20px',
-                  fontSize: '16px',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
                   backgroundColor: '#8B7355',
                   color: '#fff',
                   border: '2px solid #5D4E37',
-                  borderRadius: '6px',
+                  borderRadius: '4px',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#A0826D';
+                  e.currentTarget.style.transform = 'scale(1.05)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = '#8B7355';
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
                 Cancel
@@ -292,23 +294,25 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 onClick={confirmNewGame}
                 style={{
                   padding: '10px 20px',
-                  fontSize: '16px',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
                   backgroundColor: '#D4AF37',
                   color: '#2C1810',
                   border: '2px solid #8B7355',
-                  borderRadius: '6px',
+                  borderRadius: '4px',
                   cursor: 'pointer',
-                  fontWeight: 'bold',
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#FFD700';
+                  e.currentTarget.style.transform = 'scale(1.05)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = '#D4AF37';
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                Start New Game
+                New Game
               </button>
             </div>
           </div>
