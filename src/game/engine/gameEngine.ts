@@ -408,19 +408,23 @@ export function applyLandscape(
     }
 
     if (heldEntity.type === 'mulch' && canPlace) {
-      // Swap: place mulch here, restore original terrain at source
+      // Swap: place mulch at destination, move destination terrain to source
+      const destTerrainBefore = tile.terrain;
       setTile(gs.tiles, tx, ty, { terrain: 'mulch', isModified: true });
-      if (heldEntity.sourceTX !== undefined && heldEntity.sourceTY !== undefined && heldEntity.sourceTerrainBefore) {
-        setTile(gs.tiles, heldEntity.sourceTX, heldEntity.sourceTY, { terrain: heldEntity.sourceTerrainBefore, isModified: true });
+      if (heldEntity.sourceTX !== undefined && heldEntity.sourceTY !== undefined) {
+        // Put the destination's terrain at the source
+        setTile(gs.tiles, heldEntity.sourceTX, heldEntity.sourceTY, { terrain: destTerrainBefore, isModified: true });
       }
       return { action: 'placed', entity: null };
     }
 
     if (heldEntity.type === 'grass' && canPlace && tile.terrain !== 'bund') {
-      // Swap: place grass here, restore original terrain at source
+      // Swap: place grass at destination, move destination terrain to source
+      const destTerrainBefore = tile.terrain;
       setTile(gs.tiles, tx, ty, { terrain: 'grass', isModified: true });
-      if (heldEntity.sourceTX !== undefined && heldEntity.sourceTY !== undefined && heldEntity.sourceTerrainBefore) {
-        setTile(gs.tiles, heldEntity.sourceTX, heldEntity.sourceTY, { terrain: heldEntity.sourceTerrainBefore, isModified: true });
+      if (heldEntity.sourceTX !== undefined && heldEntity.sourceTY !== undefined) {
+        // Put the destination's terrain at the source
+        setTile(gs.tiles, heldEntity.sourceTX, heldEntity.sourceTY, { terrain: destTerrainBefore, isModified: true });
       }
       return { action: 'placed', entity: null };
     }
@@ -480,10 +484,10 @@ export function applyLandscape(
     return { action: 'picked', entity: { type: 'grass', data: null, sourceTX: tx, sourceTY: ty, sourceTerrainBefore: 'grass' } };
   }
 
-  // Convert mode: turn terrain into soil
+  // Convert mode: turn terrain into dry soil (brown) — but not if plant is on the tile
   if (mode === 'convert' && !heldEntity) {
     const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil'];
-    if (convertibleTerrains.includes(tile.terrain)) {
+    if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
       setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
       return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
     }
