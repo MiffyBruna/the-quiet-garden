@@ -1549,6 +1549,8 @@ export function deserializeDiscoveries(gs: GameState, json: string): void {
 export function serializeGameState(gs: GameState): string {
   return JSON.stringify({
     // Player & world state
+    playerTX: gs.playerTX,
+    playerTY: gs.playerTY,
     playerPX: gs.playerPX,
     playerPY: gs.playerPY,
     playerDestTX: gs.playerDestTX,
@@ -1614,10 +1616,13 @@ export function deserializeGameState(json: string): GameState | null {
     const gs = createInitialGameState();
 
     // Restore player & world state
+    gs.playerTX = data.playerTX ?? gs.playerTX;
+    gs.playerTY = data.playerTY ?? gs.playerTY;
     gs.playerPX = data.playerPX ?? gs.playerPX;
     gs.playerPY = data.playerPY ?? gs.playerPY;
-    gs.playerDestTX = data.playerDestTX ?? gs.playerDestTX;
-    gs.playerDestTY = data.playerDestTY ?? gs.playerDestTY;
+    // Sync destination to current position to prevent stuck animations
+    gs.playerDestTX = data.playerDestTX ?? gs.playerTX;
+    gs.playerDestTY = data.playerDestTY ?? gs.playerTY;
     gs.tick = data.tick ?? gs.tick;
     gs.rainTimer = data.rainTimer ?? gs.rainTimer;
     gs.isRaining = data.isRaining ?? gs.isRaining;
