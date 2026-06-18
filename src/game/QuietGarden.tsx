@@ -1,12 +1,15 @@
 /**
  * The Quiet Garden — root component.
  *
+ * LandingPage is the initial welcome screen (Continue/Start).
  * GameScene is the primary interface (playable top-down world).
  * WatershedProgress is the optional overview, opened via the Journal button.
  */
 import { useState, useCallback } from 'react';
 import { registerKitLifecycles } from '../services/lifecycles';
 import { track } from '../services/analytics';
+import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
+import { LandingPage } from './LandingPage';
 import { GameScene } from './GameScene';
 import { WatershedProgress } from './WatershedProgress';
 
@@ -33,6 +36,8 @@ interface WatershedData {
 }
 
 export function QuietGarden() {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [isContinue, setIsContinue] = useState(false);
   const [showWatershed, setShowWatershed] = useState(false);
   const [watershedData, setWatershedData] = useState<WatershedData>({
     chapter1Restoration: 0,
@@ -40,6 +45,12 @@ export function QuietGarden() {
     discoveredFairies: [],
     discoveredPlants: [],
   });
+
+  const handleStartGame = useCallback((isContinue: boolean) => {
+    setIsContinue(isContinue);
+    setGameStarted(true);
+    RundotGameAPI.analytics.recordCustomEvent('landing_game_started', { isContinue: String(isContinue) });
+  }, []);
 
   const handleOpenWatershed = useCallback(
     (restoration: number, wildlife: string[], fairies: string[], plants: string[]) => {
@@ -55,9 +66,13 @@ export function QuietGarden() {
     [],
   );
 
+  if (!gameStarted) {
+    return <LandingPage onStart={handleStartGame} />;
+  }
+
   return (
     <>
-      <GameScene onShowWatershed={handleOpenWatershed} />
+      <GameScene onShowWatershed={handleOpenWatershed} isContinue={isContinue} />
       {showWatershed && (
         <WatershedProgress
           chapter1Restoration={watershedData.chapter1Restoration}

@@ -1542,3 +1542,162 @@ export function deserializeDiscoveries(gs: GameState, json: string): void {
     console.warn('Failed to deserialize discoveries:', e);
   }
 }
+
+/**
+ * Serialize full game state to JSON for saving a game
+ */
+export function serializeGameState(gs: GameState): string {
+  return JSON.stringify({
+    // Player & world state
+    playerPX: gs.playerPX,
+    playerPY: gs.playerPY,
+    playerDestTX: gs.playerDestTX,
+    playerDestTY: gs.playerDestTY,
+    tick: gs.tick,
+    rainTimer: gs.rainTimer,
+    isRaining: gs.isRaining,
+
+    // Game progression
+    questStep: gs.questStep,
+    inspectedCount: gs.inspectedCount,
+    bundPlaced: gs.bundPlaced,
+    rainsCount: gs.rainsCount,
+    completionTriggered: gs.completionTriggered,
+
+    // Game systems
+    fairySpawnCooldown: gs.fairySpawnCooldown,
+    grassSpreadingStarted: gs.grassSpreadingStarted,
+    bundRemovalPenalty: gs.bundRemovalPenalty,
+    lastRestorationBeforeRain: gs.lastRestorationBeforeRain,
+    firstBundActivated: gs.firstBundActivated,
+    restorationMilestonesSeen: gs.restorationMilestonesSeen,
+    workingBundCount: gs.workingBundCount,
+    firstWiltSeen: gs.firstWiltSeen,
+
+    // Discoveries & journal
+    discoveredWildlife: gs.discoveredWildlife,
+    discoveredFairies: gs.discoveredFairies,
+    discoveredPlants: gs.discoveredPlants,
+    discoveredGuideNotes: gs.discoveredGuideNotes,
+
+    // Tile data — serialize as array of tile objects
+    tiles: gs.tiles.map(row =>
+      row.map(tile => ({
+        terrain: tile.terrain,
+        fertility: tile.fertility,
+        moisture: tile.moisture,
+        water: tile.water,
+        plant: tile.plant ? {
+          type: tile.plant.type,
+          stage: tile.plant.stage,
+          age: tile.plant.age,
+          waterStress: tile.plant.waterStress,
+          isWilted: tile.plant.isWilted,
+        } : null,
+      }))
+    ),
+
+    // Entities & wildlife
+    fairies: gs.fairies.map(f => ({ px: f.px, py: f.py, glowPhase: f.glowPhase })),
+    entities: gs.entities.map(e => ({ px: e.px, py: e.py, emoji: e.emoji, type: e.type })),
+    mossTX: gs.mossTX,
+    mossTY: gs.mossTY,
+  });
+}
+
+/**
+ * Deserialize full game state from JSON
+ */
+export function deserializeGameState(json: string): GameState | null {
+  try {
+    const data = JSON.parse(json);
+    const gs = createInitialGameState();
+
+    // Restore player & world state
+    gs.playerPX = data.playerPX ?? gs.playerPX;
+    gs.playerPY = data.playerPY ?? gs.playerPY;
+    gs.playerDestTX = data.playerDestTX ?? gs.playerDestTX;
+    gs.playerDestTY = data.playerDestTY ?? gs.playerDestTY;
+    gs.tick = data.tick ?? gs.tick;
+    gs.rainTimer = data.rainTimer ?? gs.rainTimer;
+    gs.isRaining = data.isRaining ?? gs.isRaining;
+
+    // Restore progression
+    if (data.questStep) gs.questStep = data.questStep;
+    if (typeof data.inspectedCount === 'number') gs.inspectedCount = data.inspectedCount;
+    if (typeof data.bundPlaced === 'boolean') gs.bundPlaced = data.bundPlaced;
+    if (typeof data.rainsCount === 'number') gs.rainsCount = data.rainsCount;
+    if (typeof data.completionTriggered === 'boolean') gs.completionTriggered = data.completionTriggered;
+
+    // Restore game systems
+    if (typeof data.fairySpawnCooldown === 'number') gs.fairySpawnCooldown = data.fairySpawnCooldown;
+    if (typeof data.grassSpreadingStarted === 'boolean') gs.grassSpreadingStarted = data.grassSpreadingStarted;
+    if (typeof data.bundRemovalPenalty === 'number') gs.bundRemovalPenalty = data.bundRemovalPenalty;
+    if (typeof data.lastRestorationBeforeRain === 'number') gs.lastRestorationBeforeRain = data.lastRestorationBeforeRain;
+    if (typeof data.firstBundActivated === 'boolean') gs.firstBundActivated = data.firstBundActivated;
+    if (Array.isArray(data.restorationMilestonesSeen)) gs.restorationMilestonesSeen = data.restorationMilestonesSeen;
+    if (typeof data.workingBundCount === 'number') gs.workingBundCount = data.workingBundCount;
+    if (typeof data.firstWiltSeen === 'boolean') gs.firstWiltSeen = data.firstWiltSeen;
+
+    // Restore discoveries
+    if (Array.isArray(data.discoveredWildlife)) gs.discoveredWildlife = data.discoveredWildlife;
+    if (Array.isArray(data.discoveredFairies)) gs.discoveredFairies = data.discoveredFairies;
+    if (Array.isArray(data.discoveredPlants)) gs.discoveredPlants = data.discoveredPlants;
+    if (Array.isArray(data.discoveredGuideNotes)) gs.discoveredGuideNotes = data.discoveredGuideNotes;
+
+    // Restore tiles
+    if (Array.isArray(data.tiles) && data.tiles.length > 0) {
+      for (let ty = 0; ty < data.tiles.length; ty++) {
+        const row = data.tiles[ty];
+        if (Array.isArray(row)) {
+          for (let tx = 0; tx < row.length; tx++) {
+            const tileData = row[tx];
+            const tile = gs.tiles[ty]?.[tx];
+            if (tile && tileData) {
+              tile.terrain = tileData.terrain ?? tile.terrain;
+              tile.fertility = tileData.fertility ?? tile.fertility;
+              tile.moisture = tileData.moisture ?? tile.moisture;
+              tile.water = tileData.water ?? tile.water;
+
+              if (tileData.plant) {
+                tile.plant = {
+                  type: tileData.plant.type,
+                  stage: tileData.plant.stage ?? 0,
+                  age: tileData.plant.age ?? 0,
+                  waterStress: tileData.plant.waterStress ?? 0,
+                  isWilted: tileData.plant.isWilted ?? false,
+                };
+              } else {
+                tile.plant = undefined;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Restore entities
+    if (Array.isArray(data.fairies)) {
+      gs.fairies = data.fairies.map((f: any) => ({
+        px: f.px,
+        py: f.py,
+        glowPhase: f.glowPhase,
+      }));
+    }
+    if (Array.isArray(data.entities)) {
+      gs.entities = data.entities.map((e: any) => ({
+        px: e.px,
+        py: e.py,
+        emoji: e.emoji,
+        type: e.type,
+      }));
+    }
+    gs.mossTX = data.mossTX ?? gs.mossTX;
+    gs.mossTY = data.mossTY ?? gs.mossTY;
+
+    return gs;
+  } catch (e) {
+    console.warn('Failed to deserialize game state:', e);
+    return null;
+  }
+}

@@ -23,6 +23,7 @@ import {
   MOSS_COMPLETION_DIALOGUE, MOSS_LANDSCAPE_DIALOGUE, MOSS_FIRST_RESTORATION_DIALOGUE,
   getTile,
   serializeDiscoveries, deserializeDiscoveries,
+  serializeGameState, deserializeGameState,
 } from './engine/gameEngine';
 import {
   INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS,
@@ -454,8 +455,9 @@ const INITIAL_UI: UIState = {
   bundTargetTiles: [],
 };
 
-export function GameScene({ onShowWatershed }: {
+export function GameScene({ onShowWatershed, isContinue }: {
   onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[]) => void;
+  isContinue: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gsRef = useRef<GameState>(createInitialGameState());
@@ -466,6 +468,7 @@ export function GameScene({ onShowWatershed }: {
   const uiRef = useRef<UIState>(INITIAL_UI);
   const safeArea = getSafeArea();
   const [frogHeight, setFrogHeight] = useState<number>(280);
+  const [gameLoaded, setGameLoaded] = useState(false);
 
   // Calculate frog height based on screen size
   useEffect(() => {
@@ -480,27 +483,46 @@ export function GameScene({ onShowWatershed }: {
     return () => window.removeEventListener('resize', calculateFrogHeight);
   }, []);
 
-  // Journal Persistence: Load discoveries on mount, save on quit
+  // Game State Persistence: Load full game state if continuing, save periodically + on quit
   useEffect(() => {
-    // Load saved discoveries from storage
     (async () => {
       try {
-        const saved = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
-        if (saved) {
-          deserializeDiscoveries(gsRef.current, saved);
+        // If continuing, load the full game state
+        if (isContinue) {
+          const savedState = await RundotGameAPI.appStorage.getItem('quiet-garden-save');
+          if (savedState) {
+            const loaded = deserializeGameState(savedState);
+            if (loaded) {
+              gsRef.current = loaded;
+              RundotGameAPI.analytics.recordCustomEvent('game_continue_loaded');
+            }
+          }
+        }
+
+        // Always load discoveries (for both new and continue)
+        const discoveries = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
+        if (discoveries) {
+          deserializeDiscoveries(gsRef.current, discoveries);
         }
       } catch (e) {
-        console.warn('Failed to load discoveries:', e);
+        console.warn('Failed to load game state:', e);
+      } finally {
+        setGameLoaded(true);
       }
     })();
 
     // Save on quit
     const quitHandler = () => {
       try {
-        const serialized = serializeDiscoveries(gsRef.current);
-        RundotGameAPI.appStorage.setItem('quiet-garden-discoveries', serialized);
+        const gameState = serializeGameState(gsRef.current);
+        RundotGameAPI.appStorage.setItem('quiet-garden-save', gameState);
+
+        const discoveries = serializeDiscoveries(gsRef.current);
+        RundotGameAPI.appStorage.setItem('quiet-garden-discoveries', discoveries);
+
+        RundotGameAPI.analytics.recordCustomEvent('game_state_saved');
       } catch (e) {
-        console.warn('Failed to save discoveries on quit:', e);
+        console.warn('Failed to save game state on quit:', e);
       }
     };
     RundotGameAPI.lifecycles.onQuit(quitHandler);
@@ -508,7 +530,7 @@ export function GameScene({ onShowWatershed }: {
     return () => {
       // Cleanup is handled by RundotGameAPI
     };
-  }, []);
+  }, [isContinue]);
 
   // Typewriter animation state
   const [displayedText, setDisplayedText] = useState('');
@@ -1409,14 +1431,17 @@ export function GameScene({ onShowWatershed }: {
         },
       );
 
-      // Journal Persistence: Save discoveries every 30 ticks (~0.5s at 60fps)
+      // Periodic Persistence: Save game state and discoveries every 30 ticks (~0.5s at 60fps)
       if (gs.tick - lastSaveTickRef.current >= 30) {
         lastSaveTickRef.current = gs.tick;
         try {
-          const serialized = serializeDiscoveries(gs);
-          RundotGameAPI.appStorage.setItem('quiet-garden-discoveries', serialized);
+          const gameState = serializeGameState(gs);
+          RundotGameAPI.appStorage.setItem('quiet-garden-save', gameState);
+
+          const discoveries = serializeDiscoveries(gs);
+          RundotGameAPI.appStorage.setItem('quiet-garden-discoveries', discoveries);
         } catch (e) {
-          console.warn('Failed to save discoveries:', e);
+          console.warn('Failed to save game state:', e);
         }
       }
 
@@ -1574,6 +1599,26 @@ export function GameScene({ onShowWatershed }: {
   // -------------------------------------------------------------------------
   // Render
   // -------------------------------------------------------------------------
+
+  // Don't render game until state is loaded
+  if (!gameLoaded) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#1A1A1A',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+        }}
+      >
+        Loading game...
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
