@@ -107,22 +107,28 @@ function loadSprite(path: string): HTMLImageElement | null {
   if (spriteCache[path]) return spriteCache[path];
   const img = new Image();
   img.src = path;
+  img.onerror = () => console.warn(`Failed to load sprite: ${path}`);
+  img.onload = () => console.log(`Loaded sprite: ${path}`);
   spriteCache[path] = img;
   return img;
 }
 
 function getPlayerSprite(facing: string, isMoving: boolean, tick: number): HTMLImageElement | null {
-  let spriteName = 'idle';
+  let spriteName = '';
 
   if (isMoving) {
     // Alternate between 2 frames every 300ms
     const frameIndex = Math.floor((tick * 16) / 300) % 2; // tick is in frames, ~16ms per frame
-    spriteName = `walk_${facing === 'e' ? 'right' : facing === 'w' ? 'left' : facing === 'n' ? 'up' : 'down'}_${frameIndex + 1}`;
+    const direction = facing === 'e' ? 'right' : facing === 'w' ? 'left' : facing === 'n' ? 'up' : 'down';
+    spriteName = `walk_${direction}_${frameIndex + 1}`;
   } else {
-    spriteName = `idle_${facing === 'n' ? 'up' : 'down'}`;
+    // Idle - only have up/down sprites, use down for left/right
+    const direction = facing === 'n' ? 'up' : 'down';
+    spriteName = `idle_${direction}`;
   }
 
-  return loadSprite(`/sprites/${spriteName}t.png`);
+  const path = `/sprites/${spriteName}t.png`;
+  return loadSprite(path);
 }
 
 // Fallback drawing function (stashed old sprite code in case we need to revert)
