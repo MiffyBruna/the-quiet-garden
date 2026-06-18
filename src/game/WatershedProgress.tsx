@@ -206,8 +206,10 @@ export function WatershedProgress({
           padding: theme.spacing.md,
           display: 'flex',
           flexDirection: 'column',
-          gap: theme.spacing.md,
+          gap: theme.spacing.sm,
           overflowY: 'auto',
+          overflowX: 'hidden',
+          minHeight: 0,
         }}
       >
         {/* Chapters tab */}
