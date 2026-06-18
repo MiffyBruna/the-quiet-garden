@@ -1588,7 +1588,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
     };
-  }, [queueDialogue, triggerCompletionEvent]);
+  }, [gameLoaded, queueDialogue, triggerCompletionEvent]);
 
   // -------------------------------------------------------------------------
   // Layout constants
