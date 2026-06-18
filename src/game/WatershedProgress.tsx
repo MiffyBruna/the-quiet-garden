@@ -3,8 +3,12 @@
  * Accessible from the Journal button in-game.
  * Replaces the old dashboard as the primary screen.
  */
+import { useState } from 'react';
 import { theme } from '../theme';
-import { WILDLIFE_CONDITIONS } from './engine/gameEngine';
+import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS } from './engine/gameEngine';
+import type { PlantType } from './engine/types';
+
+type CatalogTab = 'plants' | 'wildlife' | 'fairies';
 
 interface ChapterInfo {
   id: string;
@@ -98,6 +102,7 @@ export function WatershedProgress({
   onClose,
 }: WatershedProgressProps) {
   const c = theme.colors;
+  const [activeTab, setActiveTab] = useState<CatalogTab>('wildlife');
 
   const chapters = CHAPTERS.map((ch) =>
     ch.id === 'dryland' ? { ...ch, restoration: chapter1Restoration } : ch,
@@ -157,7 +162,7 @@ export function WatershedProgress({
         </button>
       </div>
 
-      {/* Discovery summary */}
+      {/* Discovery tabs */}
       <div
         style={{
           display: 'flex',
@@ -168,23 +173,28 @@ export function WatershedProgress({
         }}
       >
         {[
-          { emoji: '🌱', label: 'Plants', count: discoveredPlants.length, total: 5 },
-          { emoji: '🐾', label: 'Wildlife', count: discoveredWildlife.length, total: 10 },
-          { emoji: '✨', label: 'Fairies', count: discoveredFairies.length, total: 5 },
+          { id: 'plants' as CatalogTab, emoji: '🌱', label: 'Plants', count: discoveredPlants.length, total: 5 },
+          { id: 'wildlife' as CatalogTab, emoji: '🐾', label: 'Wildlife', count: discoveredWildlife.length, total: 10 },
+          { id: 'fairies' as CatalogTab, emoji: '✨', label: 'Fairies', count: discoveredFairies.length, total: 5 },
         ].map((item) => (
-          <div
+          <button
             key={item.label}
+            onClick={() => setActiveTab(item.id)}
             style={{
               flex: 1,
               padding: '10px 8px',
               textAlign: 'center',
               borderRight: `1px solid ${c.border}`,
+              border: 'none',
+              background: activeTab === item.id ? 'rgba(124,202,124,0.15)' : 'transparent',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
             }}
           >
             <div style={{ fontSize: 20 }}>{item.emoji}</div>
             <div style={{ fontSize: theme.fontSize.xs, fontWeight: 700, color: c.text.primary }}>{item.count}/{item.total}</div>
             <div style={{ fontSize: 10, color: c.text.muted }}>{item.label}</div>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -202,8 +212,8 @@ export function WatershedProgress({
           <ChapterCard key={ch.id} chapter={ch} />
         ))}
 
-        {/* Wildlife Catalog */}
-        {discoveredWildlife.length > 0 && (
+        {/* Catalog View (switches based on active tab) */}
+        {activeTab === 'wildlife' && discoveredWildlife.length > 0 && (
           <div
             style={{
               borderRadius: theme.borderRadius.lg,
@@ -213,9 +223,6 @@ export function WatershedProgress({
               marginTop: theme.spacing.sm,
             }}
           >
-            <div style={{ fontSize: theme.fontSize.md, fontWeight: 700, marginBottom: theme.spacing.md, color: c.text.primary }}>
-              🐾 Discovered Wildlife
-            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
               {discoveredWildlife.map((wildlifeType) => {
                 const info = WILDLIFE_CONDITIONS.find((w) => w.type === wildlifeType);
@@ -246,6 +253,107 @@ export function WatershedProgress({
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* Plants Catalog */}
+        {activeTab === 'plants' && discoveredPlants.length > 0 && (
+          <div
+            style={{
+              borderRadius: theme.borderRadius.lg,
+              border: `1px solid ${c.border}`,
+              background: c.surface,
+              padding: theme.spacing.md,
+              marginTop: theme.spacing.sm,
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
+              {discoveredPlants.map((plantType) => {
+                const info = PLANT_REQUIREMENTS[plantType as PlantType];
+                if (!info) return null;
+                return (
+                  <div
+                    key={plantType}
+                    style={{
+                      borderRadius: 8,
+                      border: `1px solid ${c.border}`,
+                      background: 'rgba(0,0,0,0.05)',
+                      padding: theme.spacing.sm,
+                      display: 'flex',
+                      gap: theme.spacing.sm,
+                      alignItems: 'flex-start',
+                    }}
+                  >
+                    <div style={{ fontSize: 24, minWidth: 32 }}>{info.emoji}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary }}>
+                        {info.name}
+                      </div>
+                      <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, lineHeight: 1.4, fontStyle: 'italic' }}>
+                        {info.role}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Fairies Catalog */}
+        {activeTab === 'fairies' && discoveredFairies.length > 0 && (
+          <div
+            style={{
+              borderRadius: theme.borderRadius.lg,
+              border: `1px solid ${c.border}`,
+              background: c.surface,
+              padding: theme.spacing.md,
+              marginTop: theme.spacing.sm,
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
+              {discoveredFairies.map((fairyType) => (
+                <div
+                  key={fairyType}
+                  style={{
+                    borderRadius: 8,
+                    border: `1px solid ${c.border}`,
+                    background: 'rgba(0,0,0,0.05)',
+                    padding: theme.spacing.sm,
+                    display: 'flex',
+                    gap: theme.spacing.sm,
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  <div style={{ fontSize: 24, minWidth: 32 }}>✨</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, textTransform: 'capitalize' }}>
+                      {fairyType.replace(/_/g, ' ')}
+                    </div>
+                    <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2 }}>
+                      A mystical fairy visit
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {activeTab === 'wildlife' && discoveredWildlife.length === 0 && (
+          <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: c.text.muted, marginTop: theme.spacing.md }}>
+            No wildlife discovered yet. Keep restoring the valley!
+          </div>
+        )}
+        {activeTab === 'plants' && discoveredPlants.length === 0 && (
+          <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: c.text.muted, marginTop: theme.spacing.md }}>
+            No plants discovered yet. Plant some seeds!
+          </div>
+        )}
+        {activeTab === 'fairies' && discoveredFairies.length === 0 && (
+          <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: c.text.muted, marginTop: theme.spacing.md }}>
+            No fairies discovered yet. Keep exploring!
           </div>
         )}
 
