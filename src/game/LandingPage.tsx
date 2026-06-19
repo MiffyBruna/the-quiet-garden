@@ -178,6 +178,17 @@ export function LandingPage({ onStart }: LandingPageProps) {
             opacity: 0;
           }
         }
+        @keyframes textGlowPulse {
+          0% {
+            text-shadow: 0 0 4px rgba(212, 175, 55, 0.3), 0 0 8px rgba(212, 175, 55, 0.1);
+          }
+          50% {
+            text-shadow: 0 0 12px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.5), 0 0 30px rgba(212, 175, 55, 0.2);
+          }
+          100% {
+            text-shadow: 0 0 4px rgba(212, 175, 55, 0.3), 0 0 8px rgba(212, 175, 55, 0.1);
+          }
+        }
         .sparkle-particle {
           position: absolute;
           top: 0;
@@ -195,6 +206,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
           height: auto;
           filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
           margin-bottom: 10px;
+        }
+        .glow-button {
+          animation: textGlowPulse 3s ease-in-out infinite;
         }
       `}</style>
 
@@ -306,6 +320,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           >
             {saveExists && (
               <button
+                className="glow-button"
                 onClick={handleContinue}
                 style={{
                   background: 'transparent',
@@ -321,11 +336,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.textShadow = '0 0 8px rgba(255, 215, 0, 0.5)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.textShadow = 'none';
                 }}
                 onTouchStart={(e) => {
                   e.currentTarget.style.transform = 'scale(0.98)';
@@ -340,6 +353,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
             {/* Audio Settings Button */}
             <button
+              className="glow-button"
               onClick={() => {
                 setShowAudioSettings(true);
                 RundotGameAPI.analytics.recordCustomEvent('landing_audio_settings_opened');
@@ -359,12 +373,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.textShadow = '0 0 8px rgba(255, 215, 0, 0.5)';
                 e.currentTarget.style.opacity = '1';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.textShadow = 'none';
                 e.currentTarget.style.opacity = '0.75';
               }}
               onTouchStart={(e) => {
