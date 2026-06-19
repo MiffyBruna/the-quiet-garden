@@ -205,6 +205,9 @@ export interface GameState {
     playerOriginalTY: number;
   };
 
+  // Track if intro animation was completed (saved in game state, not persistent across new games)
+  introAnimationCompleted: boolean;
+
   // Pathfinding: queued path to follow
   playerPath: Array<{ x: number; y: number }>;
 }

@@ -260,6 +260,7 @@ export function createInitialGameState(): GameState {
     bundRemovalPenalty: 0,
     cinematicCam: null,
     introAnimationState: null,
+    introAnimationCompleted: false,
     playerPath: [],
   };
 }
@@ -323,6 +324,7 @@ export function createChapter2InitialState(): GameState {
     bundRemovalPenalty: 0,
     cinematicCam: null,
     introAnimationState: null,
+    introAnimationCompleted: false,
     playerPath: [],
   };
 }
