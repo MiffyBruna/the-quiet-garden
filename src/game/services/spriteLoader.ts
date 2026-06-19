@@ -3,8 +3,10 @@
  * Handles sprite sheets with multiple stages/frames.
  */
 
+import { loadCdnAsset } from './assetLoader';
+
 export interface SpriteDefinition {
-  imagePath: string;
+  filename: string; // filename in public/cdn-assets/ (e.g., 'blue-grama.png')
   spriteWidth: number;
   spriteHeight: number;
   stageCount: number; // number of stages (0-4 for plants)
@@ -18,14 +20,14 @@ export interface LoadedSprite {
 // Sprite sheet definitions
 export const PLANT_SPRITES: Record<string, SpriteDefinition> = {
   blue_grama: {
-    imagePath: '/src/game/assets/plants/blue-grama.png',
+    filename: 'blue-grama.png',
     spriteWidth: 48,
     spriteHeight: 56,
     stageCount: 5,
   },
   // Add more plants as you create them
-  // sage: { imagePath: '...', spriteWidth: 48, spriteHeight: 56, stageCount: 5 },
-  // lupine: { imagePath: '...', spriteWidth: 48, spriteHeight: 56, stageCount: 5 },
+  // sage: { filename: 'sage.png', spriteWidth: 48, spriteHeight: 56, stageCount: 5 },
+  // lupine: { filename: 'lupine.png', spriteWidth: 48, spriteHeight: 56, stageCount: 5 },
 };
 
 class SpriteLoader {
@@ -53,18 +55,28 @@ class SpriteLoader {
       throw new Error(`No sprite definition found for plant type: ${plantType}`);
     }
 
-    const promise = new Promise<LoadedSprite>((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
+    const promise = (async () => {
+      try {
+        // Load the sprite from CDN assets
+        const blobUrl = await loadCdnAsset(definition.filename);
+
+        // Create image and load from blob URL
+        const img = new Image();
+        img.src = blobUrl;
+
+        // Wait for image to load
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error(`Failed to load sprite: ${definition.filename}`));
+        });
+
         const loaded: LoadedSprite = { image: img, definition };
         this.loadedSprites.set(plantType, loaded);
-        resolve(loaded);
-      };
-      img.onerror = () => {
-        reject(new Error(`Failed to load sprite: ${definition.imagePath}`));
-      };
-      img.src = definition.imagePath;
-    });
+        return loaded;
+      } catch (error) {
+        throw new Error(`Failed to load sprite ${plantType}: ${error}`);
+      }
+    })();
 
     this.loadingPromises.set(plantType, promise);
     return promise;
