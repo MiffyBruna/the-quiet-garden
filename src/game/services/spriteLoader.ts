@@ -23,8 +23,10 @@ export const PLANT_SPRITES: Record<string, PlantSpriteConfig> = {
   milkweed: {
     baseFilename: 'milkweed',
   },
+  sage: {
+    baseFilename: 'sage',
+  },
   // Add more plants as you create them:
-  // sage: { baseFilename: 'sage' },
 };
 
 class SpriteLoader {
