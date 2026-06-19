@@ -557,6 +557,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
           }
         }
 
+        // Check if the intro walk animation has already been played (persists across sessions/resets)
+        const introPlayed = await RundotGameAPI.appStorage.getItem('quiet-garden-intro-played');
+        if (introPlayed === 'true') {
+          introAnimationPlayedRef.current = true;
+        }
+
         // Always load discoveries (for both new and continue)
         const discoveries = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
         if (discoveries) {
@@ -629,6 +635,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
   // Intro animation: track if dialogue was shown last frame
   const introDialogueWasShownRef = useRef(false);
+  // Intro animation: persisted flag so the walk-with-Moss cinematic plays only once
+  const introAnimationPlayedRef = useRef(false);
 
   // Inspect tile animation: track when a new tile is inspected for flash effect
   const inspectFlashRef = useRef<{ x: number; y: number; startTick: number } | null>(null);
@@ -1730,8 +1738,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
       // Intro animation: detect when dialogue finishes and trigger Moss walk
       const currentUI = uiRef.current;
       const dialogueNowShowing = currentUI.dialogue !== null;
-      if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState) {
-        // Dialogue just finished — start the animation
+      if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState && !introAnimationPlayedRef.current) {
+        // Dialogue just finished — start the animation (only plays the very first time)
         // Both player and Moss walk toward each other, meet, then walk back
         gs.introAnimationState = {
           startTick: gs.tick,
@@ -1744,6 +1752,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
         };
         track('custom_cinematic_intro_animation', {});
         RundotGameAPI.analytics.recordCustomEvent('custom_cinematic_intro_animation', {});
+        // Persist the flag so we never show this animation again
+        introAnimationPlayedRef.current = true;
+        RundotGameAPI.appStorage.setItem('quiet-garden-intro-played', 'true');
       }
       introDialogueWasShownRef.current = dialogueNowShowing;
 
