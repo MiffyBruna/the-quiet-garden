@@ -94,6 +94,7 @@ class SpriteLoader {
    * @param stage Growth stage (0-4)
    * @param x Screen X position (center)
    * @param y Screen Y position (center)
+   * @param maxSize Maximum size in pixels to scale to (default 20px for a 24px tile with padding)
    * @returns true if sprite was drawn, false if not available
    */
   drawSprite(
@@ -101,7 +102,8 @@ class SpriteLoader {
     plantType: string,
     stage: number,
     x: number,
-    y: number
+    y: number,
+    maxSize: number = 20
   ): boolean {
     // Clamp stage to valid range (0-4)
     const clampedStage = Math.max(0, Math.min(Math.floor(stage), 4));
@@ -109,10 +111,19 @@ class SpriteLoader {
     const img = this.getLoadedSprite(plantType, clampedStage);
     if (!img) return false; // Not loaded yet
 
+    // Calculate scaled dimensions to fit within maxSize while maintaining aspect ratio
+    const aspectRatio = img.width / img.height;
+    let width = maxSize;
+    let height = maxSize / aspectRatio;
+
+    // If height exceeds maxSize, scale based on height instead
+    if (height > maxSize) {
+      height = maxSize;
+      width = maxSize * aspectRatio;
+    }
+
     // Draw centered at (x, y)
-    const width = img.width;
-    const height = img.height;
-    ctx.drawImage(img, x - width / 2, y - height / 2);
+    ctx.drawImage(img, x - width / 2, y - height / 2, width, height);
 
     return true;
   }
