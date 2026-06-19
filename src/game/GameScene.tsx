@@ -1738,8 +1738,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
       // Intro animation: detect when dialogue finishes and trigger Moss walk
       const currentUI = uiRef.current;
       const dialogueNowShowing = currentUI.dialogue !== null;
-      if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState && !introAnimationPlayedRef.current) {
-        // Dialogue just finished — start the animation (only plays the very first time)
+      if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState && !introAnimationPlayedRef.current && gs.chapter === 'dryland') {
+        // Dialogue just finished — start the animation (only for Chapter 1, and only the very first time until completed)
         // Both player and Moss walk toward each other, meet, then walk back
         gs.introAnimationState = {
           startTick: gs.tick,
@@ -1752,11 +1752,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
         };
         track('custom_cinematic_intro_animation', {});
         RundotGameAPI.analytics.recordCustomEvent('custom_cinematic_intro_animation', {});
-        // Persist the flag so we never show this animation again
-        introAnimationPlayedRef.current = true;
-        RundotGameAPI.appStorage.setItem('quiet-garden-intro-played', 'true');
-      } else if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState && introAnimationPlayedRef.current) {
-        // Animation was already played before — skip it and auto-advance to inspect_soil
+      } else if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState && introAnimationPlayedRef.current && gs.chapter === 'dryland') {
+        // Animation was already completed before (Chapter 1 only) — skip it and auto-advance to inspect_soil
         // Manually advance without calling advanceQuest (to avoid double dialogue queueing)
         gsRef.current.questStep = 'inspect_soil';
         const highlights: typeof gsRef.current.highlightTiles = [];
@@ -1867,6 +1864,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
           gs.playerDestTX = gs.introAnimationState.playerOriginalTX;
           gs.playerDestTY = gs.introAnimationState.playerOriginalTY;
           gs.introAnimationState = null;
+
+          // Only mark animation as played for Chapter 1 (dryland) to avoid breaking other chapters
+          if (gs.chapter === 'dryland') {
+            introAnimationPlayedRef.current = true;
+            RundotGameAPI.appStorage.setItem('quiet-garden-intro-played', 'true');
+          }
         }
       }
 
