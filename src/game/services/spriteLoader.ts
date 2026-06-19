@@ -14,6 +14,9 @@ export const PLANT_SPRITES: Record<string, PlantSpriteConfig> = {
   blue_grama: {
     baseFilename: 'blue-grama',
   },
+  desert_marigold: {
+    baseFilename: 'desert-marigold',
+  },
   // Add more plants as you create them:
   // sage: { baseFilename: 'sage' },
   // lupine: { baseFilename: 'lupine' },

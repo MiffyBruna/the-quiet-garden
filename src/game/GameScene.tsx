@@ -604,7 +604,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     });
 
     // Preload plant sprites
-    spriteLoader.preloadPlants(['blue_grama']).catch((e) => {
+    spriteLoader.preloadPlants(['blue_grama', 'desert_marigold']).catch((e) => {
       console.warn('Failed to preload plant sprites:', e);
     });
 
@@ -2387,6 +2387,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 <button
                   key={p}
                   onClick={() => {
+                    track('custom_seed_selected', { plant: p });
+                    RundotGameAPI.analytics.recordCustomEvent('seed_selected', { plant: p });
                     seedMsgShownRef.current = null; // new seed type — allow one fresh message
                     setUI((prev) => ({ ...prev, selectedSeed: p }));
                   }}
@@ -2425,7 +2427,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   ) : (
                     <span style={{ fontSize: 16 }}>{req?.emoji[4] ?? '🌿'}</span>
                   )}
-                  <span>{req?.name.split(' ')[0] ?? p}</span>
+                  <span>{req?.name.split(' ').pop() ?? p}</span>
                   <span style={{ fontSize: 9, opacity: 0.6 }}>💧{req?.moisture}% 🌱{req?.fertility}%</span>
                 </button>
               );
