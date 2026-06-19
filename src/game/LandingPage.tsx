@@ -180,13 +180,28 @@ export function LandingPage({ onStart }: LandingPageProps) {
         }
         @keyframes textGlowPulse {
           0% {
-            text-shadow: 0 0 4px rgba(212, 175, 55, 0.3), 0 0 8px rgba(212, 175, 55, 0.1);
+            text-shadow:
+              -1px -1px 0 rgba(44, 24, 16, 0.8), 1px -1px 0 rgba(44, 24, 16, 0.8),
+              -1px 1px 0 rgba(44, 24, 16, 0.8), 1px 1px 0 rgba(44, 24, 16, 0.8),
+              0 -2px 0 rgba(44, 24, 16, 0.6), 0 2px 0 rgba(44, 24, 16, 0.6),
+              -2px 0 0 rgba(44, 24, 16, 0.6), 2px 0 0 rgba(44, 24, 16, 0.6),
+              0 0 4px rgba(212, 175, 55, 0.3), 0 0 8px rgba(212, 175, 55, 0.1);
           }
           50% {
-            text-shadow: 0 0 12px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.5), 0 0 30px rgba(212, 175, 55, 0.2);
+            text-shadow:
+              -1px -1px 0 rgba(44, 24, 16, 0.8), 1px -1px 0 rgba(44, 24, 16, 0.8),
+              -1px 1px 0 rgba(44, 24, 16, 0.8), 1px 1px 0 rgba(44, 24, 16, 0.8),
+              0 -2px 0 rgba(44, 24, 16, 0.6), 0 2px 0 rgba(44, 24, 16, 0.6),
+              -2px 0 0 rgba(44, 24, 16, 0.6), 2px 0 0 rgba(44, 24, 16, 0.6),
+              0 0 12px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.5), 0 0 30px rgba(212, 175, 55, 0.2);
           }
           100% {
-            text-shadow: 0 0 4px rgba(212, 175, 55, 0.3), 0 0 8px rgba(212, 175, 55, 0.1);
+            text-shadow:
+              -1px -1px 0 rgba(44, 24, 16, 0.8), 1px -1px 0 rgba(44, 24, 16, 0.8),
+              -1px 1px 0 rgba(44, 24, 16, 0.8), 1px 1px 0 rgba(44, 24, 16, 0.8),
+              0 -2px 0 rgba(44, 24, 16, 0.6), 0 2px 0 rgba(44, 24, 16, 0.6),
+              -2px 0 0 rgba(44, 24, 16, 0.6), 2px 0 0 rgba(44, 24, 16, 0.6),
+              0 0 4px rgba(212, 175, 55, 0.3), 0 0 8px rgba(212, 175, 55, 0.1);
           }
         }
         .sparkle-particle {
