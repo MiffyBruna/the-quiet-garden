@@ -5043,11 +5043,24 @@
       "timestamp": 1781907878287,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "1781907881047-5143ch0fm",
+      "role": "system",
+      "content": "Compacting project...",
+      "isShownToUser": true,
+      "timestamp": 1781907881047,
+      "type": "compaction",
+      "metadata": {
+        "compaction": {
+          "trigger": "auto"
+        }
+      }
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1781907878329,
-  "tokenUsage": 100529,
+  "updatedAt": 1781907967635,
+  "tokenUsage": 0,
   "script": "default",
   "claudeSessionId": "6bd07aa8-6bb3-4193-9ec2-b07d1d2848b2"
 }
