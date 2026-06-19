@@ -2381,6 +2381,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
             {(['blue_grama', 'desert_marigold', 'lupine', 'sage', 'milkweed', 'mesquite'] as PlantType[]).map((p) => {
               const req = PLANT_REQUIREMENTS[p];
               const selected = ui.selectedSeed === p;
+              const sprite = spriteLoader.getLoadedSprite(p, 4); // stage 4 = blooming
+
               return (
                 <button
                   key={p}
@@ -2402,7 +2404,27 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     gap: 2,
                   }}
                 >
-                  <span style={{ fontSize: 16 }}>{req?.emoji[4] ?? '🌿'}</span>
+                  {/* Show sprite if available, otherwise emoji */}
+                  {sprite ? (
+                    <canvas
+                      ref={(canvas) => {
+                        if (canvas && sprite) {
+                          const ctx = canvas.getContext('2d');
+                          if (ctx) {
+                            canvas.width = 24;
+                            canvas.height = 24;
+                            ctx.clearRect(0, 0, 24, 24);
+                            const w = sprite.width * (20 / Math.max(sprite.width, sprite.height));
+                            const h = sprite.height * (20 / Math.max(sprite.width, sprite.height));
+                            ctx.drawImage(sprite, 12 - w / 2, 12 - h / 2, w, h);
+                          }
+                        }
+                      }}
+                      style={{ imageRendering: 'pixelated', width: 24, height: 24 }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: 16 }}>{req?.emoji[4] ?? '🌿'}</span>
+                  )}
                   <span>{req?.name.split(' ')[0] ?? p}</span>
                   <span style={{ fontSize: 9, opacity: 0.6 }}>💧{req?.moisture}% 🌱{req?.fertility}%</span>
                 </button>
