@@ -557,10 +557,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
           }
         }
 
-        // Check if the intro walk animation has already been played (persists across sessions/resets)
-        const introPlayed = await RundotGameAPI.appStorage.getItem('quiet-garden-intro-played');
-        if (introPlayed === 'true') {
-          introAnimationPlayedRef.current = true;
+        // Check if the intro walk animation has already been played (only applies to continuing games, not new games)
+        if (isContinue) {
+          const introPlayed = await RundotGameAPI.appStorage.getItem('quiet-garden-intro-played');
+          if (introPlayed === 'true') {
+            introAnimationPlayedRef.current = true;
+          }
         }
 
         // Always load discoveries (for both new and continue)
