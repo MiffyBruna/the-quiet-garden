@@ -1755,6 +1755,31 @@ export function GameScene({ onShowWatershed, isContinue }: {
         // Persist the flag so we never show this animation again
         introAnimationPlayedRef.current = true;
         RundotGameAPI.appStorage.setItem('quiet-garden-intro-played', 'true');
+      } else if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState && introAnimationPlayedRef.current) {
+        // Animation was already played before — skip it and auto-advance to inspect_soil
+        // Manually advance without calling advanceQuest (to avoid double dialogue queueing)
+        gsRef.current.questStep = 'inspect_soil';
+        const highlights: typeof gsRef.current.highlightTiles = [];
+        const newTools = [...new Set([...uiRef.current.unlockedTools, 'inspect' as ToolType])];
+        highlights.push(...INSPECT_HIGHLIGHTS);
+        gsRef.current.highlightTiles = highlights;
+        setUI((prev) => ({
+          ...prev,
+          questStep: 'inspect_soil',
+          questObjective: 'Inspect 3 cracked soil tiles',
+          unlockedTools: newTools,
+          activeTool: 'inspect',
+          previousTool: prev.previousTool !== null ? 'inspect' : null,
+        }));
+        // Queue thank-you message followed by the inspect_soil dialogue
+        queueDialogue([
+          {
+            speaker: 'Moss',
+            emoji: '🐸',
+            text: 'Thank you for walking with me. The valley remembers your care.',
+          },
+          ...getQuestMossDialogue('inspect_soil'),
+        ]);
       }
       introDialogueWasShownRef.current = dialogueNowShowing;
 
