@@ -20,6 +20,9 @@ export const PLANT_SPRITES: Record<string, PlantSpriteConfig> = {
   lupine: {
     baseFilename: 'lupine',
   },
+  milkweed: {
+    baseFilename: 'milkweed',
+  },
   // Add more plants as you create them:
   // sage: { baseFilename: 'sage' },
 };
