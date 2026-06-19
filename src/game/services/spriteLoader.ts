@@ -1,64 +1,63 @@
 /**
- * Sprite loading and management system for plant and entity sprites.
- * Handles sprite sheets with multiple stages/frames.
+ * Sprite loading and management for plant sprites.
+ * Uses individual PNG files per growth stage (0-4).
  */
 
 import { loadCdnAsset } from './assetLoader';
 
-export interface SpriteDefinition {
-  filename: string; // filename in public/cdn-assets/ (e.g., 'blue-grama.png')
-  spriteWidth: number;
-  spriteHeight: number;
-  stageCount: number; // number of stages (0-4 for plants)
+export interface PlantSpriteConfig {
+  baseFilename: string; // e.g., 'blue-grama' (files will be 'blue-grama-0.png', 'blue-grama-1.png', etc.)
 }
 
-export interface LoadedSprite {
-  image: HTMLImageElement;
-  definition: SpriteDefinition;
-}
-
-// Sprite sheet definitions
-export const PLANT_SPRITES: Record<string, SpriteDefinition> = {
+// Plant sprite configurations
+export const PLANT_SPRITES: Record<string, PlantSpriteConfig> = {
   blue_grama: {
-    filename: 'blue-grama.png',
-    spriteWidth: 48,
-    spriteHeight: 56,
-    stageCount: 5,
+    baseFilename: 'blue-grama',
   },
-  // Add more plants as you create them
-  // sage: { filename: 'sage.png', spriteWidth: 48, spriteHeight: 56, stageCount: 5 },
-  // lupine: { filename: 'lupine.png', spriteWidth: 48, spriteHeight: 56, stageCount: 5 },
+  // Add more plants as you create them:
+  // sage: { baseFilename: 'sage' },
+  // lupine: { baseFilename: 'lupine' },
 };
 
 class SpriteLoader {
-  private loadedSprites: Map<string, LoadedSprite> = new Map();
-  private loadingPromises: Map<string, Promise<LoadedSprite>> = new Map();
+  // Maps 'blue_grama-stage' -> HTMLImageElement
+  private loadedSprites: Map<string, HTMLImageElement> = new Map();
+  private loadingPromises: Map<string, Promise<HTMLImageElement>> = new Map();
 
   /**
-   * Load a sprite sheet image asynchronously.
-   * Results are cached, so multiple calls for the same sprite are fast.
+   * Get the cache key for a specific plant stage
    */
-  async loadSprite(plantType: string): Promise<LoadedSprite> {
+  private getCacheKey(plantType: string, stage: number): string {
+    return `${plantType}-${stage}`;
+  }
+
+  /**
+   * Load a specific growth stage sprite asynchronously.
+   */
+  async loadSprite(plantType: string, stage: number): Promise<HTMLImageElement> {
+    const cacheKey = this.getCacheKey(plantType, stage);
+
     // Return cached result if available
-    if (this.loadedSprites.has(plantType)) {
-      return this.loadedSprites.get(plantType)!;
+    if (this.loadedSprites.has(cacheKey)) {
+      return this.loadedSprites.get(cacheKey)!;
     }
 
     // Return pending promise if already loading
-    if (this.loadingPromises.has(plantType)) {
-      return this.loadingPromises.get(plantType)!;
+    if (this.loadingPromises.has(cacheKey)) {
+      return this.loadingPromises.get(cacheKey)!;
     }
 
-    // Load the sprite
-    const definition = PLANT_SPRITES[plantType];
-    if (!definition) {
-      throw new Error(`No sprite definition found for plant type: ${plantType}`);
+    // Get plant config
+    const config = PLANT_SPRITES[plantType];
+    if (!config) {
+      throw new Error(`No sprite configuration found for plant type: ${plantType}`);
     }
 
     const promise = (async () => {
       try {
         // Load the sprite from CDN assets
-        const blobUrl = await loadCdnAsset(definition.filename);
+        const filename = `${config.baseFilename}-${stage}.png`;
+        const blobUrl = await loadCdnAsset(filename);
 
         // Create image and load from blob URL
         const img = new Image();
@@ -67,36 +66,34 @@ class SpriteLoader {
         // Wait for image to load
         await new Promise<void>((resolve, reject) => {
           img.onload = () => resolve();
-          img.onerror = () => reject(new Error(`Failed to load sprite: ${definition.filename}`));
+          img.onerror = () => reject(new Error(`Failed to load sprite: ${filename}`));
         });
 
-        const loaded: LoadedSprite = { image: img, definition };
-        this.loadedSprites.set(plantType, loaded);
-        return loaded;
+        this.loadedSprites.set(cacheKey, img);
+        return img;
       } catch (error) {
-        throw new Error(`Failed to load sprite ${plantType}: ${error}`);
+        throw new Error(`Failed to load sprite ${plantType} stage ${stage}: ${error}`);
       }
     })();
 
-    this.loadingPromises.set(plantType, promise);
+    this.loadingPromises.set(cacheKey, promise);
     return promise;
   }
 
   /**
    * Get cached sprite without loading (returns undefined if not loaded yet).
    */
-  getLoadedSprite(plantType: string): LoadedSprite | undefined {
-    return this.loadedSprites.get(plantType);
+  getLoadedSprite(plantType: string, stage: number): HTMLImageElement | undefined {
+    return this.loadedSprites.get(this.getCacheKey(plantType, stage));
   }
 
   /**
-   * Draw a specific stage of a plant sprite onto the canvas.
+   * Draw a specific growth stage sprite onto the canvas.
    * @param ctx Canvas context
    * @param plantType Type of plant (e.g., 'blue_grama')
    * @param stage Growth stage (0-4)
    * @param x Screen X position (center)
    * @param y Screen Y position (center)
-   * @param scale Scale factor (default 1.0)
    * @returns true if sprite was drawn, false if not available
    */
   drawSprite(
@@ -104,43 +101,41 @@ class SpriteLoader {
     plantType: string,
     stage: number,
     x: number,
-    y: number,
-    scale: number = 1.0
+    y: number
   ): boolean {
-    const loaded = this.getLoadedSprite(plantType);
-    if (!loaded) return false; // Not loaded yet
+    // Clamp stage to valid range (0-4)
+    const clampedStage = Math.max(0, Math.min(Math.floor(stage), 4));
 
-    const { image, definition } = loaded;
-    const { spriteWidth, spriteHeight } = definition;
-
-    // Clamp stage to valid range
-    const clampedStage = Math.max(0, Math.min(stage, definition.stageCount - 1));
-
-    // Source position in sprite sheet (stages are arranged horizontally)
-    const sourceX = clampedStage * spriteWidth;
-    const sourceY = 0;
-
-    // Destination size (with scale)
-    const destWidth = spriteWidth * scale;
-    const destHeight = spriteHeight * scale;
+    const img = this.getLoadedSprite(plantType, clampedStage);
+    if (!img) return false; // Not loaded yet
 
     // Draw centered at (x, y)
-    ctx.drawImage(
-      image,
-      sourceX, sourceY, // source position
-      spriteWidth, spriteHeight, // source size
-      x - destWidth / 2, y - destHeight / 2, // destination position (centered)
-      destWidth, destHeight // destination size
-    );
+    const width = img.width;
+    const height = img.height;
+    ctx.drawImage(img, x - width / 2, y - height / 2);
 
     return true;
   }
 
   /**
-   * Preload sprites to avoid loading delays during gameplay.
+   * Preload all stages of a plant to avoid loading delays during gameplay.
    */
-  async preloadSprites(plantTypes: string[]): Promise<void> {
-    await Promise.all(plantTypes.map((type) => this.loadSprite(type)));
+  async preloadPlant(plantType: string): Promise<void> {
+    // Load all 5 stages (0-4)
+    await Promise.all([
+      this.loadSprite(plantType, 0),
+      this.loadSprite(plantType, 1),
+      this.loadSprite(plantType, 2),
+      this.loadSprite(plantType, 3),
+      this.loadSprite(plantType, 4),
+    ]);
+  }
+
+  /**
+   * Preload multiple plants
+   */
+  async preloadPlants(plantTypes: string[]): Promise<void> {
+    await Promise.all(plantTypes.map((type) => this.preloadPlant(type)));
   }
 }
 

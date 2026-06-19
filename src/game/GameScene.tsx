@@ -341,8 +341,7 @@ function renderFrame(
           tile.plant.type,
           tile.plant.stage,
           sx + T / 2 + sway,
-          sy + T / 2 + droop,
-          1.0
+          sy + T / 2 + droop
         );
 
         // If no sprite available, render emoji fallback
@@ -605,7 +604,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     });
 
     // Preload plant sprites
-    spriteLoader.preloadSprites(['blue_grama']).catch((e) => {
+    spriteLoader.preloadPlants(['blue_grama']).catch((e) => {
       console.warn('Failed to preload plant sprites:', e);
     });
 
