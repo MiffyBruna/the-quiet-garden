@@ -17,9 +17,11 @@ export const PLANT_SPRITES: Record<string, PlantSpriteConfig> = {
   desert_marigold: {
     baseFilename: 'desert-marigold',
   },
+  lupine: {
+    baseFilename: 'lupine',
+  },
   // Add more plants as you create them:
   // sage: { baseFilename: 'sage' },
-  // lupine: { baseFilename: 'lupine' },
 };
 
 class SpriteLoader {
