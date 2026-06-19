@@ -604,7 +604,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     });
 
     // Preload plant sprites
-    spriteLoader.preloadPlants(['blue_grama', 'desert_marigold', 'lupine', 'milkweed', 'sage']).catch((e) => {
+    spriteLoader.preloadPlants(['blue_grama', 'desert_marigold', 'lupine', 'milkweed', 'sage', 'mesquite']).catch((e) => {
       console.warn('Failed to preload plant sprites:', e);
     });
 

@@ -26,6 +26,9 @@ export const PLANT_SPRITES: Record<string, PlantSpriteConfig> = {
   sage: {
     baseFilename: 'sage',
   },
+  mesquite: {
+    baseFilename: 'mesquite',
+  },
   // Add more plants as you create them:
 };
 
