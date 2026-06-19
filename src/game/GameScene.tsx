@@ -13,6 +13,7 @@ import { track } from '../services/analytics';
 import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, loadAudioSettings } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
+import { spriteLoader } from './services/spriteLoader';
 import {
   TILE_SIZE, MAP_W, MAP_H,
   GameState, UIState, ToolType, PlantType, PlantState, DialogueLine, QuestStep, Tile,
@@ -329,21 +330,37 @@ function renderFrame(
 
       // Plant — always rendered last so it sits above terrain, mulch, water
       if (tile.plant) {
-        const req = PLANT_REQUIREMENTS[tile.plant.type];
-        const emoji = req?.emoji[tile.plant.stage] ?? '🌱';
-        ctx.font = `${T - 6}px serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
         // Sway for mature/blooming plants; droop down when wilted
         const sway = tile.plant.stage >= 3 ? Math.sin(tick * 0.04 + tx * 1.3) * 1.5 : 0;
         const droop = tile.plant.isWilted ? 2 : 0;
         if (tile.plant.isWilted) ctx.globalAlpha = 0.60;
-        ctx.fillText(emoji, sx + T / 2 + sway, sy + T / 2 + droop);
+
+        // Try to render sprite (if available), otherwise fall back to emoji
+        const spriteDrawn = spriteLoader.drawSprite(
+          ctx,
+          tile.plant.type,
+          tile.plant.stage,
+          sx + T / 2 + sway,
+          sy + T / 2 + droop,
+          1.0
+        );
+
+        // If no sprite available, render emoji fallback
+        if (!spriteDrawn) {
+          const req = PLANT_REQUIREMENTS[tile.plant.type];
+          const emoji = req?.emoji[tile.plant.stage] ?? '🌱';
+          ctx.font = `${T - 6}px serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(emoji, sx + T / 2 + sway, sy + T / 2 + droop);
+        }
+
         ctx.globalAlpha = 1.0;
         // Water-stress droplet indicator (shows when noticeably stressed)
         if (tile.plant.waterStress >= 40) {
           ctx.font = '7px serif';
           ctx.textAlign = 'right';
+          ctx.textBaseline = 'middle';
           ctx.fillText('💧', sx + T - 1, sy + 8);
           ctx.textAlign = 'center';
         }
@@ -585,6 +602,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
     // Preload sprites and other assets in background
     preloadCdnAssets(SPRITE_FILENAMES).catch((e) => {
       console.warn('Failed to preload sprites:', e);
+    });
+
+    // Preload plant sprites
+    spriteLoader.preloadSprites(['blue_grama']).catch((e) => {
+      console.warn('Failed to preload plant sprites:', e);
     });
 
     // Preload sound effects in background
