@@ -191,3 +191,29 @@ export function stopRain(): void {
     rainAudioInstance = null;
   }
 }
+
+let mulchAudioInstance: HTMLAudioElement | null = null;
+
+/**
+ * Play mulch sound effect (one-time)
+ */
+export function playMulch(): void {
+  if (!currentSettings.sfxEnabled) return;
+
+  // Stop any existing mulch sound
+  if (mulchAudioInstance) {
+    mulchAudioInstance.pause();
+    mulchAudioInstance = null;
+  }
+
+  try {
+    mulchAudioInstance = new Audio('/mulch.ogg');
+    mulchAudioInstance.loop = false;
+    mulchAudioInstance.volume = currentSettings.sfxVolume / 100;
+    mulchAudioInstance.play().catch((e) => {
+      console.warn('Failed to play mulch sound:', e);
+    });
+  } catch (e) {
+    console.warn('Failed to load mulch sound:', e);
+  }
+}
