@@ -3,6 +3,13 @@
   "relativePathToDistFolder": "dist",
   "usesPreloader": false,
   "orientation": "both",
-  "keywords": null,
+  "keywords": [
+    "cozy",
+    "nature",
+    "restoration",
+    "garden",
+    "puzzle",
+    "relaxing"
+  ],
   "kitId": "stay-awhile"
 }
