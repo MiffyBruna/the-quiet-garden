@@ -2914,6 +2914,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 if (gsRef.current.introAnimationState) return;
 
                 if (def.id === 'rain') {
+                  // Cancel bund positioning if active
+                  if (uiRef.current.bundMode === 'positioning') {
+                    gsRef.current.highlightTiles = [];
+                    setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
+                  }
                   const gs = gsRef.current;
                   const restoration = calculateRestoration(gs);
                   triggerRain(gs, restoration);
@@ -2947,6 +2952,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 }
 
                 if (def.id === 'talk') {
+                  // Cancel bund positioning if active
+                  if (uiRef.current.bundMode === 'positioning') {
+                    gsRef.current.highlightTiles = [];
+                    setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
+                  }
                   const gs = gsRef.current;
                   // Moss dialogue
                   if (gs.questStep === 'intro') {
@@ -2968,6 +2978,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 }
 
                 if (def.id === 'journal') {
+                  // Cancel bund positioning if active
+                  if (uiRef.current.bundMode === 'positioning') {
+                    gsRef.current.highlightTiles = [];
+                    setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
+                  }
                   const gss = gsRef.current;
                   onShowWatershed(
                     calculateRestoration(gss),
