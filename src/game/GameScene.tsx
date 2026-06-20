@@ -1439,7 +1439,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
         const ok = applyBund(gs, tx, ty);
         if (ok) {
-          playSFX('bund', 0.9).catch(() => {});
+          playSFX('bund', 1.0).catch(() => {});
           track('custom_bund_placed', { tx, ty });
           RundotGameAPI.analytics.recordCustomEvent('bund_placed', { tx, ty });
 

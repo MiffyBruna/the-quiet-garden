@@ -13401,11 +13401,82 @@
       "timestamp": 1781925743457,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1781925768598",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "can it be nore than .9",
+      "timestamp": 1781925768598,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781925777082-u0mw5x603",
+      "role": "assistant",
+      "content": "Absolutely! Let me crank it up to maximum (1.0):",
+      "isShownToUser": true,
+      "timestamp": 1781925777202,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1781925778397-2ji4290pb",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781925778397,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781925780182-1td4j2lwy",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1781925780182,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1781925782189-jt5xgatfz",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1781925782189,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1781925787439-5q22yvok1",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1781925787439,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1781925792902-danz8w8mx",
+      "role": "assistant",
+      "content": "Done! The digging sound is now at maximum volume (1.0). It will be loud and clear when you dig each bund space!",
+      "isShownToUser": true,
+      "timestamp": 1781925793031,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1781925743492,
-  "tokenUsage": 83536,
+  "updatedAt": 1781925793121,
+  "tokenUsage": 84480,
   "script": "default",
   "claudeSessionId": "7c710745-5c51-4e9b-a2e0-1a5469470ee3"
 }
