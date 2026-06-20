@@ -2311,7 +2311,17 @@ export function deserializeGameState(json: string): GameState | null {
 
     // Restore discoveries
     if (Array.isArray(data.discoveredWildlife)) gs.discoveredWildlife = data.discoveredWildlife;
-    if (Array.isArray(data.discoveredFairies)) gs.discoveredFairies = data.discoveredFairies;
+    if (Array.isArray(data.discoveredFairies)) {
+      // Migrate old fairy names (first_fairy, second_fairy, etc.) to new ones (sprig, nima, etc.)
+      const fairyMigration: Record<string, string> = {
+        'first_fairy': 'sprig',
+        'second_fairy': 'nima',
+        'third_fairy': 'bloom',
+        'fourth_fairy': 'ripple',
+        'fifth_fairy': 'tampopo',
+      };
+      gs.discoveredFairies = data.discoveredFairies.map((fairy: string) => fairyMigration[fairy] || fairy);
+    }
     if (Array.isArray(data.discoveredPlants)) gs.discoveredPlants = data.discoveredPlants;
     if (Array.isArray(data.discoveredGuideNotes)) gs.discoveredGuideNotes = data.discoveredGuideNotes;
 
