@@ -2655,8 +2655,29 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     track('custom_seed_selected', { plant: p });
                     RundotGameAPI.analytics.recordCustomEvent('seed_selected', { plant: p });
                     seedMsgShownRef.current = null; // new seed type — allow one fresh message
-                    // Cancel mesquite positioning mode if switching away from mesquite
-                    setUI((prev) => ({ ...prev, selectedSeed: p, mesquiteMode: p === 'mesquite' ? prev.mesquiteMode : null }));
+                    // Auto-enable positioning mode for mesquite, cancel for other seeds
+                    if (p === 'mesquite') {
+                      const wasntInMesquiteMode = uiRef.current.mesquiteMode !== 'positioning';
+                      setUI((prev) => ({
+                        ...prev,
+                        selectedSeed: p,
+                        mesquiteMode: 'positioning',
+                      }));
+                      // Show explanation only once per session when entering mesquite mode
+                      if (wasntInMesquiteMode && !mesquiteExplainedRef.current) {
+                        mesquiteExplainedRef.current = true;
+                        queueDialogue([{
+                          speaker: 'Moss', emoji: '🐸',
+                          text: 'Walk to a spot with fertile soil across all 4 tiles, then press ✓ to plant the mesquite.',
+                        }]);
+                      }
+                    } else {
+                      setUI((prev) => ({
+                        ...prev,
+                        selectedSeed: p,
+                        mesquiteMode: null,
+                      }));
+                    }
                   }}
                   style={{
                     background: selected ? '#2E6B2E' : 'rgba(255,255,255,0.07)',
