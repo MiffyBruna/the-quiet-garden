@@ -1253,7 +1253,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     if (dy < 0) gs.playerFacing = 'n';
 
     // Play footstep sound
-    playSFX('footstep', 0.5).catch(() => {});
+    playSFX('footstep', 0.3).catch(() => {});
     track('custom_sfx_footstep');
   }, [isWalkableTile]);
 
