@@ -712,15 +712,27 @@ export function GameScene({ onShowWatershed, isContinue }: {
             console.warn('Failed to preload Moss sprite:', e);
           }),
           fairyLoader.preloadAll().catch((e) => {
-            console.warn('Failed to preload fairy sprites:', e);
+            console.warn('Failed to preload all fairy sprites:', e);
           }),
           Promise.all([
-            fairyLoader.loadSprite('sprig').catch(() => {}),
-            fairyLoader.loadSprite('nima').catch(() => {}),
-            fairyLoader.loadSprite('bloom').catch(() => {}),
-            fairyLoader.loadSprite('ripple').catch(() => {}),
-            fairyLoader.loadSprite('tampopo').catch(() => {}),
-          ]).catch(() => {}),
+            fairyLoader.loadSprite('sprig').catch((e) => {
+              console.warn('Failed to load sprig fairy:', e);
+            }),
+            fairyLoader.loadSprite('nima').catch((e) => {
+              console.warn('Failed to load nima fairy:', e);
+            }),
+            fairyLoader.loadSprite('bloom').catch((e) => {
+              console.warn('Failed to load bloom fairy:', e);
+            }),
+            fairyLoader.loadSprite('ripple').catch((e) => {
+              console.warn('Failed to load ripple fairy:', e);
+            }),
+            fairyLoader.loadSprite('tampopo').catch((e) => {
+              console.warn('Failed to load tampopo fairy:', e);
+            }),
+          ]).catch((e) => {
+            console.warn('Failed to load some fairy sprites:', e);
+          }),
         ]);
 
         // Preload sound effects in background (after game is loaded)

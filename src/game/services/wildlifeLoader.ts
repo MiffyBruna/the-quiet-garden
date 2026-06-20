@@ -124,7 +124,11 @@ class WildlifeLoader {
    */
   async preloadAll(): Promise<void> {
     const allWildlifeTypes = Object.keys(WILDLIFE_SPRITES);
-    await Promise.all(allWildlifeTypes.map((type) => this.loadSprite(type).catch(() => {})));
+    await Promise.all(allWildlifeTypes.map((type) =>
+      this.loadSprite(type).catch((e) => {
+        console.warn(`[wildlifeLoader] Failed to preload ${type}:`, e);
+      })
+    ));
   }
 }
 

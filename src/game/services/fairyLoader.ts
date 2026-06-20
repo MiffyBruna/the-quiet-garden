@@ -83,7 +83,7 @@ class FairyLoader {
   getLoadedSprite(fairyType: string): HTMLImageElement | undefined {
     const sprite = this.loadedSprites.get(fairyType);
     if (!sprite) {
-      console.log(`[fairyLoader] getLoadedSprite(${fairyType}): NOT found. Cache has: ${Array.from(this.loadedSprites.keys()).join(', ')}`);
+      console.warn(`[fairyLoader] getLoadedSprite(${fairyType}): NOT found. Cache has: [${Array.from(this.loadedSprites.keys()).join(', ')}]`);
     } else {
       console.log(`[fairyLoader] getLoadedSprite(${fairyType}): Found, dimensions: ${sprite.width}x${sprite.height}`);
     }
@@ -127,7 +127,11 @@ class FairyLoader {
    */
   async preloadAll(): Promise<void> {
     const allFairyTypes = Object.keys(FAIRY_SPRITES);
-    await Promise.all(allFairyTypes.map((type) => this.loadSprite(type).catch(() => {})));
+    await Promise.all(allFairyTypes.map((type) =>
+      this.loadSprite(type).catch((e) => {
+        console.warn(`[fairyLoader] Failed to preload ${type}:`, e);
+      })
+    ));
   }
 }
 
