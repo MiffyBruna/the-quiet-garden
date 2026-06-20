@@ -22,6 +22,7 @@ export const WILDLIFE_SPRITES: Record<string, WildlifeSpriteConfig> = {
   frog: { filename: 'frog' },
   quail: { filename: 'quail' },
   finch: { filename: 'finch' },
+  hawk: { filename: 'hawk' },
   // Chapter 2 available sprites
   painted_lady: { filename: 'paintedlady' },
   swallow: { filename: 'swallow' },
