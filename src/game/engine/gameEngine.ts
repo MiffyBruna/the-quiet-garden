@@ -2509,58 +2509,45 @@ export function deserializeGameState(json: string): GameState | null {
 
     // Restore fairies with missing fields regenerated
     if (Array.isArray(data.fairies)) {
-      gs.fairies = data.fairies.map((f: any, idx: number) => {
-        // If type is missing, recover it from wisdom text (each fairy has unique wisdom)
+      // Build a list of available fairy types from discovered fairies
+      const availableFairyTypes = new Map<string, FairyType>();
+      if (Array.isArray(gs.discoveredFairies)) {
+        for (const discoveredId of gs.discoveredFairies) {
+          const milestone = FAIRY_MILESTONES.find((m) => m.id === discoveredId);
+          if (milestone) {
+            availableFairyTypes.set(discoveredId, milestone.type);
+          }
+        }
+      }
+      const unusedTypes = Array.from(availableFairyTypes.values());
+
+      gs.fairies = data.fairies.map((f: any) => {
         let fairyType = f.type as FairyType | undefined;
         let fairyWisdom = f.wisdom as string | undefined;
 
-        console.log(`[deserialize] Fairy ${idx}: has type=${!!fairyType}, wisdom="${fairyWisdom?.substring(0, 40) || '(none)'}"`);
-
-        if (!fairyType && fairyWisdom) {
-          // Each fairy has unique wisdom — match to find type
-          const milestone = FAIRY_MILESTONES.find((m) => m.wisdom === fairyWisdom);
-          if (milestone) {
-            fairyType = milestone.type;
-            console.log(`[deserialize] Fairy ${idx}: wisdom matched → type=${fairyType}`);
-          }
+        // First, try to use the saved type if available
+        if (fairyType) {
+          return {
+            id: f.id ?? nextId(),
+            type: fairyType,
+            px: f.px,
+            py: f.py,
+            glowPhase: f.glowPhase ?? Math.random() * Math.PI * 2,
+            wisdom: fairyWisdom ?? 'The garden grows.',
+          };
         }
 
-        // If still no type, try partial matching on wisdom
-        if (!fairyType && fairyWisdom) {
-          const milestone = FAIRY_MILESTONES.find((m) => m.wisdom.substring(0, 30) === fairyWisdom!.substring(0, 30));
-          if (milestone) {
-            fairyType = milestone.type;
-          }
-        }
-
-        // If still missing, check discoveredFairies and assign in order
-        if (!fairyType && Array.isArray(gs.discoveredFairies)) {
-          for (const discoveredId of gs.discoveredFairies) {
-            const milestone = FAIRY_MILESTONES.find((m) => m.id === discoveredId);
-            if (milestone) {
-              fairyType = milestone.type;
-              fairyWisdom = milestone.wisdom;
-              break;
-            }
-          }
-        }
-
-        // Last resort: sprig
-        if (!fairyType) {
-          fairyType = 'sprig' as FairyType;
-          const sprigMilestone = FAIRY_MILESTONES.find((m) => m.type === 'sprig');
-          if (sprigMilestone) {
-            fairyWisdom = sprigMilestone.wisdom;
-          }
-        }
+        // No type saved — assign from discovered fairies in order
+        const assignedType = unusedTypes.shift() ?? ('sprig' as FairyType);
+        const milestone = FAIRY_MILESTONES.find((m) => m.type === assignedType);
 
         return {
           id: f.id ?? nextId(),
-          type: fairyType,
+          type: assignedType,
           px: f.px,
           py: f.py,
           glowPhase: f.glowPhase ?? Math.random() * Math.PI * 2,
-          wisdom: fairyWisdom ?? 'The garden grows.',
+          wisdom: milestone?.wisdom ?? fairyWisdom ?? 'The garden grows.',
         };
       });
     }
