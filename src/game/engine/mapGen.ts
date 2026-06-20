@@ -133,10 +133,11 @@ export const INSPECT_HIGHLIGHTS: Array<{ x: number; y: number }> = [
 // Mesquite 2x2 placement offsets relative to anchor (top-left) tile.
 // The anchor tile stores the real plant; the other 3 are "occupied" markers.
 export const MESQUITE_OFFSETS: Array<{ dx: number; dy: number }> = [
-  { dx: 0, dy: 0 }, // anchor (top-left)
-  { dx: 1, dy: 0 },
-  { dx: 0, dy: 1 },
-  { dx: 1, dy: 1 },
+  // 4x4 grid - anchor at top-left
+  { dx: 0, dy: 0 }, { dx: 1, dy: 0 }, { dx: 2, dy: 0 }, { dx: 3, dy: 0 }, // top row
+  { dx: 0, dy: 1 }, { dx: 1, dy: 1 }, { dx: 2, dy: 1 }, { dx: 3, dy: 1 }, // 2nd row
+  { dx: 0, dy: 2 }, { dx: 1, dy: 2 }, { dx: 2, dy: 2 }, { dx: 3, dy: 2 }, // 3rd row
+  { dx: 0, dy: 3 }, { dx: 1, dy: 3 }, { dx: 2, dy: 3 }, { dx: 3, dy: 3 }, // bottom row
 ];
 
 // Half-moon bund shape offsets relative to a center tile.

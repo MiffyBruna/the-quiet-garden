@@ -345,12 +345,12 @@ function renderFrame(
           if (tile.plant.isWilted) ctx.globalAlpha = 0.60;
 
           if (tile.plant.type === 'mesquite') {
-            // Mesquite renders at 2x2 tile size — scales with growth stage
-            const baseSize = T * 2 - 4; // maximum size at maturity
+            // Mesquite renders at 4x4 tile size — scales with growth stage
+            const baseSize = T * 4 - 4; // maximum size at maturity (4x4 tiles)
             const stageScale = [0.25, 0.45, 0.65, 0.85, 1.0][tile.plant.stage] ?? 1.0; // grow from 25% to 100%
             const treeSize = baseSize * stageScale;
-            const centerX = sx + T + sway; // center of the 2x2 block
-            const centerY = sy + T + droop;
+            const centerX = sx + T * 2 + sway; // center of the 4x4 block
+            const centerY = sy + T * 2 + droop;
 
             const spriteDrawn = spriteLoader.drawSprite(
               ctx,
