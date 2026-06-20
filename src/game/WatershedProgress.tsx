@@ -104,7 +104,7 @@ export function WatershedProgress({
       >
         {[
           { id: 'plants' as CatalogTab, emoji: '🌱', label: 'Plants', count: discoveredPlants.length, total: 5 },
-          { id: 'wildlife' as CatalogTab, emoji: '🐾', label: 'Wildlife', count: discoveredWildlife.length, total: 10 },
+          { id: 'wildlife' as CatalogTab, emoji: '🐾', label: 'Wildlife', count: discoveredWildlife.length, total: 12 },
           { id: 'fairies' as CatalogTab, emoji: '✨', label: 'Fairies', count: discoveredFairies.length, total: 5 },
         ].map((item) => (
           <button
