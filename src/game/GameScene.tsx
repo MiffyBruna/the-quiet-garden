@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -1571,6 +1571,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           setUI((p) => ({ ...p, heldEntity: null }));
           if (currentUI.reshapeMode === 'create_water') {
             track('custom_landscape_created_water', { tx, ty });
+            playWater();
           } else if (currentUI.reshapeMode === 'create_rocks') {
             track('custom_landscape_created_rocks', { tx, ty });
           } else if (currentUI.reshapeMode === 'destroy_rocks') {

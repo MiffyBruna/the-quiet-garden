@@ -269,3 +269,29 @@ export function playMove(): void {
     console.warn('Failed to load move sound:', e);
   }
 }
+
+let waterAudioInstance: HTMLAudioElement | null = null;
+
+/**
+ * Play water creation sound effect (for reshape tool water creation)
+ */
+export function playWater(): void {
+  if (!currentSettings.sfxEnabled) return;
+
+  // Stop any existing water sound
+  if (waterAudioInstance) {
+    waterAudioInstance.pause();
+    waterAudioInstance = null;
+  }
+
+  try {
+    waterAudioInstance = new Audio('/water.ogg');
+    waterAudioInstance.loop = false;
+    waterAudioInstance.volume = currentSettings.sfxVolume / 100;
+    waterAudioInstance.play().catch((e) => {
+      console.warn('Failed to play water sound:', e);
+    });
+  } catch (e) {
+    console.warn('Failed to load water sound:', e);
+  }
+}
