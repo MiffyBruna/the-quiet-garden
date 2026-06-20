@@ -2304,9 +2304,19 @@ export function serializeDiscoveries(gs: GameState): string {
 export function deserializeDiscoveries(gs: GameState, json: string): void {
   try {
     const data = JSON.parse(json);
-    if (Array.isArray(data.discoveredWildlife)) gs.discoveredWildlife = data.discoveredWildlife;
-    if (Array.isArray(data.discoveredFairies)) gs.discoveredFairies = data.discoveredFairies;
-    if (Array.isArray(data.discoveredPlants)) gs.discoveredPlants = data.discoveredPlants;
+    // Filter out invalid discoveries to keep only those that exist in the current game
+    if (Array.isArray(data.discoveredWildlife)) {
+      const validWildlifeIds = new Set(ZONES.flatMap((z) => z.wildlife.map((w) => w.id)));
+      gs.discoveredWildlife = data.discoveredWildlife.filter((w: string) => validWildlifeIds.has(w));
+    }
+    if (Array.isArray(data.discoveredFairies)) {
+      const validFairyIds = new Set(ZONES.flatMap((z) => z.fairies.map((f) => f.id)));
+      gs.discoveredFairies = data.discoveredFairies.filter((f: string) => validFairyIds.has(f));
+    }
+    if (Array.isArray(data.discoveredPlants)) {
+      const validPlantIds = new Set(PLANTS.map((p) => p.id));
+      gs.discoveredPlants = data.discoveredPlants.filter((plant: string) => validPlantIds.has(plant));
+    }
     if (Array.isArray(data.discoveredGuideNotes)) gs.discoveredGuideNotes = data.discoveredGuideNotes;
   } catch (e) {
     // Silently ignore malformed JSON — use defaults
