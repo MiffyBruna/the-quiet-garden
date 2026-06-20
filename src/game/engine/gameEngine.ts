@@ -838,7 +838,7 @@ export function applyPlantSeed(
 
 /**
  * Plant a mesquite tree on a 2x2 grid anchored at (anchorTX, anchorTY).
- * All 4 tiles must be valid (no rocks, water, existing plants, and moisture ≥ 50%).
+ * All 4 tiles must be valid (no rocks, water, existing plants, and fertility ≥ 25%).
  * The anchor tile (top-left) holds the real PlantState; the other 3 tiles get
  * an isMesquiteOccupied marker so the renderer skips them individually.
  */
@@ -847,7 +847,7 @@ export function applyMesquitePlant(
   anchorTX: number,
   anchorTY: number,
 ): { planted: boolean; reason: string } {
-  const req = PLANT_REQUIREMENTS['mesquite'];
+  const REQUIRED_FERTILITY = 25; // Mesquite requires fertile soil, not necessarily wet soil
 
   // Validate all 4 tiles first
   for (const { dx, dy } of MESQUITE_OFFSETS) {
@@ -866,10 +866,10 @@ export function applyMesquitePlant(
     if (tile.terrain === 'bund') return { planted: false, reason: 'Cannot plant over a bund.' };
     if (tile.terrain === 'water') return { planted: false, reason: 'Cannot plant in water.' };
     if (tile.plant) return { planted: false, reason: 'Something is already growing in the way.' };
-    if (tile.moisture < req.moisture) {
+    if (tile.fertility < REQUIRED_FERTILITY) {
       return {
         planted: false,
-        reason: `All 4 tiles need ${req.moisture}% moisture. One only has ${Math.round(tile.moisture)}% — try an area with more humidity.`,
+        reason: `All 4 tiles need ${REQUIRED_FERTILITY}% fertility. One only has ${Math.round(tile.fertility)}% — try an area with richer soil.`,
       };
     }
   }
@@ -1032,7 +1032,7 @@ export const PLANT_REQUIREMENTS: Record<PlantType, {
     moisture: 28,
     fertility: 20,
     role: 'Late-season food for tired wings',
-    attractsWildlife: ['swallowtail', 'bumblebee'],
+    attractsWildlife: ['painted_lady', 'bumblebee'],
   },
   aster: {
     name: 'Aster',
@@ -1040,7 +1040,7 @@ export const PLANT_REQUIREMENTS: Record<PlantType, {
     moisture: 26,
     fertility: 19,
     role: 'Late bloomer for autumn pollinators',
-    attractsWildlife: ['swallowtail', 'bumblebee'],
+    attractsWildlife: ['painted_lady', 'bumblebee'],
   },
 };
 
@@ -1493,9 +1493,9 @@ export const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
     wisdom: 'Bumblebees are the gentle giants of the meadow. They hum songs of abundance.',
   },
   {
-    type: 'swallowtail', emoji: '🦋',
+    type: 'painted_lady', emoji: '🦋',
     check: (gs) => gs.discoveredPlants.includes('goldenrod') || gs.discoveredPlants.includes('aster'),
-    wisdom: 'Swallowtails carry late-season nectar on their wings, returning strength to tired flowers.',
+    wisdom: 'Painted Ladies journey across continents on fragile wings, proving that beauty is also resilience.',
   },
   {
     type: 'hummingbird', emoji: '🌺',

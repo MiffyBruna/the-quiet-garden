@@ -1506,14 +1506,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
       }
 
       if (tool === 'seed') {
-        // Mesquite requires 2x2 humidity area — use positioning mode instead of direct planting
+        // Mesquite requires 2x2 fertility area — use positioning mode instead of direct planting
         if (currentUI.selectedSeed === 'mesquite') {
           // If already in positioning mode, a canvas tap just moves the player; confirm via button
           if (currentUI.mesquiteMode !== 'positioning') {
             setUI((p) => ({ ...p, mesquiteMode: 'positioning' }));
             queueDialogue([{
               speaker: 'Moss', emoji: '🐸',
-              text: 'Walk to a spot with good humidity on all 4 tiles, then press ✓ to plant the mesquite.',
+              text: 'Walk to a spot with fertile soil across all 4 tiles, then press ✓ to plant the mesquite.',
             }]);
           }
           return;
@@ -2520,7 +2520,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
               🌳 Position mesquite (2×2)
             </div>
             <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.6)' }}>
-              Walk to a humid spot, then confirm
+              Walk to fertile soil, then confirm
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>

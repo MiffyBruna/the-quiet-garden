@@ -400,11 +400,11 @@ export const ZONES: Zone[] = [
         appearsAtHealth: 40,
       },
       {
-        id: 'swallowtail',
-        name: 'Swallowtail Butterfly',
+        id: 'painted_lady',
+        name: 'Painted Lady Butterfly',
         emoji: '🦋',
         role: 'Pollinator',
-        fact: 'Swallowtail caterpillars need very specific host plants. Their arrival means the meadow has matured enough to support the whole life cycle.',
+        fact: 'Painted Ladies are champions of migration—traveling thousands of miles on delicate wings. Their presence signals a meadow in full bloom.',
         appearsAtHealth: 60,
       },
       {

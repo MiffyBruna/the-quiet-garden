@@ -21,7 +21,7 @@ export const WILDLIFE_SPRITES: Record<string, WildlifeSpriteConfig> = {
   quail: { filename: 'quail' },
   finch: { filename: 'finch' },
   // Chapter 2 available sprites
-  swallowtail: { filename: 'swallowtail' },
+  painted_lady: { filename: 'paintedlady' },
   swallow: { filename: 'swallow' },
   // NPCs
   moss: { filename: 'moss' },
