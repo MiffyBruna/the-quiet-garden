@@ -2651,6 +2651,53 @@ export function GameScene({ onShowWatershed, isContinue }: {
         </div>
       )}
 
+      {/* ── Bund digging mode (after confirmation, shows cancel button) ──── */}
+      {ui.bundMode === 'digging' && !ui.dialogue && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: TOOLBAR_H + safeArea.bottom + 8,
+            left: 8,
+            right: 8,
+            background: 'rgba(20,35,30,0.96)',
+            borderRadius: 12,
+            border: '1px solid rgba(80,210,190,0.45)',
+            padding: '10px 14px',
+            zIndex: 35,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#50D2BE', marginBottom: 2 }}>
+              🌙 Dig bund
+            </div>
+            <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.6)' }}>
+              Tap to dig the marked area
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button
+              onClick={cancelBund}
+              style={{
+                background: 'rgba(200,80,80,0.15)',
+                border: '1px solid rgba(200,80,80,0.45)',
+                borderRadius: 8,
+                padding: '6px 12px',
+                color: '#FF9090',
+                fontSize: 14,
+                cursor: 'pointer',
+                fontWeight: 700,
+              }}
+            >
+              ✗
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Seed selector (shown when seed tool active, no dialogue) ─────── */}
       {ui.activeTool === 'seed' && !ui.dialogue && ui.showSeedPanel && (
         <div
