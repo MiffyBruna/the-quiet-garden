@@ -2509,16 +2509,19 @@ export function deserializeGameState(json: string): GameState | null {
 
     // Restore fairies with missing fields regenerated
     if (Array.isArray(data.fairies)) {
-      gs.fairies = data.fairies.map((f: any) => {
+      gs.fairies = data.fairies.map((f: any, idx: number) => {
         // If type is missing, recover it from wisdom text (each fairy has unique wisdom)
         let fairyType = f.type as FairyType | undefined;
         let fairyWisdom = f.wisdom as string | undefined;
+
+        console.log(`[deserialize] Fairy ${idx}: has type=${!!fairyType}, wisdom="${fairyWisdom?.substring(0, 40) || '(none)'}"`);
 
         if (!fairyType && fairyWisdom) {
           // Each fairy has unique wisdom — match to find type
           const milestone = FAIRY_MILESTONES.find((m) => m.wisdom === fairyWisdom);
           if (milestone) {
             fairyType = milestone.type;
+            console.log(`[deserialize] Fairy ${idx}: wisdom matched → type=${fairyType}`);
           }
         }
 
