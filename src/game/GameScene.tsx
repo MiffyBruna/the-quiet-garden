@@ -333,74 +333,6 @@ function renderFrame(
         }
       }
 
-      // Plant — always rendered last so it sits above terrain, mulch, water
-      if (tile.plant) {
-        // Occupied mesquite tiles (non-anchor) are invisible — only the anchor (top-left) renders
-        if (tile.plant.isMesquiteOccupied) {
-          // skip — anchor tile renders the full 4x4 tree
-        } else {
-          // Sway for mature/blooming plants; droop down when wilted
-          const sway = tile.plant.stage >= 3 ? Math.sin(tick * 0.04 + tx * 1.3) * 1.5 : 0;
-          const droop = tile.plant.isWilted ? 2 : 0;
-          if (tile.plant.isWilted) ctx.globalAlpha = 0.60;
-
-          if (tile.plant.type === 'mesquite') {
-            // Mesquite renders at 4x4 tile size — scales with growth stage
-            const baseSize = T * 3.5; // maximum size at maturity (fits in 4x4 tiles with margin)
-            const stageScale = [0.25, 0.45, 0.65, 0.85, 1.0][tile.plant.stage] ?? 1.0; // grow from 25% to 100%
-            const treeSize = baseSize * stageScale;
-            const centerX = sx + T * 1.5 + sway; // center of the 4x4 block (1.5 tiles from anchor)
-            const centerY = sy + T * 1.5 + droop;
-
-            const spriteDrawn = spriteLoader.drawSprite(
-              ctx,
-              'mesquite',
-              tile.plant.stage,
-              centerX,
-              centerY,
-              treeSize,
-            );
-
-            if (!spriteDrawn) {
-              const req = PLANT_REQUIREMENTS['mesquite'];
-              const emoji = req?.emoji[tile.plant.stage] ?? '🌳';
-              ctx.font = `${T * 1.6}px serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(emoji, centerX, centerY);
-            }
-          } else {
-            // Try to render sprite (if available), otherwise fall back to emoji
-            const spriteDrawn = spriteLoader.drawSprite(
-              ctx,
-              tile.plant.type,
-              tile.plant.stage,
-              sx + T / 2 + sway,
-              sy + T / 2 + droop
-            );
-
-            // If no sprite available, render emoji fallback
-            if (!spriteDrawn) {
-              const req = PLANT_REQUIREMENTS[tile.plant.type];
-              const emoji = req?.emoji[tile.plant.stage] ?? '🌱';
-              ctx.font = `${T - 6}px serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(emoji, sx + T / 2 + sway, sy + T / 2 + droop);
-            }
-          }
-
-          ctx.globalAlpha = 1.0;
-          // Water-stress droplet indicator (shows when noticeably stressed)
-          if (tile.plant.waterStress >= 40) {
-            ctx.font = '7px serif';
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('💧', sx + T - 1, sy + 8);
-            ctx.textAlign = 'center';
-          }
-        }
-      }
 
       // Objective highlight (soft pulsing glow and border)
       const isHighlighted = highlights.some((h) => h.x === tx && h.y === ty);
@@ -465,7 +397,82 @@ function renderFrame(
     }
   }
 
-  // --- Draw mesquite growth borders (after tiles, so they appear on top) ---
+  // --- Draw all plants (after all tiles and terrain effects, so they always appear on top) ---
+  for (let ty = startTY; ty <= endTY; ty++) {
+    for (let tx = startTX; tx <= endTX; tx++) {
+      const tile = getTile(gs.tiles, tx, ty);
+      if (!tile?.plant) continue;
+
+      // Occupied mesquite tiles (non-anchor) are invisible — only the anchor (top-left) renders
+      if (tile.plant.isMesquiteOccupied) continue;
+
+      const sx = tx * T - camX;
+      const sy = ty * T - camY;
+
+      // Sway for mature/blooming plants; droop down when wilted
+      const sway = tile.plant.stage >= 3 ? Math.sin(tick * 0.04 + tx * 1.3) * 1.5 : 0;
+      const droop = tile.plant.isWilted ? 2 : 0;
+      if (tile.plant.isWilted) ctx.globalAlpha = 0.60;
+
+      if (tile.plant.type === 'mesquite') {
+        // Mesquite renders at 4x4 tile size — scales with growth stage
+        const baseSize = T * 3.5; // maximum size at maturity (fits in 4x4 tiles with margin)
+        const stageScale = [0.25, 0.45, 0.65, 0.85, 1.0][tile.plant.stage] ?? 1.0;
+        const treeSize = baseSize * stageScale;
+        const centerX = sx + T * 1.5 + sway; // center of the 4x4 block
+        const centerY = sy + T * 1.5 + droop;
+
+        const spriteDrawn = spriteLoader.drawSprite(
+          ctx,
+          'mesquite',
+          tile.plant.stage,
+          centerX,
+          centerY,
+          treeSize,
+        );
+
+        if (!spriteDrawn) {
+          const req = PLANT_REQUIREMENTS['mesquite'];
+          const emoji = req?.emoji[tile.plant.stage] ?? '🌳';
+          ctx.font = `${T * 1.6}px serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(emoji, centerX, centerY);
+        }
+      } else {
+        // Regular plants — try sprite first, fall back to emoji
+        const spriteDrawn = spriteLoader.drawSprite(
+          ctx,
+          tile.plant.type,
+          tile.plant.stage,
+          sx + T / 2 + sway,
+          sy + T / 2 + droop
+        );
+
+        if (!spriteDrawn) {
+          const req = PLANT_REQUIREMENTS[tile.plant.type];
+          const emoji = req?.emoji[tile.plant.stage] ?? '🌱';
+          ctx.font = `${T - 6}px serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(emoji, sx + T / 2 + sway, sy + T / 2 + droop);
+        }
+      }
+
+      ctx.globalAlpha = 1.0;
+
+      // Water-stress droplet indicator
+      if (tile.plant.waterStress >= 40) {
+        ctx.font = '7px serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('💧', sx + T - 1, sy + 8);
+        ctx.textAlign = 'center';
+      }
+    }
+  }
+
+  // --- Draw mesquite growth borders (after plants, so they appear on top) ---
   for (let ty = startTY; ty <= endTY; ty++) {
     for (let tx = startTX; tx <= endTX; tx++) {
       const tile = getTile(gs.tiles, tx, ty);
@@ -477,8 +484,8 @@ function renderFrame(
       const mpulse = 0.5 + 0.5 * Math.sin(tick * 0.08);
       ctx.strokeStyle = `rgba(139, 115, 85, ${0.5 + mpulse * 0.4})`; // Brown border, pulsing
       ctx.lineWidth = 3;
-      // Draw border around full 2x2 mesquite area
-      ctx.strokeRect(sx, sy, T * 2, T * 2);
+      // Draw border around full 4x4 mesquite area
+      ctx.strokeRect(sx, sy, T * 4, T * 4);
     }
   }
 
