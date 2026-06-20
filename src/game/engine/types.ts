@@ -33,6 +33,7 @@ export interface PlantState {
   age: number;          // ticks at current stage
   waterStress: number;  // 0–100; climbs when moisture < plant minimum, drops when above
   isWilted: boolean;    // true when waterStress ≥ 50; growth pauses
+  isMesquiteOccupied?: boolean; // true for the 3 non-anchor tiles in a 2x2 mesquite placement
 }
 
 // ---------------------------------------------------------------------------
@@ -238,6 +239,9 @@ export interface UIState {
   // Bund placement stencil system
   bundMode: 'positioning' | 'digging' | null; // positioning: stencil follows player; digging: locked tiles
   bundTargetTiles: Array<{ x: number; y: number }>; // locked tile set after stencil is confirmed
+
+  // Mesquite 2x2 placement stencil (active when seed=mesquite and tool=seed)
+  mesquiteMode: 'positioning' | null; // stencil follows player until confirmed
 
   // Seed selector panel visibility (independent from activeTool)
   showSeedPanel: boolean; // can close panel while keeping seed tool active

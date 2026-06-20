@@ -22,7 +22,7 @@ import {
 } from './engine/types';
 import {
   createInitialGameState,
-  applyBund, applyMulch, applyPlantSeed, applyShovel, applyLandscape,
+  applyBund, applyMulch, applyPlantSeed, applyShovel, applyLandscape, applyMesquitePlant,
   triggerRain, updateGame,
   PLANT_REQUIREMENTS, calculateRestoration, getRainCooldown,
   getQuestObjective, getQuestMossDialogue,
@@ -32,7 +32,7 @@ import {
   serializeGameState, deserializeGameState,
 } from './engine/gameEngine';
 import {
-  INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS,
+  INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS, MESQUITE_OFFSETS,
 } from './engine/mapGen';
 
 // Module-scope lifecycle telemetry (registered once per page load)
@@ -214,6 +214,7 @@ function renderFrame(
   stencilTiles: Array<{ x: number; y: number }> = [],
   showMossHint = false,
   inspectFlash: { x: number; y: number; startTick: number } | null = null,
+  mesquiteStencilTiles: Array<{ x: number; y: number }> = [],
 ): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -332,38 +333,68 @@ function renderFrame(
 
       // Plant — always rendered last so it sits above terrain, mulch, water
       if (tile.plant) {
-        // Sway for mature/blooming plants; droop down when wilted
-        const sway = tile.plant.stage >= 3 ? Math.sin(tick * 0.04 + tx * 1.3) * 1.5 : 0;
-        const droop = tile.plant.isWilted ? 2 : 0;
-        if (tile.plant.isWilted) ctx.globalAlpha = 0.60;
+        // Occupied mesquite tiles (non-anchor) are invisible — only the anchor (top-left) renders
+        if (tile.plant.isMesquiteOccupied) {
+          // skip — anchor tile renders the full 2x2 tree
+        } else {
+          // Sway for mature/blooming plants; droop down when wilted
+          const sway = tile.plant.stage >= 3 ? Math.sin(tick * 0.04 + tx * 1.3) * 1.5 : 0;
+          const droop = tile.plant.isWilted ? 2 : 0;
+          if (tile.plant.isWilted) ctx.globalAlpha = 0.60;
 
-        // Try to render sprite (if available), otherwise fall back to emoji
-        const spriteDrawn = spriteLoader.drawSprite(
-          ctx,
-          tile.plant.type,
-          tile.plant.stage,
-          sx + T / 2 + sway,
-          sy + T / 2 + droop
-        );
+          if (tile.plant.type === 'mesquite') {
+            // Mesquite renders at 2x2 tile size — centered on the 2x2 block
+            const treeSize = T * 2 - 4; // fits nicely within two tiles with a small margin
+            const centerX = sx + T + sway; // center of the 2x2 block
+            const centerY = sy + T + droop;
 
-        // If no sprite available, render emoji fallback
-        if (!spriteDrawn) {
-          const req = PLANT_REQUIREMENTS[tile.plant.type];
-          const emoji = req?.emoji[tile.plant.stage] ?? '🌱';
-          ctx.font = `${T - 6}px serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(emoji, sx + T / 2 + sway, sy + T / 2 + droop);
-        }
+            const spriteDrawn = spriteLoader.drawSprite(
+              ctx,
+              'mesquite',
+              tile.plant.stage,
+              centerX,
+              centerY,
+              treeSize,
+            );
 
-        ctx.globalAlpha = 1.0;
-        // Water-stress droplet indicator (shows when noticeably stressed)
-        if (tile.plant.waterStress >= 40) {
-          ctx.font = '7px serif';
-          ctx.textAlign = 'right';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('💧', sx + T - 1, sy + 8);
-          ctx.textAlign = 'center';
+            if (!spriteDrawn) {
+              const req = PLANT_REQUIREMENTS['mesquite'];
+              const emoji = req?.emoji[tile.plant.stage] ?? '🌳';
+              ctx.font = `${T * 1.6}px serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(emoji, centerX, centerY);
+            }
+          } else {
+            // Try to render sprite (if available), otherwise fall back to emoji
+            const spriteDrawn = spriteLoader.drawSprite(
+              ctx,
+              tile.plant.type,
+              tile.plant.stage,
+              sx + T / 2 + sway,
+              sy + T / 2 + droop
+            );
+
+            // If no sprite available, render emoji fallback
+            if (!spriteDrawn) {
+              const req = PLANT_REQUIREMENTS[tile.plant.type];
+              const emoji = req?.emoji[tile.plant.stage] ?? '🌱';
+              ctx.font = `${T - 6}px serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(emoji, sx + T / 2 + sway, sy + T / 2 + droop);
+            }
+          }
+
+          ctx.globalAlpha = 1.0;
+          // Water-stress droplet indicator (shows when noticeably stressed)
+          if (tile.plant.waterStress >= 40) {
+            ctx.font = '7px serif';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('💧', sx + T - 1, sy + 8);
+            ctx.textAlign = 'center';
+          }
         }
       }
 
@@ -387,6 +418,17 @@ function renderFrame(
         ctx.fillStyle = `rgba(80,210,190,${0.10 + spulse * 0.08})`;
         ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
         ctx.strokeStyle = `rgba(80,210,190,${0.6 + spulse * 0.4})`;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
+      }
+
+      // Mesquite 2x2 stencil preview (warm green — shown when positioning mesquite placement)
+      const isMesquiteStencil = mesquiteStencilTiles.some((s) => s.x === tx && s.y === ty);
+      if (isMesquiteStencil) {
+        const mpulse = 0.5 + 0.5 * Math.sin(tick * 0.08 + tx * 0.4 + ty * 0.6);
+        ctx.fillStyle = `rgba(100,180,80,${0.12 + mpulse * 0.10})`;
+        ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
+        ctx.strokeStyle = `rgba(100,180,80,${0.7 + mpulse * 0.3})`;
         ctx.lineWidth = 2;
         ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
       }
@@ -558,6 +600,7 @@ const INITIAL_UI: UIState = {
   fastDialogue: false,
   bundMode: null,
   bundTargetTiles: [],
+  mesquiteMode: null,
   showSeedPanel: true,
   showReshapeMenu: false,
   reshapeMode: 'move',
@@ -1069,6 +1112,33 @@ export function GameScene({ onShowWatershed, isContinue }: {
   }, []);
 
   // -------------------------------------------------------------------------
+  // Mesquite 2x2 placement — confirm / cancel
+  // -------------------------------------------------------------------------
+  const confirmMesquite = useCallback(() => {
+    const gs = gsRef.current;
+    const result = applyMesquitePlant(gs, gs.playerTX, gs.playerTY);
+    if (result.planted) {
+      playSFX('planting', 0.8).catch(() => {});
+      track('custom_mesquite_planted', { tx: gs.playerTX, ty: gs.playerTY });
+      RundotGameAPI.analytics.recordCustomEvent('mesquite_planted', { tx: gs.playerTX, ty: gs.playerTY });
+      setUI((p) => ({
+        ...p,
+        mesquiteMode: null,
+      }));
+      queueDialogue([{
+        speaker: 'Moss', emoji: '🐸',
+        text: 'The mesquite is in! Its deep roots will hold the soil and draw water up for years to come.',
+      }]);
+    } else {
+      queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: result.reason }]);
+    }
+  }, [queueDialogue]);
+
+  const cancelMesquite = useCallback(() => {
+    setUI((p) => ({ ...p, mesquiteMode: null }));
+  }, []);
+
+  // -------------------------------------------------------------------------
   // Completion event — camera pan → dialogue → landscape tool
   // -------------------------------------------------------------------------
   const triggerCompletionEvent = useCallback(() => {
@@ -1436,6 +1506,19 @@ export function GameScene({ onShowWatershed, isContinue }: {
       }
 
       if (tool === 'seed') {
+        // Mesquite requires 2x2 humidity area — use positioning mode instead of direct planting
+        if (currentUI.selectedSeed === 'mesquite') {
+          // If already in positioning mode, a canvas tap just moves the player; confirm via button
+          if (currentUI.mesquiteMode !== 'positioning') {
+            setUI((p) => ({ ...p, mesquiteMode: 'positioning' }));
+            queueDialogue([{
+              speaker: 'Moss', emoji: '🐸',
+              text: 'Walk to a spot with good humidity on all 4 tiles, then press ✓ to plant the mesquite.',
+            }]);
+          }
+          return;
+        }
+
         // Seed spots always relative to wherever the bund was confirmed
         const seedSpots = [
           { x: gs.bundCenterTX - 1, y: gs.bundCenterTY + 2 },
@@ -1586,13 +1669,18 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
       if (e.key === 'Escape') {
         if (currentUI.bundMode === 'positioning') { cancelBund(); return; }
+        if (currentUI.mesquiteMode === 'positioning') { cancelMesquite(); return; }
         if (currentUI.inspectedTile) setUI((p) => ({ ...p, inspectedTile: null }));
         return;
       }
 
-      // Enter confirms bund placement while in positioning mode
+      // Enter confirms bund/mesquite placement while in positioning mode
       if (e.key === 'Enter' && currentUI.bundMode === 'positioning') {
         confirmBund();
+        return;
+      }
+      if (e.key === 'Enter' && currentUI.mesquiteMode === 'positioning') {
+        confirmMesquite();
         return;
       }
 
@@ -1611,7 +1699,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         setTimeout(() => { keyCooldown.current = false; }, 140);
       }
     };
-  }, [handleDialogueInput, movePlayer, confirmBund, cancelBund]);
+  }, [handleDialogueInput, movePlayer, confirmBund, cancelBund, confirmMesquite, cancelMesquite]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => keydownRef.current(e);
@@ -1947,6 +2035,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
             .filter(({ x, y }) => x > 0 && x < MAP_W - 1 && y > 0 && y < MAP_H - 1)
         : [];
 
+      // Mesquite 2x2 stencil: follows player when mesquite seed is selected
+      const mesquiteStencilTiles = currentUI.mesquiteMode === 'positioning'
+        ? MESQUITE_OFFSETS
+            .map(({ dx, dy }) => ({ x: gs.playerTX + dx, y: gs.playerTY + dy }))
+            .filter(({ x, y }) => x > 0 && x < MAP_W - 1 && y > 0 && y < MAP_H - 1)
+        : [];
+
 
       // Moss proximity hint
       const playerNearMoss =
@@ -1968,7 +2063,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         canvas.style.cursor = 'pointer';
       }
 
-      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles, showMossHint, inspectFlashRef.current);
+      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles, showMossHint, inspectFlashRef.current, mesquiteStencilTiles);
       rafRef.current = requestAnimationFrame(loop);
     };
 
@@ -2401,6 +2496,68 @@ export function GameScene({ onShowWatershed, isContinue }: {
         </div>
       )}
 
+      {/* ── Mesquite 2x2 stencil confirm/cancel (positioning mode, no dialogue) ── */}
+      {ui.mesquiteMode === 'positioning' && !ui.dialogue && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: TOOLBAR_H + safeArea.bottom + 8,
+            left: 8,
+            right: 8,
+            background: 'rgba(20,35,15,0.96)',
+            borderRadius: 12,
+            border: '1px solid rgba(100,180,80,0.5)',
+            padding: '10px 14px',
+            zIndex: 36,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#7CCA7C', marginBottom: 2 }}>
+              🌳 Position mesquite (2×2)
+            </div>
+            <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.6)' }}>
+              Walk to a humid spot, then confirm
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button
+              onClick={cancelMesquite}
+              style={{
+                background: 'rgba(200,80,80,0.15)',
+                border: '1px solid rgba(200,80,80,0.45)',
+                borderRadius: 8,
+                padding: '6px 12px',
+                color: '#FF9090',
+                fontSize: 14,
+                cursor: 'pointer',
+                fontWeight: 700,
+              }}
+            >
+              ✗
+            </button>
+            <button
+              onClick={confirmMesquite}
+              style={{
+                background: 'rgba(100,180,80,0.2)',
+                border: '1px solid rgba(100,180,80,0.55)',
+                borderRadius: 8,
+                padding: '6px 12px',
+                color: '#7CCA7C',
+                fontSize: 14,
+                cursor: 'pointer',
+                fontWeight: 700,
+              }}
+            >
+              ✓
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Seed selector (shown when seed tool active, no dialogue) ─────── */}
       {ui.activeTool === 'seed' && !ui.dialogue && ui.showSeedPanel && (
         <div
@@ -2447,7 +2604,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     track('custom_seed_selected', { plant: p });
                     RundotGameAPI.analytics.recordCustomEvent('seed_selected', { plant: p });
                     seedMsgShownRef.current = null; // new seed type — allow one fresh message
-                    setUI((prev) => ({ ...prev, selectedSeed: p }));
+                    // Cancel mesquite positioning mode if switching away from mesquite
+                    setUI((prev) => ({ ...prev, selectedSeed: p, mesquiteMode: p === 'mesquite' ? prev.mesquiteMode : null }));
                   }}
                   style={{
                     background: selected ? '#2E6B2E' : 'rgba(255,255,255,0.07)',
@@ -2704,9 +2862,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   return;
                 }
 
-                // Leaving seed tool resets the "once per selection" message
+                // Leaving seed tool resets the "once per selection" message and mesquite mode
                 if (uiRef.current.activeTool === 'seed' && def.id !== 'seed') {
                   seedMsgShownRef.current = null;
+                  if (uiRef.current.mesquiteMode === 'positioning') {
+                    setUI((p) => ({ ...p, mesquiteMode: null }));
+                  }
                 }
 
                 if (def.id === 'bund') {

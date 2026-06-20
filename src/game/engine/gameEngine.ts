@@ -15,6 +15,7 @@ import {
   CHAPTER2_PLAYER_START_TX, CHAPTER2_PLAYER_START_TY,
   CHAPTER2_CLOVER_START_TX, CHAPTER2_CLOVER_START_TY,
   CHAPTER2_INSPECT_HIGHLIGHTS,
+  MESQUITE_OFFSETS,
 } from './mapGen';
 
 // ---------------------------------------------------------------------------
@@ -558,6 +559,30 @@ export function applyShovel(gs: GameState, tx: number, ty: number): boolean {
 
   // Remove a plant first if one is present
   if (tile.plant) {
+    // Mesquite occupies a 2x2 grid — find and remove all 4 tiles
+    if (tile.plant.type === 'mesquite') {
+      // Find the anchor tile (top-left of the 2x2)
+      let anchorTX = tx;
+      let anchorTY = ty;
+      if (tile.plant.isMesquiteOccupied) {
+        // Search nearby tiles for the anchor
+        for (const { dx, dy } of MESQUITE_OFFSETS) {
+          const candidateX = tx - dx;
+          const candidateY = ty - dy;
+          const candidateTile = getTile(gs.tiles, candidateX, candidateY);
+          if (candidateTile?.plant?.type === 'mesquite' && !candidateTile.plant.isMesquiteOccupied) {
+            anchorTX = candidateX;
+            anchorTY = candidateY;
+            break;
+          }
+        }
+      }
+      // Remove all 4 tiles
+      for (const { dx, dy } of MESQUITE_OFFSETS) {
+        setTile(gs.tiles, anchorTX + dx, anchorTY + dy, { plant: undefined, isModified: true });
+      }
+      return true;
+    }
     setTile(gs.tiles, tx, ty, { plant: undefined, isModified: true });
     return true;
   }
@@ -806,6 +831,69 @@ export function applyPlantSeed(
   }
   if (LATE_BLOOMS.includes(plantType)) {
     gs.chapter2LateFlowerPlanted = true;
+  }
+
+  return { planted: true, reason: '' };
+}
+
+/**
+ * Plant a mesquite tree on a 2x2 grid anchored at (anchorTX, anchorTY).
+ * All 4 tiles must be valid (no rocks, water, existing plants, and moisture ≥ 50%).
+ * The anchor tile (top-left) holds the real PlantState; the other 3 tiles get
+ * an isMesquiteOccupied marker so the renderer skips them individually.
+ */
+export function applyMesquitePlant(
+  gs: GameState,
+  anchorTX: number,
+  anchorTY: number,
+): { planted: boolean; reason: string } {
+  const req = PLANT_REQUIREMENTS['mesquite'];
+
+  // Validate all 4 tiles first
+  for (const { dx, dy } of MESQUITE_OFFSETS) {
+    const tx = anchorTX + dx;
+    const ty = anchorTY + dy;
+
+    if (tx === gs.mossTX && ty === gs.mossTY) {
+      return { planted: false, reason: 'Moss is standing in the way of the tree.' };
+    }
+    if (tx <= 0 || tx >= MAP_W - 1 || ty <= 0 || ty >= MAP_H - 1) {
+      return { planted: false, reason: 'Not enough space here for the tree.' };
+    }
+    const tile = getTile(gs.tiles, tx, ty);
+    if (!tile) return { planted: false, reason: 'Not enough space here.' };
+    if (tile.terrain === 'rock') return { planted: false, reason: 'Cannot plant over rock.' };
+    if (tile.terrain === 'bund') return { planted: false, reason: 'Cannot plant over a bund.' };
+    if (tile.terrain === 'water') return { planted: false, reason: 'Cannot plant in water.' };
+    if (tile.plant) return { planted: false, reason: 'Something is already growing in the way.' };
+    if (tile.moisture < req.moisture) {
+      return {
+        planted: false,
+        reason: `All 4 tiles need ${req.moisture}% moisture. One only has ${Math.round(tile.moisture)}% — try an area with more humidity.`,
+      };
+    }
+  }
+
+  // Plant on all 4 tiles
+  for (const { dx, dy } of MESQUITE_OFFSETS) {
+    const tx = anchorTX + dx;
+    const ty = anchorTY + dy;
+    const isAnchor = dx === 0 && dy === 0;
+    setTile(gs.tiles, tx, ty, {
+      plant: {
+        type: 'mesquite',
+        stage: 0,
+        age: 0,
+        waterStress: 0,
+        isWilted: false,
+        isMesquiteOccupied: !isAnchor,
+      },
+      isModified: true,
+    });
+  }
+
+  if (!gs.discoveredPlants.includes('mesquite')) {
+    gs.discoveredPlants.push('mesquite');
   }
 
   return { planted: true, reason: '' };
@@ -1235,6 +1323,10 @@ export function growPlants(gs: GameState, restoration: number): boolean {
       if (!tile?.plant) continue;
 
       const plant = tile.plant;
+
+      // Mesquite occupied tiles (non-anchor) are synced from the anchor — skip them here
+      if (plant.isMesquiteOccupied) continue;
+
       const req = PLANT_REQUIREMENTS[plant.type];
       if (!req) continue;
 
@@ -1260,7 +1352,14 @@ export function growPlants(gs: GameState, restoration: number): boolean {
 
       // Death from drought — only before 70% restoration
       if (plant.waterStress >= 100 && canDieFromDrought) {
-        setTile(gs.tiles, x, y, { plant: undefined });
+        if (plant.type === 'mesquite') {
+          // Remove all 4 mesquite tiles
+          for (const { dx, dy } of MESQUITE_OFFSETS) {
+            setTile(gs.tiles, x + dx, y + dy, { plant: undefined });
+          }
+        } else {
+          setTile(gs.tiles, x, y, { plant: undefined });
+        }
         continue;
       }
 
@@ -1281,6 +1380,19 @@ export function growPlants(gs: GameState, restoration: number): boolean {
       if (plant.age >= GROWTH_TICKS_PER_STAGE) {
         plant.stage = (plant.stage + 1) as PlantStage;
         plant.age = 0;
+      }
+
+      // Sync stage/wilt/stress to the 3 occupied mesquite tiles
+      if (plant.type === 'mesquite') {
+        for (const { dx, dy } of MESQUITE_OFFSETS) {
+          if (dx === 0 && dy === 0) continue; // skip anchor
+          const occupiedTile = getTile(gs.tiles, x + dx, y + dy);
+          if (occupiedTile?.plant?.isMesquiteOccupied) {
+            occupiedTile.plant.stage = plant.stage;
+            occupiedTile.plant.isWilted = plant.isWilted;
+            occupiedTile.plant.waterStress = plant.waterStress;
+          }
+        }
       }
     }
   }
@@ -2255,6 +2367,7 @@ export function serializeGameState(gs: GameState): string {
           age: tile.plant.age,
           waterStress: tile.plant.waterStress,
           isWilted: tile.plant.isWilted,
+          isMesquiteOccupied: tile.plant.isMesquiteOccupied ?? false,
         } : null,
       }))
     ),
@@ -2383,6 +2496,7 @@ export function deserializeGameState(json: string): GameState | null {
                   age: tileData.plant.age ?? 0,
                   waterStress: tileData.plant.waterStress ?? 0,
                   isWilted: tileData.plant.isWilted ?? false,
+                  isMesquiteOccupied: tileData.plant.isMesquiteOccupied ?? false,
                 };
               } else {
                 tile.plant = undefined;
