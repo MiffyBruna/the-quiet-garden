@@ -2512,14 +2512,20 @@ export function deserializeGameState(json: string): GameState | null {
       // Build a list of available fairy types from discovered fairies
       const availableFairyTypes = new Map<string, FairyType>();
       if (Array.isArray(gs.discoveredFairies)) {
+        console.log(`[fairy restore] discoveredFairies: ${gs.discoveredFairies.join(', ')}`);
         for (const discoveredId of gs.discoveredFairies) {
           const milestone = FAIRY_MILESTONES.find((m) => m.id === discoveredId);
           if (milestone) {
             availableFairyTypes.set(discoveredId, milestone.type);
+            console.log(`[fairy restore] Found milestone ${discoveredId} → type ${milestone.type}`);
           }
         }
+      } else {
+        console.warn(`[fairy restore] discoveredFairies is not an array!`);
       }
       const unusedTypes = Array.from(availableFairyTypes.values());
+      console.log(`[fairy restore] unusedTypes: ${unusedTypes.join(', ')} (count: ${unusedTypes.length})`);
+      console.log(`[fairy restore] data.fairies count: ${data.fairies.length}`);
 
       gs.fairies = data.fairies.map((f: any) => {
         let fairyType = f.type as FairyType | undefined;
