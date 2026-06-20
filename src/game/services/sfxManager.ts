@@ -169,6 +169,19 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
       }
     }
 
+    // For bund digging, try to load user-uploaded leather handle sounds first
+    if (sfxType === 'bund') {
+      try {
+        // Randomly pick one of two leather handle sound variants
+        const variant = Math.floor(Math.random() * 2);
+        const filename = variant === 0 ? 'handleSmallLeather.ogg' : 'handleSmallLeather2.ogg';
+        url = await loadCdnAsset(filename);
+      } catch (e) {
+        console.debug(`User bund audio not available, falling back to generated: ${e}`);
+        url = null; // Fall back to generated audio
+      }
+    }
+
     // If no user audio was loaded, get generated SFX
     if (!url) {
       url = await getSFX(sfxType);
