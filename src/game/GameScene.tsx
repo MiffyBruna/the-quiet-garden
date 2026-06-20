@@ -415,12 +415,12 @@ function renderFrame(
       if (tile.plant.isWilted) ctx.globalAlpha = 0.60;
 
       if (tile.plant.type === 'mesquite') {
-        // Mesquite renders at 4x4 tile size — scales with growth stage
-        const baseSize = T * 2.8; // maximum size at maturity (fits in 4x4 tiles with margin)
+        // Mesquite renders at 2x2 tile size — scales with growth stage
+        const baseSize = T * 1.8; // maximum size at maturity (fits in 2x2 tiles with margin)
         const stageScale = [0.25, 0.45, 0.65, 0.85, 1.0][tile.plant.stage] ?? 1.0;
         const treeSize = baseSize * stageScale;
-        const centerX = sx + T * 1.5 + sway; // center of the 4x4 block
-        const centerY = sy + T * 1.5 + droop;
+        const centerX = sx + T + sway; // center of the 2x2 block
+        const centerY = sy + T + droop;
 
         const spriteDrawn = spriteLoader.drawSprite(
           ctx,
@@ -484,8 +484,8 @@ function renderFrame(
       const mpulse = 0.5 + 0.5 * Math.sin(tick * 0.08);
       ctx.strokeStyle = `rgba(139, 115, 85, ${0.5 + mpulse * 0.4})`; // Brown border, pulsing
       ctx.lineWidth = 3;
-      // Draw border around full 4x4 mesquite area
-      ctx.strokeRect(sx, sy, T * 4, T * 4);
+      // Draw border around full 2x2 mesquite area
+      ctx.strokeRect(sx, sy, T * 2, T * 2);
     }
   }
 
