@@ -85,22 +85,6 @@ export function Journal({ zoneHealthMap, onClose }: JournalProps) {
     (n) => (zoneHealthMap[n.zoneId] ?? 0) >= n.appearsAtHealth,
   ).length;
 
-  // Debug logging
-  console.log('[Journal] Total counts:', {
-    plants: totalPlants,
-    wildlife: totalWildlife,
-    fairies: totalFairies,
-    notes: totalNotes,
-  });
-  console.log('[Journal] Discovered counts:', {
-    plants: discoveredPlants,
-    wildlife: discoveredWildlife,
-    fairies: discoveredFairies,
-    notes: discoveredNotes,
-  });
-  console.log('[Journal] PLANTS array length:', PLANTS.length);
-  console.log('[Journal] ZONES wildlife totals:', ZONES.map((z) => `${z.id}:${z.wildlife.length}`));
-
   return (
     <div
       style={{
