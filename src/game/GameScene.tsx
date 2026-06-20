@@ -717,6 +717,21 @@ export function GameScene({ onShowWatershed, isContinue }: {
         }
 
         // Preload sprites and other assets BEFORE marking game as loaded
+        // Fairy sprites are REQUIRED — game will not load without them
+        try {
+          await Promise.all([
+            fairyLoader.loadSprite('sprig'),
+            fairyLoader.loadSprite('nima'),
+            fairyLoader.loadSprite('bloom'),
+            fairyLoader.loadSprite('ripple'),
+            fairyLoader.loadSprite('tampopo'),
+          ]);
+        } catch (e) {
+          console.error('Failed to load fairy sprites — cannot continue:', e);
+          throw e;
+        }
+
+        // Optional assets load in background (non-blocking)
         await Promise.all([
           preloadCdnAssets(SPRITE_FILENAMES).catch((e) => {
             console.warn('Failed to preload sprites:', e);
@@ -729,28 +744,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
           }),
           wildlifeLoader.loadSprite('moss').catch((e) => {
             console.warn('Failed to preload Moss sprite:', e);
-          }),
-          fairyLoader.preloadAll().catch((e) => {
-            console.warn('Failed to preload all fairy sprites:', e);
-          }),
-          Promise.all([
-            fairyLoader.loadSprite('sprig').catch((e) => {
-              console.warn('Failed to load sprig fairy:', e);
-            }),
-            fairyLoader.loadSprite('nima').catch((e) => {
-              console.warn('Failed to load nima fairy:', e);
-            }),
-            fairyLoader.loadSprite('bloom').catch((e) => {
-              console.warn('Failed to load bloom fairy:', e);
-            }),
-            fairyLoader.loadSprite('ripple').catch((e) => {
-              console.warn('Failed to load ripple fairy:', e);
-            }),
-            fairyLoader.loadSprite('tampopo').catch((e) => {
-              console.warn('Failed to load tampopo fairy:', e);
-            }),
-          ]).catch((e) => {
-            console.warn('Failed to load some fairy sprites:', e);
           }),
         ]);
 
