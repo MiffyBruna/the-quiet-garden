@@ -295,3 +295,29 @@ export function playWater(): void {
     console.warn('Failed to load water sound:', e);
   }
 }
+
+let buttonAudioInstance: HTMLAudioElement | null = null;
+
+/**
+ * Play button click sound effect (for toolbar buttons)
+ */
+export function playButton(): void {
+  if (!currentSettings.sfxEnabled) return;
+
+  // Stop any existing button sound
+  if (buttonAudioInstance) {
+    buttonAudioInstance.pause();
+    buttonAudioInstance = null;
+  }
+
+  try {
+    buttonAudioInstance = new Audio('/button.ogg');
+    buttonAudioInstance.loop = false;
+    buttonAudioInstance.volume = currentSettings.sfxVolume / 100;
+    buttonAudioInstance.play().catch((e) => {
+      console.warn('Failed to play button sound:', e);
+    });
+  } catch (e) {
+    console.warn('Failed to load button sound:', e);
+  }
+}

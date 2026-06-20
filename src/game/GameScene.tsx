@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -2961,6 +2961,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     }]);
                   }
                   track('custom_moss_talked');
+                  playButton();
                   return;
                 }
 
@@ -2974,6 +2975,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   );
                   track('custom_journal_opened');
                   RundotGameAPI.analytics.recordCustomEvent('journal_opened');
+                  playButton();
                   return;
                 }
 
@@ -2998,6 +3000,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                       bundTargetTiles: [],
                       inspectedTile: null,
                     }));
+                    playButton();
                     track('custom_tool_selected', { tool: def.id });
                     RundotGameAPI.analytics.recordCustomEvent('tool_selected', { tool: def.id });
                     return;
@@ -3015,6 +3018,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     bundTargetTiles: [],
                     inspectedTile: null,
                   }));
+                  playButton();
                   track('custom_tool_selected', { tool: def.id });
                   RundotGameAPI.analytics.recordCustomEvent('tool_selected', { tool: def.id });
                   return;
@@ -3029,6 +3033,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   // When switching to landscape tool, show the reshape menu
                   ...(def.id === 'landscape' && { showReshapeMenu: true }),
                 }));
+                playButton();
                 track('custom_tool_selected', { tool: def.id });
                 RundotGameAPI.analytics.recordCustomEvent('tool_selected', { tool: def.id });
               }}
