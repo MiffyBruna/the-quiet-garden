@@ -531,8 +531,8 @@ function renderFrame(
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
 
     // Try to render as sprite first, fall back to emoji
-    // Insects are slightly smaller than animals
-    const spriteSize = isInsect(entity.type) ? 22 : 28;
+    // Insects are smaller than animals for visual distinction
+    const spriteSize = isInsect(entity.type) ? 25 : 32;
     const spriteDrawn = wildlifeLoader.drawSprite(ctx, entity.type, sx, sy, spriteSize);
     if (!spriteDrawn) {
       ctx.font = '14px serif';
