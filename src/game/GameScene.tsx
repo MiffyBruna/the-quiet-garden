@@ -337,7 +337,7 @@ function renderFrame(
       if (tile.plant) {
         // Occupied mesquite tiles (non-anchor) are invisible — only the anchor (top-left) renders
         if (tile.plant.isMesquiteOccupied) {
-          // skip — anchor tile renders the full 2x2 tree
+          // skip — anchor tile renders the full 4x4 tree
         } else {
           // Sway for mature/blooming plants; droop down when wilted
           const sway = tile.plant.stage >= 3 ? Math.sin(tick * 0.04 + tx * 1.3) * 1.5 : 0;
@@ -349,8 +349,8 @@ function renderFrame(
             const baseSize = T * 4 - 4; // maximum size at maturity (4x4 tiles)
             const stageScale = [0.25, 0.45, 0.65, 0.85, 1.0][tile.plant.stage] ?? 1.0; // grow from 25% to 100%
             const treeSize = baseSize * stageScale;
-            const centerX = sx + T * 2 + sway; // center of the 4x4 block
-            const centerY = sy + T * 2 + droop;
+            const centerX = sx + T * 1.5 + sway; // center of the 4x4 block (1.5 tiles from anchor)
+            const centerY = sy + T * 1.5 + droop;
 
             const spriteDrawn = spriteLoader.drawSprite(
               ctx,
