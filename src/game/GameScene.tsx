@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -1688,7 +1688,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         }
         const currentRestoration = calculateRestoration(gs);
         triggerRain(gs, currentRestoration);
-        playSFX('rain', 0.5).catch(() => {});
+        playRain();
         track('custom_rain_called', { rains: gs.rainsCount });
 
         if (gs.questStep === 'first_rain') {
@@ -1736,6 +1736,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
   const keydownRef = useRef<(e: KeyboardEvent) => void>(() => {});
   const keyCooldown = useRef(false);
+  const wasRainingRef = useRef(false);
 
   useEffect(() => {
     keydownRef.current = (e: KeyboardEvent) => {
@@ -1961,6 +1962,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
           ]);
         },
       );
+
+      // Stop rain sound if rain just ended
+      if (wasRainingRef.current && !gs.isRaining) {
+        stopRain();
+      }
+      wasRainingRef.current = gs.isRaining;
 
       // Periodic Persistence: Save game state and discoveries every 30 ticks (~0.5s at 60fps)
       if (gs.tick - lastSaveTickRef.current >= 30) {
