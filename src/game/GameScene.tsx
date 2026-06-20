@@ -742,21 +742,18 @@ export function GameScene({ onShowWatershed, isContinue }: {
           throw new Error(`Fairy sprites failed to load: ${e}`);
         }
 
-        // Optional assets load in background (non-blocking)
-        await Promise.all([
-          preloadCdnAssets(SPRITE_FILENAMES).catch((e) => {
-            console.warn('Failed to preload sprites:', e);
-          }),
-          spriteLoader.preloadPlants(['blue_grama', 'desert_marigold', 'lupine', 'milkweed', 'sage', 'mesquite']).catch((e) => {
-            console.warn('Failed to preload plant sprites:', e);
-          }),
-          wildlifeLoader.preloadAll().catch((e) => {
-            console.warn('Failed to preload wildlife sprites:', e);
-          }),
-          wildlifeLoader.loadSprite('moss').catch((e) => {
-            console.warn('Failed to preload Moss sprite:', e);
-          }),
-        ]);
+        // Load critical assets before showing game
+        try {
+          await Promise.all([
+            preloadCdnAssets(SPRITE_FILENAMES),
+            spriteLoader.preloadPlants(['blue_grama', 'desert_marigold', 'lupine', 'milkweed', 'sage', 'mesquite']),
+            wildlifeLoader.preloadAll(),
+            wildlifeLoader.loadSprite('moss'),
+          ]);
+        } catch (e) {
+          console.error('Failed to load critical game assets:', e);
+          throw new Error(`Critical assets failed to load: ${e}`);
+        }
 
         // Preload sound effects in background (after game is loaded)
         preloadSFX().catch((e) => {
