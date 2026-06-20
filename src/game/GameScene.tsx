@@ -2908,6 +2908,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   const gs = gsRef.current;
                   const restoration = calculateRestoration(gs);
                   triggerRain(gs, restoration);
+                  playRain();
                   setUI((p) => ({ ...p, rainCooling: true }));
                   const cooldown = getRainCooldown(restoration);
                   setTimeout(() => setUI((p) => ({ ...p, rainCooling: false })), cooldown);
