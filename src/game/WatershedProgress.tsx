@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { theme } from '../theme';
 import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS } from './engine/gameEngine';
+import { spriteLoader } from './services/spriteLoader';
 import type { PlantType } from './engine/types';
 
 type CatalogTab = 'plants' | 'wildlife' | 'fairies';
@@ -214,7 +215,29 @@ export function WatershedProgress({
                       alignItems: 'flex-start',
                     }}
                   >
-                    <div style={{ fontSize: 24, minWidth: 32 }}>{info.emoji}</div>
+                    {(() => {
+                      const sprite = spriteLoader.getLoadedSprite(plantType as PlantType, 4); // stage 4 = blooming
+                      return sprite ? (
+                        <canvas
+                          ref={(canvas) => {
+                            if (canvas && sprite) {
+                              const ctx = canvas.getContext('2d');
+                              if (ctx) {
+                                canvas.width = 32;
+                                canvas.height = 32;
+                                ctx.clearRect(0, 0, 32, 32);
+                                const w = sprite.width * (28 / Math.max(sprite.width, sprite.height));
+                                const h = sprite.height * (28 / Math.max(sprite.width, sprite.height));
+                                ctx.drawImage(sprite, 16 - w / 2, 16 - h / 2, w, h);
+                              }
+                            }
+                          }}
+                          style={{ imageRendering: 'pixelated', width: 32, height: 32, minWidth: 32 }}
+                        />
+                      ) : (
+                        <div style={{ fontSize: 24, minWidth: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{info.emoji[4]}</div>
+                      );
+                    })()}
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary }}>
                         {info.name}
