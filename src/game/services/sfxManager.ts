@@ -1,7 +1,9 @@
 /**
  * Sound Effects Manager — generates and caches game sound effects using Audio Generation API
+ * Falls back to user-uploaded audio files if available (e.g., footsteps)
  */
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
+import { loadCdnAsset } from './assetLoader';
 
 interface CachedSFX {
   url: string;
@@ -144,11 +146,30 @@ export async function getSFX(sfxType: SFXType): Promise<string | null> {
 }
 
 /**
- * Play a sound effect
+ * Play a sound effect — tries user-uploaded audio files first, then falls back to generated audio
  */
 export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<void> {
   try {
-    const url = await getSFX(sfxType);
+    let url: string | null = null;
+
+    // For footsteps, try to load user-uploaded audio first
+    if (sfxType === 'footstep') {
+      try {
+        // Randomly pick one of two footstep variants
+        const variant = Math.random() > 0.5 ? 0 : 1;
+        const filename = `footstep_grass_00${variant}.ogg`;
+        url = await loadCdnAsset(filename);
+      } catch (e) {
+        console.debug(`User footstep audio not available, falling back to generated: ${e}`);
+        url = null; // Fall back to generated audio
+      }
+    }
+
+    // If no user audio was loaded, get generated SFX
+    if (!url) {
+      url = await getSFX(sfxType);
+    }
+
     if (url) {
       const audio = new Audio(url);
       audio.volume = volume;
