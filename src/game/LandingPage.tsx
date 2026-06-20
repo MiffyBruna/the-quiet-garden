@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
-import { playMusic, loadAudioSettings, toggleMusic, setMusicVolume } from './services/audioManager';
+import { playMusic, loadAudioSettings, toggleMusic, setMusicVolume, playMenuSelect } from './services/audioManager';
 import { loadCdnAsset } from './services/assetLoader';
 
 interface LandingPageProps {
@@ -284,7 +284,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
         >
           {/* Start/New Game Button */}
           <button
-            onClick={handleNewGame}
+            onClick={() => {
+              playMenuSelect();
+              handleNewGame();
+            }}
             style={{
               background: 'none',
               border: 'none',
@@ -336,7 +339,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
             {saveExists && (
               <button
                 className="glow-button"
-                onClick={handleContinue}
+                onClick={() => {
+                  playMenuSelect();
+                  handleContinue();
+                }}
                 style={{
                   background: 'transparent',
                   border: 'none',
@@ -370,6 +376,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <button
               className="glow-button"
               onClick={() => {
+                playMenuSelect();
                 setShowAudioSettings(true);
                 RundotGameAPI.analytics.recordCustomEvent('landing_audio_settings_opened');
               }}
@@ -472,7 +479,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
               }}
             >
               <button
-                onClick={() => setShowNewGameConfirm(false)}
+                onClick={() => {
+                  playMenuSelect();
+                  setShowNewGameConfirm(false);
+                }}
                 style={{
                   padding: '10px 20px',
                   fontSize: '14px',
@@ -496,7 +506,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 Cancel
               </button>
               <button
-                onClick={confirmNewGame}
+                onClick={() => {
+                  playMenuSelect();
+                  confirmNewGame();
+                }}
                 style={{
                   padding: '10px 20px',
                   fontSize: '14px',
@@ -587,6 +600,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
               </span>
               <button
                 onClick={() => {
+                  playMenuSelect();
                   toggleMusic(!isMusicOn);
                   setIsMusicOn(!isMusicOn);
                   RundotGameAPI.analytics.recordCustomEvent('audio_settings_music_toggled', {
@@ -657,7 +671,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
             {/* Close Button */}
             <button
-              onClick={() => setShowAudioSettings(false)}
+              onClick={() => {
+                playMenuSelect();
+                setShowAudioSettings(false);
+              }}
               style={{
                 width: '100%',
                 padding: '12px',

@@ -321,3 +321,29 @@ export function playButton(): void {
     console.warn('Failed to load button sound:', e);
   }
 }
+
+let menuSelectAudioInstance: HTMLAudioElement | null = null;
+
+/**
+ * Play menu select sound effect (for main menu buttons)
+ */
+export function playMenuSelect(): void {
+  if (!currentSettings.sfxEnabled) return;
+
+  // Stop any existing menu select sound
+  if (menuSelectAudioInstance) {
+    menuSelectAudioInstance.pause();
+    menuSelectAudioInstance = null;
+  }
+
+  try {
+    menuSelectAudioInstance = new Audio('/menu-select.ogg');
+    menuSelectAudioInstance.loop = false;
+    menuSelectAudioInstance.volume = currentSettings.sfxVolume / 100;
+    menuSelectAudioInstance.play().catch((e) => {
+      console.warn('Failed to play menu select sound:', e);
+    });
+  } catch (e) {
+    console.warn('Failed to load menu select sound:', e);
+  }
+}
