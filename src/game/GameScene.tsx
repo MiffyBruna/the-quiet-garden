@@ -490,14 +490,29 @@ function renderFrame(
   }
 
   // --- Draw fairies ---
+  const fairyEmojis: Record<string, string> = {
+    sprig: '🌱',
+    nima: '💧',
+    bloom: '🌸',
+    ripple: '💙',
+    tampopo: '🌼',
+  };
+
   for (const fairy of gs.fairies) {
     const sx = fairy.px - camX;
     const sy = fairy.py - camY;
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
     const float = Math.sin(fairy.glowPhase + tick * 0.04) * 2;
 
-    // Render fairy sprite (sprites are guaranteed to be loaded)
-    fairyLoader.drawSprite(ctx, fairy.type, sx, sy + float, 24);
+    // Render fairy sprite, fallback to emoji if type is missing or sprite unavailable
+    const spriteDrawn = fairyLoader.drawSprite(ctx, fairy.type, sx, sy + float, 24);
+    if (!spriteDrawn) {
+      const emoji = fairyEmojis[fairy.type] ?? '✨';
+      ctx.font = '16px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(emoji, sx, sy + float);
+    }
   }
 
   // --- Draw wildlife entities ---
