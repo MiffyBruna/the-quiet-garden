@@ -239,11 +239,20 @@ function PlantsTab({ zoneHealthMap }: { zoneHealthMap: Record<string, number> })
 
         return (
           <div key={zoneId}>
-            <ZoneSectionHeader
-              emoji={zone.emoji}
-              name={zoneNames[zoneId] ?? zoneId}
-              isUnlocked={isUnlocked}
-            />
+            {(() => {
+              const discoveredInZone = zonePlants.filter(
+                (p) => plantDiscoveryLevel(p, health) > 0,
+              ).length;
+              return (
+                <ZoneSectionHeader
+                  emoji={zone.emoji}
+                  name={zoneNames[zoneId] ?? zoneId}
+                  isUnlocked={isUnlocked}
+                  discovered={discoveredInZone}
+                  total={zonePlants.length}
+                />
+              );
+            })()}
             {isUnlocked ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}>
                 {zonePlants.map((plant) => (
@@ -387,11 +396,20 @@ function WildlifeTab({ zoneHealthMap }: { zoneHealthMap: Record<string, number> 
 
         return (
           <div key={zoneId}>
-            <ZoneSectionHeader
-              emoji={zone.emoji}
-              name={zoneNames[zoneId] ?? zoneId}
-              isUnlocked={isUnlocked}
-            />
+            {(() => {
+              const discoveredInZone = zone.wildlife.filter(
+                (w) => wildlifeDiscoveryLevel(w.appearsAtHealth, health) > 0,
+              ).length;
+              return (
+                <ZoneSectionHeader
+                  emoji={zone.emoji}
+                  name={zoneNames[zoneId] ?? zoneId}
+                  isUnlocked={isUnlocked}
+                  discovered={discoveredInZone}
+                  total={zone.wildlife.length}
+                />
+              );
+            })()}
             {isUnlocked ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}>
                 {zone.wildlife.map((w) => {
@@ -488,7 +506,18 @@ function FairiesTab({ zoneHealthMap }: { zoneHealthMap: Record<string, number> }
 
         return (
           <div key={zone.id}>
-            <ZoneSectionHeader emoji={zone.emoji} name={zone.name} isUnlocked={isUnlocked} />
+            {(() => {
+              const discoveredInZone = zone.fairies.filter((f) => health >= f.appearsAtHealth).length;
+              return (
+                <ZoneSectionHeader
+                  emoji={zone.emoji}
+                  name={zone.name}
+                  isUnlocked={isUnlocked}
+                  discovered={discoveredInZone}
+                  total={zone.fairies.length}
+                />
+              );
+            })()}
             {isUnlocked ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}>
                 {zone.fairies.map((f) => {
@@ -731,8 +760,8 @@ function DiscoveryBadge({ level }: { level: DiscoveryLevel }) {
 }
 
 function ZoneSectionHeader({
-  emoji, name, isUnlocked,
-}: { emoji: string; name: string; isUnlocked: boolean }) {
+  emoji, name, isUnlocked, discovered, total,
+}: { emoji: string; name: string; isUnlocked: boolean; discovered?: number; total?: number }) {
   return (
     <div
       style={{
@@ -752,12 +781,18 @@ function ZoneSectionHeader({
           fontWeight: theme.fontWeight.bold,
           color: isUnlocked ? INK : INK_FAINT,
           fontStyle: 'italic',
+          flex: 1,
         }}
       >
         {name}
       </div>
+      {discovered !== undefined && total !== undefined && (
+        <div style={{ fontSize: 11, color: INK_MUTED, marginLeft: 'auto' }}>
+          {discovered}/{total}
+        </div>
+      )}
       {!isUnlocked && (
-        <span style={{ fontSize: 12, marginLeft: 'auto' }}>🔒</span>
+        <span style={{ fontSize: 12, marginLeft: discovered !== undefined ? undefined : 'auto' }}>🔒</span>
       )}
     </div>
   );
