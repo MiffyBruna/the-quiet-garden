@@ -677,8 +677,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const safeArea = getSafeArea();
   const [frogHeight, setFrogHeight] = useState<number>(280);
   const [gameLoaded, setGameLoaded] = useState(false);
-  const [mossPresentationUrl, setMossPresentationUrl] = useState<string>('');
-  const [fairyPortraits, setFairyPortraits] = useState<Record<string, string>>({});
+  const [characterPortraits, setCharacterPortraits] = useState<Record<string, string>>({});
 
   // Calculate frog height based on screen size
   useEffect(() => {
@@ -715,20 +714,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
           deserializeDiscoveries(gsRef.current, discoveries);
         }
 
-        // Load moss portrait
+        // Load all character portraits (Moss + Fairies)
         try {
-          const portraitUrl = await loadCdnAsset('moss-portrait.png');
-          setMossPresentationUrl(portraitUrl);
-        } catch (e) {
-          console.warn('Failed to load moss portrait:', e);
-        }
-
-        // Load fairy portraits
-        try {
-          const fairyNames = ['sprig', 'nima', 'bloom', 'ripple', 'tampopo'];
+          const characterNames = ['moss', 'sprig', 'nima', 'bloom', 'ripple', 'tampopo'];
           const portraits: Record<string, string> = {};
           await Promise.all(
-            fairyNames.map(async (name) => {
+            characterNames.map(async (name) => {
               try {
                 const url = await loadCdnAsset(`${name}-portrait.png`);
                 portraits[name] = url;
@@ -737,9 +728,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
               }
             })
           );
-          setFairyPortraits(portraits);
+          setCharacterPortraits(portraits);
         } catch (e) {
-          console.warn('Failed to load fairy portraits:', e);
+          console.warn('Failed to load character portraits:', e);
         }
 
         // Ensure music is playing in the game
@@ -2530,10 +2521,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
         );
       })()}
 
-      {/* Moss portrait — smoothly scales with screen size */}
-      {ui.dialogue && frogHeight > 100 && mossPresentationUrl && (
+      {/* Character portrait — displays any speaker at full height */}
+      {ui.dialogue && frogHeight > 100 && ui.dialogue.speaker && characterPortraits[ui.dialogue.speaker] && (
         <img
-          src={mossPresentationUrl}
+          src={characterPortraits[ui.dialogue.speaker]}
           alt=""
           style={{
             position: 'fixed',
@@ -2543,24 +2534,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             width: 'auto',
             zIndex: 42,
             pointerEvents: 'none',
-            transform: 'scaleX(-1)',
-          }}
-        />
-      )}
-
-      {/* Fairy portrait — displays at same height as Moss */}
-      {ui.dialogue && frogHeight > 100 && ui.dialogue.speaker && fairyPortraits[ui.dialogue.speaker] && (
-        <img
-          src={fairyPortraits[ui.dialogue.speaker]}
-          alt=""
-          style={{
-            position: 'fixed',
-            bottom: 160 + Math.max(0, 140 - frogHeight),
-            right: 8,
-            height: frogHeight,
-            width: 'auto',
-            zIndex: 42,
-            pointerEvents: 'none',
+            transform: ui.dialogue.speaker === 'moss' ? 'scaleX(-1)' : 'none',
           }}
         />
       )}
