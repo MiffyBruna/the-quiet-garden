@@ -155,9 +155,9 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
     // For footsteps, try to load user-uploaded audio first
     if (sfxType === 'footstep') {
       try {
-        // Randomly pick one of two footstep variants
-        const variant = Math.random() > 0.5 ? 0 : 1;
-        const filename = `footstep_grass_00${variant}.ogg`;
+        // Randomly pick one of five snow footstep variants for variety
+        const variant = Math.floor(Math.random() * 5);
+        const filename = `footstep_snow_00${variant}.ogg`;
         url = await loadCdnAsset(filename);
       } catch (e) {
         console.debug(`User footstep audio not available, falling back to generated: ${e}`);
