@@ -15,6 +15,7 @@ export const WILDLIFE_SPRITES: Record<string, WildlifeSpriteConfig> = {
   ant: { filename: 'ant' },
   beetle: { filename: 'beetle' },
   bee: { filename: 'bee' },
+  dragonfly: { filename: 'dragonfly' },
   hoverfly: { filename: 'hoverfly' },
   monarch: { filename: 'monarch' },
   cottontail: { filename: 'cottontail' },
