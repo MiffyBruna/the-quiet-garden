@@ -9,6 +9,8 @@ import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS, FAIRY_CONDITIONS } from './eng
 import { spriteLoader } from './services/spriteLoader';
 import { wildlifeLoader } from './services/wildlifeLoader';
 import { fairyLoader } from './services/fairyLoader';
+import { PLANTS } from './journalData';
+import { ZONES } from './gardenData';
 import type { PlantType } from './engine/types';
 
 type CatalogTab = 'plants' | 'wildlife' | 'fairies';
@@ -142,9 +144,9 @@ export function WatershedProgress({
         }}
       >
         {[
-          { id: 'plants' as CatalogTab, emoji: '🌱', label: 'Plants', count: discoveredPlants.length, total: 5 },
-          { id: 'wildlife' as CatalogTab, emoji: '🐾', label: 'Wildlife', count: discoveredWildlife.length, total: 12 },
-          { id: 'fairies' as CatalogTab, emoji: '✨', label: 'Fairies', count: discoveredFairies.length, total: 5 },
+          { id: 'plants' as CatalogTab, emoji: '🌱', label: 'Plants', count: discoveredPlants.length, total: PLANTS.length },
+          { id: 'wildlife' as CatalogTab, emoji: '🐾', label: 'Wildlife', count: discoveredWildlife.length, total: ZONES.flatMap((z) => z.wildlife).length },
+          { id: 'fairies' as CatalogTab, emoji: '✨', label: 'Fairies', count: discoveredFairies.length, total: ZONES.flatMap((z) => z.fairies).length },
         ].map((item) => (
           <button
             key={item.label}

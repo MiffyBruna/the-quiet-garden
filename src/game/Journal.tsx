@@ -85,16 +85,6 @@ export function Journal({ zoneHealthMap, onClose }: JournalProps) {
     (n) => (zoneHealthMap[n.zoneId] ?? 0) >= n.appearsAtHealth,
   ).length;
 
-  // Debug: log counts to console
-  React.useEffect(() => {
-    console.log('Journal counts:', {
-      plants: `${discoveredPlants}/${totalPlants}`,
-      wildlife: `${discoveredWildlife}/${totalWildlife}`,
-      fairies: `${discoveredFairies}/${totalFairies}`,
-      notes: `${discoveredNotes}/${totalNotes}`,
-    });
-  }, [discoveredPlants, totalPlants, discoveredWildlife, totalWildlife, discoveredFairies, totalFairies, discoveredNotes, totalNotes]);
-
   return (
     <div
       style={{
