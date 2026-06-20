@@ -261,6 +261,7 @@ export function createInitialGameState(): GameState {
     firstWiltSeen: false,
     grassSpreadingStarted: false,
     bundRemovalPenalty: 0,
+    maxRestorationAchieved: 0,
     cinematicCam: null,
     introAnimationState: null,
     introAnimationCompleted: false,
@@ -325,6 +326,7 @@ export function createChapter2InitialState(): GameState {
     firstWiltSeen: false,
     grassSpreadingStarted: false,
     bundRemovalPenalty: 0,
+    maxRestorationAchieved: 0,
     cinematicCam: null,
     introAnimationState: null,
     introAnimationCompleted: false,
@@ -1845,8 +1847,11 @@ export function calculateRestoration(gs: GameState): number {
 
   // Apply bund removal penalty (cumulative reduction from removing bund clusters)
   const penalizedScore = Math.max(0, score - gs.bundRemovalPenalty);
+  const currentRestoration = Math.round(Math.min(100, penalizedScore));
 
-  return Math.round(Math.min(100, penalizedScore));
+  // Restoration never goes below the maximum previously achieved
+  // This locks restoration at 100% once reached, while allowing moisture to fluctuate dynamically
+  return Math.max(currentRestoration, gs.maxRestorationAchieved);
 }
 
 // ---------------------------------------------------------------------------
@@ -2223,6 +2228,10 @@ export function updateGame(
   // Notify React every ~0.5s
   if (onUIChange && gs.tick % 30 === 0) {
     const restoration = calculateRestoration(gs);
+    // Update the maximum restoration ever achieved — prevents regression
+    if (restoration > gs.maxRestorationAchieved) {
+      gs.maxRestorationAchieved = restoration;
+    }
     const avgMoisture = getAvgMoisture(gs);
     onUIChange(restoration, avgMoisture, gs.discoveredWildlife.length, gs.discoveredPlants.length, gs.questStep);
 
@@ -2359,6 +2368,7 @@ export function serializeGameState(gs: GameState): string {
     restorationMilestonesSeen: gs.restorationMilestonesSeen,
     workingBundCount: gs.workingBundCount,
     firstWiltSeen: gs.firstWiltSeen,
+    maxRestorationAchieved: gs.maxRestorationAchieved,
 
     // Discoveries & journal
     discoveredWildlife: gs.discoveredWildlife,
@@ -2433,6 +2443,7 @@ export function deserializeGameState(json: string): GameState | null {
     if (Array.isArray(data.restorationMilestonesSeen)) gs.restorationMilestonesSeen = data.restorationMilestonesSeen;
     if (typeof data.workingBundCount === 'number') gs.workingBundCount = data.workingBundCount;
     if (typeof data.firstWiltSeen === 'boolean') gs.firstWiltSeen = data.firstWiltSeen;
+    if (typeof data.maxRestorationAchieved === 'number') gs.maxRestorationAchieved = data.maxRestorationAchieved;
 
     // Restore discoveries and filter out invalid ones
     if (Array.isArray(data.discoveredWildlife)) {

@@ -191,6 +191,7 @@ export interface GameState {
   firstWiltSeen: boolean;               // whether first-time plant-wilt dialogue has fired
   grassSpreadingStarted: boolean;       // true once natural grass spread begins at 92% restoration
   bundRemovalPenalty: number;           // cumulative restoration penalty from removing bunds
+  maxRestorationAchieved: number;       // highest restoration % ever reached — restoration never goes below this
 
   // Cinematic camera (null = follow player, set during completion tour)
   cinematicCam: { px: number; py: number } | null;
