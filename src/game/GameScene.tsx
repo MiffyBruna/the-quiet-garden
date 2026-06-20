@@ -2694,6 +2694,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 <button
                   key={p}
                   onClick={() => {
+                    playButton();
                     track('custom_seed_selected', { plant: p });
                     RundotGameAPI.analytics.recordCustomEvent('seed_selected', { plant: p });
                     seedMsgShownRef.current = null; // new seed type — allow one fresh message
@@ -2813,6 +2814,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 <button
                   key={opt.mode}
                   onClick={() => {
+                    playButton();
                     track('custom_reshape_mode_selected', { mode: opt.mode });
                     setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' }));
                   }}
