@@ -243,3 +243,29 @@ export function playDestroy(): void {
     console.warn('Failed to load destroy sound:', e);
   }
 }
+
+let moveAudioInstance: HTMLAudioElement | null = null;
+
+/**
+ * Play movement sound effect (for reshape tool block movement)
+ */
+export function playMove(): void {
+  if (!currentSettings.sfxEnabled) return;
+
+  // Stop any existing movement sound
+  if (moveAudioInstance) {
+    moveAudioInstance.pause();
+    moveAudioInstance = null;
+  }
+
+  try {
+    moveAudioInstance = new Audio('/move.ogg');
+    moveAudioInstance.loop = false;
+    moveAudioInstance.volume = currentSettings.sfxVolume / 100;
+    moveAudioInstance.play().catch((e) => {
+      console.warn('Failed to play move sound:', e);
+    });
+  } catch (e) {
+    console.warn('Failed to load move sound:', e);
+  }
+}

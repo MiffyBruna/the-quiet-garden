@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -1564,6 +1564,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
         if (result.action === 'picked') {
           setUI((p) => ({ ...p, heldEntity: result.entity }));
           track('custom_landscape_picked');
+          if (currentUI.reshapeMode === 'move') {
+            playMove();
+          }
         } else if (result.action === 'placed') {
           setUI((p) => ({ ...p, heldEntity: null }));
           if (currentUI.reshapeMode === 'create_water') {
@@ -1576,6 +1579,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           } else {
             track('custom_landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
             RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
+            playMove();
           }
         }
         return;
