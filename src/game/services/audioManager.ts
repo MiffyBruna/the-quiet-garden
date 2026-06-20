@@ -154,3 +154,40 @@ export function getSfxVolume(): number {
 export function isSfxEnabled(): boolean {
   return currentSettings.sfxEnabled;
 }
+
+let rainAudioInstance: HTMLAudioElement | null = null;
+
+/**
+ * Play rain sound effect (looping ambient sound)
+ */
+export function playRain(): void {
+  if (!currentSettings.sfxEnabled) return;
+
+  // Stop any existing rain sound
+  if (rainAudioInstance) {
+    rainAudioInstance.pause();
+    rainAudioInstance = null;
+  }
+
+  try {
+    rainAudioInstance = new Audio('/rain.wav');
+    rainAudioInstance.loop = true;
+    rainAudioInstance.volume = (currentSettings.sfxVolume / 100) * 0.6; // Slightly quieter than other SFX
+    rainAudioInstance.play().catch((e) => {
+      console.warn('Failed to play rain sound:', e);
+    });
+  } catch (e) {
+    console.warn('Failed to load rain sound:', e);
+  }
+}
+
+/**
+ * Stop rain sound effect
+ */
+export function stopRain(): void {
+  if (rainAudioInstance) {
+    rainAudioInstance.pause();
+    rainAudioInstance.currentTime = 0;
+    rainAudioInstance = null;
+  }
+}
