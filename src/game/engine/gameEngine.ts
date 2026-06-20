@@ -2134,7 +2134,7 @@ export function getCloverQuestDialogue(questStep: QuestStep): DialogueLine[] {
 export function updateGame(
   gs: GameState,
   dt: number,
-  onUIChange?: (restoration: number, avgMoisture: number, wildlifeCount: number, questStep: QuestStep) => void,
+  onUIChange?: (restoration: number, avgMoisture: number, wildlifeCount: number, plantCount: number, questStep: QuestStep) => void,
   onMilestone?: (milestone: number, lines: DialogueLine[]) => void,
   onCompletion?: () => void,
   onFirstWilt?: () => void,
@@ -2222,7 +2222,7 @@ export function updateGame(
   if (onUIChange && gs.tick % 30 === 0) {
     const restoration = calculateRestoration(gs);
     const avgMoisture = getAvgMoisture(gs);
-    onUIChange(restoration, avgMoisture, gs.discoveredWildlife.length, gs.questStep);
+    onUIChange(restoration, avgMoisture, gs.discoveredWildlife.length, gs.discoveredPlants.length, gs.questStep);
 
     // Check ecological milestones — every 5% plus tipping points (only in free_play)
     if (onMilestone && gs.questStep === 'free_play') {

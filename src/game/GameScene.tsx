@@ -620,6 +620,7 @@ const INITIAL_UI: UIState = {
   showWatershed: false,
   avgMoisture: 8,
   wildlifeCount: 0,
+  plantCount: 0,
   rainCooling: false,
   heldPlant: null,
   heldEntity: null,
@@ -849,6 +850,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         restoration: Math.round(calculateRestoration(gs)),
         avgMoisture: Math.round(gs.tiles.flat().reduce((sum, t) => sum + t.moisture, 0) / (gs.tiles.flat().length || 1)),
         wildlifeCount: gs.discoveredWildlife.length,
+        plantCount: gs.discoveredPlants.length,
       }));
     }
   }, [gameLoaded, isContinue]);
@@ -1909,8 +1911,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
       updateGame(
         gs,
         dt,
-        (restoration, avgMoisture, wildlifeCount, questStep) => {
-          setUI((prev) => ({ ...prev, restoration, avgMoisture, wildlifeCount, questStep }));
+        (restoration, avgMoisture, wildlifeCount, plantCount, questStep) => {
+          setUI((prev) => ({ ...prev, restoration, avgMoisture, wildlifeCount, plantCount, questStep }));
         },
         (_milestone, lines) => {
           // Ecological milestone — Moss or Clover comments on ecosystem recovery
@@ -2304,7 +2306,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           </div>
           <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', lineHeight: 1 }}>restored</div>
           <div style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>
-            💧{Math.round(ui.avgMoisture)}% · 🐾{ui.wildlifeCount}
+            💧{Math.round(ui.avgMoisture)}% · 🐾{ui.wildlifeCount} · 🌱{ui.plantCount}/6
           </div>
         </div>
       </div>

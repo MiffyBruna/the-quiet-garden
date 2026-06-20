@@ -230,6 +230,7 @@ export interface UIState {
   showWatershed: boolean;
   avgMoisture: number;
   wildlifeCount: number;
+  plantCount: number;
   rainCooling: boolean; // true while rain is active + cooldown — disables rain button
   heldPlant: PlantState | null; // landscape tool: plant picked up for relocation (legacy, use heldEntity)
   heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null; // reshape tool: entity picked up for relocation (with optional swap source)
