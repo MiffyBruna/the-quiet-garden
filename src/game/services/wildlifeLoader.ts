@@ -29,6 +29,8 @@ export const WILDLIFE_SPRITES: Record<string, WildlifeSpriteConfig> = {
   swallowtail: { filename: 'swallowtail' },
   hummingbird: { filename: 'hummingbird' },
   swallow: { filename: 'swallow' },
+  // NPCs
+  moss: { filename: 'moss' },
 };
 
 class WildlifeLoader {

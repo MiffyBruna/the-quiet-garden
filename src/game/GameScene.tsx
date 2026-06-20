@@ -428,10 +428,15 @@ function renderFrame(
     const sx = entity.px - camX;
     const sy = entity.py - camY;
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
-    ctx.font = '14px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(entity.emoji, sx, sy);
+
+    // Try to render as sprite first, fall back to emoji
+    const spriteDrawn = wildlifeLoader.drawSprite(ctx, entity.type, sx, sy, 20);
+    if (!spriteDrawn) {
+      ctx.font = '14px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(entity.emoji, sx, sy);
+    }
   }
 
   // --- Draw Moss ---
@@ -439,10 +444,20 @@ function renderFrame(
     const sx = gs.mossTX * T - camX;
     const sy = gs.mossTY * T - camY;
     const bob = Math.sin(tick * 0.05) * 1.5;
-    ctx.font = `${T - 2}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🐸', sx + T / 2, sy + T / 2 + bob);
+
+    // Try to render Moss sprite, fall back to emoji + nameplate
+    const mossSprite = wildlifeLoader.getLoadedSprite('moss');
+    if (mossSprite) {
+      const w = mossSprite.width * (40 / Math.max(mossSprite.width, mossSprite.height));
+      const h = mossSprite.height * (40 / Math.max(mossSprite.width, mossSprite.height));
+      ctx.drawImage(mossSprite, sx + T / 2 - w / 2, sy + T / 2 + bob - h / 2, w, h);
+    } else {
+      ctx.font = `${T - 2}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🐸', sx + T / 2, sy + T / 2 + bob);
+    }
+
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
     ctx.fillRect(sx + T / 2 - 20, sy - 4, 40, 13);
     ctx.fillStyle = '#fff';
@@ -610,9 +625,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
       console.warn('Failed to preload plant sprites:', e);
     });
 
-    // Preload wildlife sprites
+    // Preload wildlife sprites (including Moss)
     wildlifeLoader.preloadAll().catch((e) => {
       console.warn('Failed to preload wildlife sprites:', e);
+    });
+    // Prioritize loading Moss sprite
+    wildlifeLoader.loadSprite('moss').catch((e) => {
+      console.warn('Failed to preload Moss sprite:', e);
     });
 
     // Preload fairy sprites
