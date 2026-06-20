@@ -217,3 +217,29 @@ export function playMulch(): void {
     console.warn('Failed to load mulch sound:', e);
   }
 }
+
+let destroyAudioInstance: HTMLAudioElement | null = null;
+
+/**
+ * Play destruction sound effect (for reshape tool destruction)
+ */
+export function playDestroy(): void {
+  if (!currentSettings.sfxEnabled) return;
+
+  // Stop any existing destruction sound
+  if (destroyAudioInstance) {
+    destroyAudioInstance.pause();
+    destroyAudioInstance = null;
+  }
+
+  try {
+    destroyAudioInstance = new Audio('/destroy.ogg');
+    destroyAudioInstance.loop = false;
+    destroyAudioInstance.volume = currentSettings.sfxVolume / 100;
+    destroyAudioInstance.play().catch((e) => {
+      console.warn('Failed to play destroy sound:', e);
+    });
+  } catch (e) {
+    console.warn('Failed to load destroy sound:', e);
+  }
+}

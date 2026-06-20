@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -1572,6 +1572,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             track('custom_landscape_created_rocks', { tx, ty });
           } else if (currentUI.reshapeMode === 'destroy_rocks') {
             track('custom_landscape_destroyed_rocks', { tx, ty });
+            playDestroy();
           } else {
             track('custom_landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
             RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
