@@ -2914,8 +2914,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 if (gsRef.current.introAnimationState) return;
 
                 if (def.id === 'rain') {
-                  // Cancel bund positioning if active
-                  if (uiRef.current.bundMode === 'positioning') {
+                  // Cancel any bund mode (positioning or digging) if active
+                  if (uiRef.current.bundMode) {
                     gsRef.current.highlightTiles = [];
                     setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
                   }
@@ -2952,8 +2952,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 }
 
                 if (def.id === 'talk') {
-                  // Cancel bund positioning if active
-                  if (uiRef.current.bundMode === 'positioning') {
+                  // Cancel any bund mode (positioning or digging) if active
+                  if (uiRef.current.bundMode) {
                     gsRef.current.highlightTiles = [];
                     setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
                   }
@@ -2978,8 +2978,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 }
 
                 if (def.id === 'journal') {
-                  // Cancel bund positioning if active
-                  if (uiRef.current.bundMode === 'positioning') {
+                  // Cancel any bund mode (positioning or digging) if active
+                  if (uiRef.current.bundMode) {
                     gsRef.current.highlightTiles = [];
                     setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
                   }
@@ -3025,8 +3025,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   // Already in digging mode — just re-select tool
                 }
 
-                // Selecting any tool other than bund while in positioning mode cancels the stencil
-                if (def.id !== 'bund' && uiRef.current.bundMode === 'positioning') {
+                // Selecting any tool other than bund cancels any bund mode (positioning or digging)
+                if (def.id !== 'bund' && uiRef.current.bundMode) {
                   gsRef.current.highlightTiles = [];
                   setUI((p) => ({
                     ...p,
