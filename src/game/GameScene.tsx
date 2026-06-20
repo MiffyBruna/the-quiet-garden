@@ -514,7 +514,7 @@ function renderFrame(
     const float = Math.sin(fairy.glowPhase + tick * 0.04) * 2;
 
     // Render fairy sprite, fallback to emoji if type is missing or sprite unavailable
-    const spriteDrawn = fairyLoader.drawSprite(ctx, fairy.type, sx, sy + float, 24);
+    const spriteDrawn = fairyLoader.drawSprite(ctx, fairy.type, sx, sy + float, 35);
     if (!spriteDrawn) {
       const emoji = fairyEmojis[fairy.type] ?? '✨';
       ctx.font = '16px serif';
