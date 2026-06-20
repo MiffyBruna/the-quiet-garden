@@ -16,6 +16,7 @@ import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
 import { wildlifeLoader } from './services/wildlifeLoader';
 import { fairyLoader } from './services/fairyLoader';
+import { LoadingScreen } from './components/LoadingScreen';
 import {
   TILE_SIZE, MAP_W, MAP_H,
   GameState, UIState, ToolType, PlantType, PlantState, DialogueLine, QuestStep, Tile,
@@ -2137,21 +2138,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
   // Don't render game until state is loaded
   if (!gameLoaded) {
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: '#1A1A1A',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-        }}
-      >
-        Loading game...
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
