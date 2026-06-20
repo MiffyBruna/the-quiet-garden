@@ -2527,29 +2527,40 @@ export function deserializeGameState(json: string): GameState | null {
       console.log(`[fairy restore] unusedTypes: ${unusedTypes.join(', ')} (count: ${unusedTypes.length})`);
       console.log(`[fairy restore] data.fairies count: ${data.fairies.length}`);
 
-      gs.fairies = data.fairies.map((f: any) => {
+      // First pass: collect which types are already used
+      const usedTypes = new Set<FairyType>();
+      const fairiesNeedingTypes: { index: number; fairy: any }[] = [];
+
+      data.fairies.forEach((f: any, idx: number) => {
+        const savedType = f.type as FairyType | undefined;
+        if (savedType) {
+          usedTypes.add(savedType);
+          console.log(`[fairy restore] Fairy ${idx}: has saved type '${savedType}'`);
+        } else {
+          fairiesNeedingTypes.push({ index: idx, fairy: f });
+          console.log(`[fairy restore] Fairy ${idx}: needs type assigned`);
+        }
+      });
+
+      // Assign types to fairies without saved types, skipping already-used ones
+      const availableForAssignment = unusedTypes.filter((t) => !usedTypes.has(t));
+      console.log(`[fairy restore] Available types for assignment: ${availableForAssignment.join(', ')}`);
+
+      gs.fairies = data.fairies.map((f: any, idx: number) => {
         let fairyType = f.type as FairyType | undefined;
         let fairyWisdom = f.wisdom as string | undefined;
 
-        // First, try to use the saved type if available
-        if (fairyType) {
-          return {
-            id: f.id ?? nextId(),
-            type: fairyType,
-            px: f.px,
-            py: f.py,
-            glowPhase: f.glowPhase ?? Math.random() * Math.PI * 2,
-            wisdom: fairyWisdom ?? 'The garden grows.',
-          };
+        // If no type saved, assign from available types
+        if (!fairyType) {
+          fairyType = availableForAssignment.shift() ?? ('sprig' as FairyType);
+          console.log(`[fairy restore] Assigned fairy ${idx} type: '${fairyType}'`);
         }
 
-        // No type saved — assign from discovered fairies in order
-        const assignedType = unusedTypes.shift() ?? ('sprig' as FairyType);
-        const milestone = FAIRY_MILESTONES.find((m) => m.type === assignedType);
+        const milestone = FAIRY_MILESTONES.find((m) => m.type === fairyType);
 
         return {
           id: f.id ?? nextId(),
-          type: assignedType,
+          type: fairyType,
           px: f.px,
           py: f.py,
           glowPhase: f.glowPhase ?? Math.random() * Math.PI * 2,
