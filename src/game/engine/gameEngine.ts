@@ -2315,6 +2315,43 @@ export function deserializeGameState(json: string): GameState | null {
     if (Array.isArray(data.discoveredPlants)) gs.discoveredPlants = data.discoveredPlants;
     if (Array.isArray(data.discoveredGuideNotes)) gs.discoveredGuideNotes = data.discoveredGuideNotes;
 
+    // Recreate wildlife entities based on discoveries
+    gs.entities = [];
+    for (const wildlifeType of gs.discoveredWildlife) {
+      const cond = WILDLIFE_CONDITIONS.find((w) => w.type === wildlifeType);
+      if (cond) {
+        const cx = 12 + Math.floor(Math.random() * 8);
+        const cy = 14 + Math.floor(Math.random() * 8);
+        gs.entities.push({
+          id: nextId(),
+          type: wildlifeType as any,
+          px: cx * TILE_SIZE + Math.random() * TILE_SIZE,
+          py: cy * TILE_SIZE + Math.random() * TILE_SIZE,
+          vx: (Math.random() - 0.5) * 20,
+          vy: (Math.random() - 0.5) * 20,
+          wanderTimer: 2000 + Math.random() * 3000,
+          emoji: cond.emoji,
+        });
+      }
+    }
+
+    // Recreate fairy entities based on discoveries
+    for (const fairyType of gs.discoveredFairies) {
+      const milestone = FAIRY_MILESTONES.find((m) => m.id === fairyType);
+      if (milestone) {
+        const [prefX, prefY] = milestone.preferredTile(gs);
+        const [fx, fy] = findFairySafeTile(gs, prefX, prefY);
+        gs.fairies.push({
+          id: nextId(),
+          type: milestone.type,
+          px: fx * TILE_SIZE + TILE_SIZE / 2,
+          py: fy * TILE_SIZE - 4,
+          glowPhase: Math.random() * Math.PI * 2,
+          wisdom: milestone.wisdom,
+        });
+      }
+    }
+
     // Restore tiles
     if (Array.isArray(data.tiles) && data.tiles.length > 0) {
       for (let ty = 0; ty < data.tiles.length; ty++) {
