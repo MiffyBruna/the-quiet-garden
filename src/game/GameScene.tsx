@@ -2206,6 +2206,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
       }}
     >
       <style>{`
+        canvas {
+          image-rendering: pixelated;
+          image-rendering: crisp-edges;
+        }
         @keyframes questFlicker {
           0%   { border-color: rgba(255,220,40,0.0); box-shadow: none; }
           15%  { border-color: rgba(255,220,40,0.9); box-shadow: 0 0 7px rgba(255,220,40,0.5); }
