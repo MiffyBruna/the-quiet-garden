@@ -416,7 +416,7 @@ function renderFrame(
 
       if (tile.plant.type === 'mesquite') {
         // Mesquite renders at 4x4 tile size — scales with growth stage
-        const baseSize = T * 3.5; // maximum size at maturity (fits in 4x4 tiles with margin)
+        const baseSize = T * 2.2; // maximum size at maturity (fits in 4x4 tiles with margin)
         const stageScale = [0.25, 0.45, 0.65, 0.85, 1.0][tile.plant.stage] ?? 1.0;
         const treeSize = baseSize * stageScale;
         const centerX = sx + T * 1.5 + sway; // center of the 4x4 block
