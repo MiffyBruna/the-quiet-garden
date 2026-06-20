@@ -392,7 +392,6 @@ export function WatershedProgress({
                         <div><strong>Appears at:</strong> {info.restorationPercent}% restoration</div>
                         <div><strong>Element:</strong> {info.element}</div>
                         <div><strong>Mood:</strong> {info.mood}</div>
-                        <div><strong>Gift:</strong> {info.gift}</div>
                       </div>
                       <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 4, lineHeight: 1.4, fontStyle: 'italic' }}>
                         &ldquo;{info.wisdom}&rdquo;
