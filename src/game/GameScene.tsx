@@ -1439,7 +1439,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
         const ok = applyBund(gs, tx, ty);
         if (ok) {
+          // Play both leather handle sounds together for maximum impact
           playSFX('bund', 1.0).catch(() => {});
+          // Small delay to ensure both sounds play together
+          setTimeout(() => {
+            playSFX('bund', 1.0).catch(() => {});
+          }, 50);
           track('custom_bund_placed', { tx, ty });
           RundotGameAPI.analytics.recordCustomEvent('bund_placed', { tx, ty });
 
