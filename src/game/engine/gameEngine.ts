@@ -2429,6 +2429,7 @@ export function deserializeGameState(json: string): GameState | null {
       // Only keep wildlife that actually exist in the current game
       const validWildlifeIds = new Set(ZONES.flatMap((z) => z.wildlife.map((w) => w.id)));
       gs.discoveredWildlife = data.discoveredWildlife.filter((w: string) => validWildlifeIds.has(w));
+      console.log('[GameEngine] Filtered wildlife:', data.discoveredWildlife, '=>', gs.discoveredWildlife);
     }
     if (Array.isArray(data.discoveredFairies)) {
       // Migrate old fairy names (first_fairy, second_fairy, etc.) to new ones (sprig, nima, etc.)
@@ -2443,11 +2444,13 @@ export function deserializeGameState(json: string): GameState | null {
       // Only keep fairies that actually exist in the current game
       const validFairyIds = new Set(ZONES.flatMap((z) => z.fairies.map((f) => f.id)));
       gs.discoveredFairies = migratedFairies.filter((f: string) => validFairyIds.has(f));
+      console.log('[GameEngine] Filtered fairies:', migratedFairies, '=>', gs.discoveredFairies);
     }
     if (Array.isArray(data.discoveredPlants)) {
       // Only keep plants that actually exist in the current game
       const validPlantIds = new Set(PLANTS.map((p) => p.id));
       gs.discoveredPlants = data.discoveredPlants.filter((plant: string) => validPlantIds.has(plant));
+      console.log('[GameEngine] Filtered plants:', data.discoveredPlants, '=>', gs.discoveredPlants);
     }
     if (Array.isArray(data.discoveredGuideNotes)) gs.discoveredGuideNotes = data.discoveredGuideNotes;
 
