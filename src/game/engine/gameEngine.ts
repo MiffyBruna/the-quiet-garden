@@ -2373,7 +2373,7 @@ export function serializeGameState(gs: GameState): string {
     ),
 
     // Entities & wildlife
-    fairies: gs.fairies.map(f => ({ px: f.px, py: f.py, glowPhase: f.glowPhase })),
+    fairies: gs.fairies.map(f => ({ id: f.id, type: f.type, px: f.px, py: f.py, glowPhase: f.glowPhase, wisdom: f.wisdom })),
     entities: gs.entities.map(e => ({ px: e.px, py: e.py, emoji: e.emoji, type: e.type })),
     mossTX: gs.mossTX,
     mossTY: gs.mossTY,
@@ -2510,14 +2510,13 @@ export function deserializeGameState(json: string): GameState | null {
     // Restore fairies with missing fields regenerated
     if (Array.isArray(data.fairies)) {
       gs.fairies = data.fairies.map((f: any) => {
-        const milestone = FAIRY_MILESTONES.find((m) => m.type === f.type);
         return {
-          id: nextId(),
+          id: f.id ?? nextId(),
           type: f.type,
           px: f.px,
           py: f.py,
           glowPhase: f.glowPhase ?? Math.random() * Math.PI * 2,
-          wisdom: milestone?.wisdom ?? 'The garden grows.',
+          wisdom: f.wisdom ?? 'The garden grows.',
         };
       });
     }
