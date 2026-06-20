@@ -2507,66 +2507,23 @@ export function deserializeGameState(json: string): GameState | null {
       }
     }
 
-    // Restore fairies with missing fields regenerated
-    if (Array.isArray(data.fairies)) {
-      // Build a list of available fairy types from discovered fairies
-      const availableFairyTypes = new Map<string, FairyType>();
-      if (Array.isArray(gs.discoveredFairies)) {
-        console.log(`[fairy restore] discoveredFairies: ${gs.discoveredFairies.join(', ')}`);
-        for (const discoveredId of gs.discoveredFairies) {
-          const milestone = FAIRY_MILESTONES.find((m) => m.id === discoveredId);
-          if (milestone) {
-            availableFairyTypes.set(discoveredId, milestone.type);
-            console.log(`[fairy restore] Found milestone ${discoveredId} → type ${milestone.type}`);
-          }
+    // Restore fairy positions from saved data, but keep correct types from Step 1
+    if (Array.isArray(data.fairies) && data.fairies.length > 0) {
+      console.log(`[fairy restore] Merging saved fairy data (count: ${data.fairies.length})`);
+      // Match saved fairies by index to the fairies created in Step 1
+      // Step 1 created them from discoveredFairies, so they have correct types
+      // We only want to restore their saved positions and glow phase
+      for (let idx = 0; idx < data.fairies.length && idx < gs.fairies.length; idx++) {
+        const savedFairy = data.fairies[idx];
+        const currentFairy = gs.fairies[idx];
+
+        if (savedFairy && currentFairy) {
+          console.log(`[fairy restore] Restoring position for fairy ${idx} (type: ${currentFairy.type})`);
+          currentFairy.px = savedFairy.px ?? currentFairy.px;
+          currentFairy.py = savedFairy.py ?? currentFairy.py;
+          currentFairy.glowPhase = savedFairy.glowPhase ?? currentFairy.glowPhase;
         }
-      } else {
-        console.warn(`[fairy restore] discoveredFairies is not an array!`);
       }
-      const unusedTypes = Array.from(availableFairyTypes.values());
-      console.log(`[fairy restore] unusedTypes: ${unusedTypes.join(', ')} (count: ${unusedTypes.length})`);
-      console.log(`[fairy restore] data.fairies count: ${data.fairies.length}`);
-
-      // First pass: collect which types are already used
-      const usedTypes = new Set<FairyType>();
-      const fairiesNeedingTypes: { index: number; fairy: any }[] = [];
-
-      data.fairies.forEach((f: any, idx: number) => {
-        const savedType = f.type as FairyType | undefined;
-        if (savedType) {
-          usedTypes.add(savedType);
-          console.log(`[fairy restore] Fairy ${idx}: has saved type '${savedType}'`);
-        } else {
-          fairiesNeedingTypes.push({ index: idx, fairy: f });
-          console.log(`[fairy restore] Fairy ${idx}: needs type assigned`);
-        }
-      });
-
-      // Assign types to fairies without saved types, skipping already-used ones
-      const availableForAssignment = unusedTypes.filter((t) => !usedTypes.has(t));
-      console.log(`[fairy restore] Available types for assignment: ${availableForAssignment.join(', ')}`);
-
-      gs.fairies = data.fairies.map((f: any, idx: number) => {
-        let fairyType = f.type as FairyType | undefined;
-        let fairyWisdom = f.wisdom as string | undefined;
-
-        // If no type saved, assign from available types
-        if (!fairyType) {
-          fairyType = availableForAssignment.shift() ?? ('sprig' as FairyType);
-          console.log(`[fairy restore] Assigned fairy ${idx} type: '${fairyType}'`);
-        }
-
-        const milestone = FAIRY_MILESTONES.find((m) => m.type === fairyType);
-
-        return {
-          id: f.id ?? nextId(),
-          type: fairyType,
-          px: f.px,
-          py: f.py,
-          glowPhase: f.glowPhase ?? Math.random() * Math.PI * 2,
-          wisdom: milestone?.wisdom ?? fairyWisdom ?? 'The garden grows.',
-        };
-      });
     }
     // Restore entities with missing fields regenerated
     if (Array.isArray(data.entities)) {
