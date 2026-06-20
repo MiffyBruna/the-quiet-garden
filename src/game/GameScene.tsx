@@ -496,14 +496,8 @@ function renderFrame(
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
     const float = Math.sin(fairy.glowPhase + tick * 0.04) * 2;
 
-    // Try to render fairy sprite, fall back to emoji
-    const spriteDrawn = fairyLoader.drawSprite(ctx, fairy.type, sx, sy + float, 24);
-    if (!spriteDrawn) {
-      ctx.font = '18px serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('🧚', sx, sy + float);
-    }
+    // Render fairy sprite only (no emoji fallback)
+    fairyLoader.drawSprite(ctx, fairy.type, sx, sy + float, 24);
   }
 
   // --- Draw wildlife entities ---
