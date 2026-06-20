@@ -2510,13 +2510,35 @@ export function deserializeGameState(json: string): GameState | null {
     // Restore fairies with missing fields regenerated
     if (Array.isArray(data.fairies)) {
       gs.fairies = data.fairies.map((f: any) => {
+        // If type is missing, try to recover it from discoveredFairies list
+        let fairyType = f.type as FairyType | undefined;
+        if (!fairyType && Array.isArray(gs.discoveredFairies)) {
+          // Find a discovered fairy that could match this one
+          const discoveredId = gs.discoveredFairies.find((dId) => {
+            const milestone = FAIRY_MILESTONES.find((m) => m.id === dId);
+            return milestone?.type;
+          });
+          if (discoveredId) {
+            const milestone = FAIRY_MILESTONES.find((m) => m.id === discoveredId);
+            fairyType = milestone?.type;
+          }
+        }
+
+        // If still no type, try to infer from wisdom if available
+        if (!fairyType && f.wisdom) {
+          const milestone = FAIRY_MILESTONES.find((m) => m.wisdom.includes(f.wisdom.substring(0, 20)));
+          fairyType = milestone?.type;
+        }
+
+        const milestone = FAIRY_MILESTONES.find((m) => m.type === fairyType);
+
         return {
           id: f.id ?? nextId(),
-          type: f.type,
+          type: fairyType ?? ('sprig' as FairyType),
           px: f.px,
           py: f.py,
           glowPhase: f.glowPhase ?? Math.random() * Math.PI * 2,
-          wisdom: f.wisdom ?? 'The garden grows.',
+          wisdom: f.wisdom ?? milestone?.wisdom ?? 'The garden grows.',
         };
       });
     }
