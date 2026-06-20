@@ -181,9 +181,9 @@ function renderDialogueText(text: string): React.ReactNode {
     'Milkweed',
     'Mesquite',
     'Water',
-    'Moisture',
+    'Moisture Retention',
     'Restoration',
-    'Moisture floor',
+    'Moisture Retention floor',
     'Fertility',
   ];
 
@@ -1585,7 +1585,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           if (!inSpot) {
             queueDialogue([{
               speaker: 'Moss', emoji: '🐸',
-              text: 'Plant in the two glowing spots inside the cup. The moisture is best there.',
+              text: 'Plant in the two glowing spots inside the cup. The moisture retention is best there.',
             }]);
             return;
           }
@@ -1689,7 +1689,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             setTimeout(() => {
               queueDialogue([{
                 speaker: 'Moss', emoji: '🐸',
-                text: `Moisture rises. The valley remembers a little more. ${restoration}% restored.`,
+                text: `Moisture retention rises. The valley remembers a little more. ${restoration}% restored.`,
               }]);
             }, 4000);
           }
@@ -2368,8 +2368,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
             const label = terrainLabels[t.terrain] ?? t.terrain;
             const suggMap: Record<string, string> = {
               cracked_soil: 'Dig a bund uphill or add mulch to slow runoff.',
-              dry_soil: 'Mulch will help this soil hold moisture.',
-              mulch: 'Ready for planting when moisture rises.',
+              dry_soil: 'Mulch will help this soil retain moisture.',
+              mulch: 'Ready for planting when moisture retention rises.',
               bund: 'Catching rain — good placement!',
               moist_soil: 'Good conditions — try planting a pioneer species.',
               grass: 'This area is healing well.',
@@ -2380,7 +2380,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             return (
               <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.7 }}>
                 <div><b>Terrain:</b> {label}</div>
-                <div><b>Moisture:</b> {Math.round(t.moisture)}%</div>
+                <div><b>Moisture Retention:</b> {Math.round(t.moisture)}%</div>
                 <div><b>Fertility:</b> {Math.round(t.fertility)}%</div>
                 <div><b>Erosion risk:</b> {Math.round(t.erosion)}%</div>
                 <div style={{ marginTop: 6, fontStyle: 'italic', opacity: 0.8 }}>{renderDialogueText(suggestion)}</div>
@@ -2898,7 +2898,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     const restorationVal = calculateRestoration(gs);
                     if (restorationVal > 0) {
                       setTimeout(() => {
-                        queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: `Moisture rises. The valley remembers a little more. ${restorationVal}% restored.` }]);
+                        queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: `Moisture retention rises. The valley remembers a little more. ${restorationVal}% restored.` }]);
                       }, 4000);
                     }
                   }
