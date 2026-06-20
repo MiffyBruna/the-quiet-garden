@@ -102,6 +102,15 @@ function tileBaseColor(tile: Tile): string {
 }
 
 // ---------------------------------------------------------------------------
+// Wildlife classification
+// ---------------------------------------------------------------------------
+
+function isInsect(wildlifeType: string): boolean {
+  const insects = new Set(['ant', 'beetle', 'bee', 'hoverfly', 'painted_lady', 'monarch', 'dragonfly', 'mason_bee', 'bumblebee']);
+  return insects.has(wildlifeType);
+}
+
+// ---------------------------------------------------------------------------
 // Dialogue text formatting with bold quest hints
 // ---------------------------------------------------------------------------
 
@@ -522,7 +531,9 @@ function renderFrame(
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
 
     // Try to render as sprite first, fall back to emoji
-    const spriteDrawn = wildlifeLoader.drawSprite(ctx, entity.type, sx, sy, 28);
+    // Insects are slightly smaller than animals
+    const spriteSize = isInsect(entity.type) ? 22 : 28;
+    const spriteDrawn = wildlifeLoader.drawSprite(ctx, entity.type, sx, sy, spriteSize);
     if (!spriteDrawn) {
       ctx.font = '14px serif';
       ctx.textAlign = 'center';
