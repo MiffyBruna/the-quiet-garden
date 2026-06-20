@@ -513,7 +513,7 @@ function renderFrame(
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
 
     // Try to render as sprite first, fall back to emoji
-    const spriteDrawn = wildlifeLoader.drawSprite(ctx, entity.type, sx, sy, 20);
+    const spriteDrawn = wildlifeLoader.drawSprite(ctx, entity.type, sx, sy, 28);
     if (!spriteDrawn) {
       ctx.font = '14px serif';
       ctx.textAlign = 'center';
