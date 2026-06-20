@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -2556,7 +2556,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             <button
-              onClick={cancelBund}
+              onClick={() => {
+                playCancel();
+                cancelBund();
+              }}
               style={{
                 background: 'rgba(200,80,80,0.15)',
                 border: '1px solid rgba(200,80,80,0.45)',
@@ -2618,7 +2621,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             <button
-              onClick={cancelMesquite}
+              onClick={() => {
+                playCancel();
+                cancelMesquite();
+              }}
               style={{
                 background: 'rgba(200,80,80,0.15)',
                 border: '1px solid rgba(200,80,80,0.45)',
@@ -2680,7 +2686,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             <button
-              onClick={cancelBund}
+              onClick={() => {
+                playCancel();
+                cancelBund();
+              }}
               style={{
                 background: 'rgba(200,80,80,0.15)',
                 border: '1px solid rgba(200,80,80,0.45)',
@@ -2716,7 +2725,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700 }}>Select seed</div>
             <button
-              onClick={() => setUI((prev) => ({ ...prev, showSeedPanel: false }))}
+              onClick={() => {
+                playCancel();
+                setUI((prev) => ({ ...prev, showSeedPanel: false }));
+              }}
               style={{
                 background: 'none',
                 border: 'none',
@@ -2832,6 +2844,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700 }}>Reshape Tool</div>
             <button
               onClick={() => {
+                playCancel();
                 track('custom_reshape_menu_closed');
                 setUI((prev) => ({ ...prev, showReshapeMenu: false }));
               }}

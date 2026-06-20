@@ -347,3 +347,29 @@ export function playMenuSelect(): void {
     console.warn('Failed to load menu select sound:', e);
   }
 }
+
+let cancelAudioInstance: HTMLAudioElement | null = null;
+
+/**
+ * Play cancel/close sound effect (for X and cancel buttons)
+ */
+export function playCancel(): void {
+  if (!currentSettings.sfxEnabled) return;
+
+  // Stop any existing cancel sound
+  if (cancelAudioInstance) {
+    cancelAudioInstance.pause();
+    cancelAudioInstance = null;
+  }
+
+  try {
+    cancelAudioInstance = new Audio('/cancel.ogg');
+    cancelAudioInstance.loop = false;
+    cancelAudioInstance.volume = currentSettings.sfxVolume / 100;
+    cancelAudioInstance.play().catch((e) => {
+      console.warn('Failed to play cancel sound:', e);
+    });
+  } catch (e) {
+    console.warn('Failed to load cancel sound:', e);
+  }
+}
