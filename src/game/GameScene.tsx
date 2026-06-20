@@ -14,6 +14,7 @@ import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, loadAudioSettin
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
+import { wildlifeLoader } from './services/wildlifeLoader';
 import {
   TILE_SIZE, MAP_W, MAP_H,
   GameState, UIState, ToolType, PlantType, PlantState, DialogueLine, QuestStep, Tile,
@@ -606,6 +607,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
     // Preload plant sprites
     spriteLoader.preloadPlants(['blue_grama', 'desert_marigold', 'lupine', 'milkweed', 'sage', 'mesquite']).catch((e) => {
       console.warn('Failed to preload plant sprites:', e);
+    });
+
+    // Preload wildlife sprites
+    wildlifeLoader.preloadAll().catch((e) => {
+      console.warn('Failed to preload wildlife sprites:', e);
     });
 
     // Preload sound effects in background

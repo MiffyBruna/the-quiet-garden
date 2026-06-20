@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { theme } from '../theme';
 import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS } from './engine/gameEngine';
 import { spriteLoader } from './services/spriteLoader';
+import { wildlifeLoader } from './services/wildlifeLoader';
 import type { PlantType } from './engine/types';
 
 type CatalogTab = 'plants' | 'wildlife' | 'fairies';
@@ -171,7 +172,29 @@ export function WatershedProgress({
                       alignItems: 'flex-start',
                     }}
                   >
-                    <div style={{ fontSize: 24, minWidth: 32 }}>{info.emoji}</div>
+                    {(() => {
+                      const sprite = wildlifeLoader.getLoadedSprite(wildlifeType);
+                      return sprite ? (
+                        <canvas
+                          ref={(canvas) => {
+                            if (canvas && sprite) {
+                              const ctx = canvas.getContext('2d');
+                              if (ctx) {
+                                canvas.width = 40;
+                                canvas.height = 40;
+                                ctx.clearRect(0, 0, 40, 40);
+                                const w = sprite.width * (36 / Math.max(sprite.width, sprite.height));
+                                const h = sprite.height * (36 / Math.max(sprite.width, sprite.height));
+                                ctx.drawImage(sprite, 20 - w / 2, 20 - h / 2, w, h);
+                              }
+                            }
+                          }}
+                          style={{ imageRendering: 'pixelated', width: 40, height: 40, minWidth: 40 }}
+                        />
+                      ) : (
+                        <div style={{ fontSize: 24, minWidth: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{info.emoji}</div>
+                      );
+                    })()}
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, textTransform: 'capitalize' }}>
                         {wildlifeType.replace(/_/g, ' ')}
