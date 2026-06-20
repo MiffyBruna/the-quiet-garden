@@ -678,6 +678,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const [frogHeight, setFrogHeight] = useState<number>(280);
   const [gameLoaded, setGameLoaded] = useState(false);
   const [mossPresentationUrl, setMossPresentationUrl] = useState<string>('');
+  const [fairyPortraits, setFairyPortraits] = useState<Record<string, string>>({});
 
   // Calculate frog height based on screen size
   useEffect(() => {
@@ -720,6 +721,25 @@ export function GameScene({ onShowWatershed, isContinue }: {
           setMossPresentationUrl(portraitUrl);
         } catch (e) {
           console.warn('Failed to load moss portrait:', e);
+        }
+
+        // Load fairy portraits
+        try {
+          const fairyNames = ['sprig', 'nima', 'bloom', 'ripple', 'tampopo'];
+          const portraits: Record<string, string> = {};
+          await Promise.all(
+            fairyNames.map(async (name) => {
+              try {
+                const url = await loadCdnAsset(`${name}-portrait.png`);
+                portraits[name] = url;
+              } catch (e) {
+                console.warn(`Failed to load ${name} portrait:`, e);
+              }
+            })
+          );
+          setFairyPortraits(portraits);
+        } catch (e) {
+          console.warn('Failed to load fairy portraits:', e);
         }
 
         // Ensure music is playing in the game
@@ -2524,6 +2544,23 @@ export function GameScene({ onShowWatershed, isContinue }: {
             zIndex: 42,
             pointerEvents: 'none',
             transform: 'scaleX(-1)',
+          }}
+        />
+      )}
+
+      {/* Fairy portrait — displays at same height as Moss */}
+      {ui.dialogue && frogHeight > 100 && ui.dialogue.speaker && fairyPortraits[ui.dialogue.speaker] && (
+        <img
+          src={fairyPortraits[ui.dialogue.speaker]}
+          alt=""
+          style={{
+            position: 'fixed',
+            bottom: 160 + Math.max(0, 140 - frogHeight),
+            right: 8,
+            height: frogHeight,
+            width: 'auto',
+            zIndex: 42,
+            pointerEvents: 'none',
           }}
         />
       )}
