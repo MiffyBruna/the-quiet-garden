@@ -56,7 +56,7 @@ export interface WildlifeEntity {
   emoji: string;
 }
 
-export type FairyType = 'marigold' | 'grama' | 'lupine' | 'sage' | 'milkweed';
+export type FairyType = 'sprig' | 'nima' | 'bloom' | 'ripple' | 'tampopo';
 
 export interface FairyEntity {
   id: string;

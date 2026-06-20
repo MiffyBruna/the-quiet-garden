@@ -3,7 +3,7 @@
  */
 import {
   MAP_W, MAP_H, TILE_SIZE,
-  GameState, Tile, TerrainType, PlantType, PlantStage,
+  GameState, Tile, TerrainType, PlantType, PlantStage, FairyType,
   WildlifeEntity, FairyEntity, QuestStep, DialogueLine,
 } from './types';
 import {
@@ -1473,15 +1473,15 @@ interface FairyMilestone {
 
 const FAIRY_MILESTONES: FairyMilestone[] = [
   {
-    id: 'first_fairy', percent: 15, type: 'grama',
-    wisdom: '"The valley has held its first rain. The memory is faint — but it is there."',
+    id: 'sprig', percent: 5, type: 'sprig',
+    wisdom: '"The first brave green thing is never small. It is the land deciding to try again."',
     preferredTile: (gs) => [gs.mossTX + 1, gs.mossTY],
   },
   {
-    id: 'second_fairy', percent: 22, type: 'marigold',
-    wisdom: '"Every bund is a small promise. The land is beginning to listen."',
+    id: 'nima', percent: 25, type: 'nima',
+    wisdom: '"Rain is not only what falls. Rain is what the earth is able to keep."',
     preferredTile: (gs) => {
-      // Near first bund tile
+      // Near first bund or water tile
       for (let y = 1; y < MAP_H - 1; y++)
         for (let x = 1; x < MAP_W - 1; x++)
           if (getTile(gs.tiles, x, y)?.terrain === 'bund') return [x + 1, y];
@@ -1489,26 +1489,87 @@ const FAIRY_MILESTONES: FairyMilestone[] = [
     },
   },
   {
-    id: 'third_fairy', percent: 32, type: 'sage',
-    wisdom: '"Soil remembers fertility. It just needs time and care to recall it."',
+    id: 'bloom', percent: 45, type: 'bloom',
+    wisdom: '"A flower is an invitation. When the land offers sweetness, life remembers the way back."',
     preferredTile: () => [10, 18],
   },
   {
-    id: 'fourth_fairy', percent: 42, type: 'lupine',
-    wisdom: '"Pollinators do not ask for much. Just a flower that stays open."',
+    id: 'ripple', percent: 75, type: 'ripple',
+    wisdom: '"Still water is never empty. It is a doorway for frogs, wings, roots, and sky."',
     preferredTile: () => [8, 12],
   },
   {
-    id: 'fifth_fairy', percent: 52, type: 'milkweed',
-    wisdom: '"Lupine gives back to soil what years of neglect took away. Patience is a kind of generosity."',
+    id: 'tampopo', percent: 93, type: 'tampopo',
+    wisdom: '"A healed place does not stay healed by being still. It sends seeds, shade, and stories onward."',
     preferredTile: (gs) => {
       for (let y = 1; y < MAP_H - 1; y++)
         for (let x = 1; x < MAP_W - 1; x++) {
           const t = getTile(gs.tiles, x, y);
-          if (t?.plant?.type === 'milkweed' && t.plant.stage >= 3) return [x, y - 1];
+          if (t?.plant && t.plant.stage >= 3) return [x, y - 1];
         }
       return [22, 18];
     },
+  },
+];
+
+/**
+ * Fairy information for the journal — includes name, restoration %, element, mood, and wisdom.
+ */
+export interface FairyCondition {
+  type: FairyType;
+  name: string;
+  restorationPercent: number;
+  element: string;
+  mood: string;
+  gift: string;
+  wisdom: string;
+}
+
+export const FAIRY_CONDITIONS: FairyCondition[] = [
+  {
+    type: 'sprig',
+    name: 'Sprig',
+    restorationPercent: 5,
+    element: 'Seed / soil',
+    mood: 'Shy, curious, hopeful',
+    gift: 'Tiny green sprout',
+    wisdom: 'The first brave green thing is never small. It is the land deciding to try again.',
+  },
+  {
+    type: 'nima',
+    name: 'Nima',
+    restorationPercent: 25,
+    element: 'Rain / moisture',
+    mood: 'Gentle, quiet, watchful',
+    gift: 'Blue rain bead',
+    wisdom: 'Rain is not only what falls. Rain is what the earth is able to keep.',
+  },
+  {
+    type: 'bloom',
+    name: 'Bloom',
+    restorationPercent: 45,
+    element: 'Flower / nectar',
+    mood: 'Bright, delighted, playful',
+    gift: 'Golden pollen star',
+    wisdom: 'A flower is an invitation. When the land offers sweetness, life remembers the way back.',
+  },
+  {
+    type: 'ripple',
+    name: 'Ripple',
+    restorationPercent: 75,
+    element: 'Pond / reflection',
+    mood: 'Calm, dreamy, slow',
+    gift: 'Silver-blue water ring',
+    wisdom: 'Still water is never empty. It is a doorway for frogs, wings, roots, and sky.',
+  },
+  {
+    type: 'tampopo',
+    name: 'Tampopo',
+    restorationPercent: 93,
+    element: 'Memory / wind / seeds',
+    mood: 'Mysterious, old-soul, warm',
+    gift: 'Drifting seed puff',
+    wisdom: 'A healed place does not stay healed by being still. It sends seeds, shade, and stories onward.',
   },
 ];
 

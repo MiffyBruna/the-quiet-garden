@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { theme } from '../theme';
-import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS } from './engine/gameEngine';
+import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS, FAIRY_CONDITIONS } from './engine/gameEngine';
 import { spriteLoader } from './services/spriteLoader';
 import { wildlifeLoader } from './services/wildlifeLoader';
 import type { PlantType } from './engine/types';
@@ -288,30 +288,40 @@ export function WatershedProgress({
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
-              {discoveredFairies.map((fairyType) => (
-                <div
-                  key={fairyType}
-                  style={{
-                    borderRadius: 8,
-                    border: `1px solid ${c.border}`,
-                    background: 'rgba(0,0,0,0.05)',
-                    padding: theme.spacing.sm,
-                    display: 'flex',
-                    gap: theme.spacing.sm,
-                    alignItems: 'flex-start',
-                  }}
-                >
-                  <div style={{ fontSize: 24, minWidth: 32 }}>✨</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, textTransform: 'capitalize' }}>
-                      {fairyType.replace(/_/g, ' ')}
-                    </div>
-                    <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2 }}>
-                      A mystical fairy visit
+              {discoveredFairies.map((fairyType) => {
+                const info = FAIRY_CONDITIONS.find((f) => f.type === fairyType);
+                if (!info) return null;
+                return (
+                  <div
+                    key={fairyType}
+                    style={{
+                      borderRadius: 8,
+                      border: `1px solid ${c.border}`,
+                      background: 'rgba(0,0,0,0.05)',
+                      padding: theme.spacing.sm,
+                      display: 'flex',
+                      gap: theme.spacing.sm,
+                      alignItems: 'flex-start',
+                    }}
+                  >
+                    <div style={{ fontSize: 28, minWidth: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✨</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary }}>
+                        {info.name}
+                      </div>
+                      <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, lineHeight: 1.5 }}>
+                        <div><strong>Appears at:</strong> {info.restorationPercent}% restoration</div>
+                        <div><strong>Element:</strong> {info.element}</div>
+                        <div><strong>Mood:</strong> {info.mood}</div>
+                        <div><strong>Gift:</strong> {info.gift}</div>
+                      </div>
+                      <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 4, lineHeight: 1.4, fontStyle: 'italic' }}>
+                        &ldquo;{info.wisdom}&rdquo;
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
