@@ -451,14 +451,23 @@ function renderFrame(
         }
       }
 
-      // Mesquite growth indicator — border around growing mesquite trees (not yet fully grown)
-      if (tile.plant?.type === 'mesquite' && !tile.plant.isMesquiteOccupied && tile.plant.stage < 4) {
-        const mpulse = 0.5 + 0.5 * Math.sin(tick * 0.08);
-        ctx.strokeStyle = `rgba(139, 115, 85, ${0.5 + mpulse * 0.4})`; // Brown border, pulsing
-        ctx.lineWidth = 3;
-        // Draw border around 2x2 mesquite area
-        ctx.strokeRect(sx + 1, sy + 1, T * 2 - 2, T * 2 - 2);
-      }
+    }
+  }
+
+  // --- Draw mesquite growth borders (after tiles, so they appear on top) ---
+  for (let ty = startTY; ty <= endTY; ty++) {
+    for (let tx = startTX; tx <= endTX; tx++) {
+      const tile = getTile(gs.tiles, tx, ty);
+      if (!tile?.plant || tile.plant.type !== 'mesquite' || tile.plant.isMesquiteOccupied || tile.plant.stage >= 4) continue;
+
+      const sx = tx * T - camX;
+      const sy = ty * T - camY;
+
+      const mpulse = 0.5 + 0.5 * Math.sin(tick * 0.08);
+      ctx.strokeStyle = `rgba(139, 115, 85, ${0.5 + mpulse * 0.4})`; // Brown border, pulsing
+      ctx.lineWidth = 3;
+      // Draw border around full 2x2 mesquite area
+      ctx.strokeRect(sx, sy, T * 2, T * 2);
     }
   }
 
@@ -1209,7 +1218,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     if (!tile) return false;
 
     // Block all these terrain types
-    const blockedTerrains = ['rock', 'water', 'bund', 'permanent_water', 'stream'];
+    const blockedTerrains = ['rock', 'permanent_water', 'stream'];
     if (blockedTerrains.includes(tile.terrain)) return false;
 
     // Can't walk on Moss
