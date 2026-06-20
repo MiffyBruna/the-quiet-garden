@@ -450,7 +450,19 @@ function renderFrame(
     if (mossSprite) {
       const w = mossSprite.width * (40 / Math.max(mossSprite.width, mossSprite.height));
       const h = mossSprite.height * (40 / Math.max(mossSprite.width, mossSprite.height));
+
+      // Add glow effect
+      const glowIntensity = 0.6 + 0.4 * Math.sin(tick * 0.08); // Pulsing glow
+      ctx.shadowColor = `rgba(100, 200, 100, ${glowIntensity * 0.6})`; // Soft green glow
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
       ctx.drawImage(mossSprite, sx + T / 2 - w / 2, sy + T / 2 + bob - h / 2, w, h);
+
+      // Clear shadow for remaining elements
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
     } else {
       ctx.font = `${T - 2}px serif`;
       ctx.textAlign = 'center';
