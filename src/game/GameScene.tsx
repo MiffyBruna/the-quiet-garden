@@ -215,6 +215,7 @@ function renderFrame(
   showMossHint = false,
   inspectFlash: { x: number; y: number; startTick: number } | null = null,
   mesquiteStencilTiles: Array<{ x: number; y: number }> = [],
+  isMesquiteValid = false,
 ): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -422,13 +423,20 @@ function renderFrame(
         ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
       }
 
-      // Mesquite 2x2 stencil preview (warm green — shown when positioning mesquite placement)
+      // Mesquite 2x2 stencil preview — green if valid, red if conditions not met
       const isMesquiteStencil = mesquiteStencilTiles.some((s) => s.x === tx && s.y === ty);
       if (isMesquiteStencil) {
         const mpulse = 0.5 + 0.5 * Math.sin(tick * 0.08 + tx * 0.4 + ty * 0.6);
-        ctx.fillStyle = `rgba(100,180,80,${0.12 + mpulse * 0.10})`;
+        if (isMesquiteValid) {
+          // Green when conditions are met
+          ctx.fillStyle = `rgba(100,180,80,${0.12 + mpulse * 0.10})`;
+          ctx.strokeStyle = `rgba(100,180,80,${0.7 + mpulse * 0.3})`;
+        } else {
+          // Red when conditions not met
+          ctx.fillStyle = `rgba(220,80,80,${0.12 + mpulse * 0.10})`;
+          ctx.strokeStyle = `rgba(220,80,80,${0.7 + mpulse * 0.3})`;
+        }
         ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
-        ctx.strokeStyle = `rgba(100,180,80,${0.7 + mpulse * 0.3})`;
         ctx.lineWidth = 2;
         ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
       }
@@ -1529,8 +1537,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           // If already in positioning mode, a canvas tap just moves the player; confirm via button
           if (currentUI.mesquiteMode !== 'positioning') {
             setUI((p) => ({ ...p, mesquiteMode: 'positioning' }));
-            // Only explain mesquite placement once per session
-            if (!mesquiteExplainedRef.current) {
+            // Check if mesquite already exists on the map
+            const hasMesquite = gs.tiles.flat().some(t => t.plant?.type === 'mesquite' && !t.plant.isMesquiteOccupied);
+            // Only explain mesquite placement once per session or if none exist yet
+            if (!mesquiteExplainedRef.current && !hasMesquite) {
               mesquiteExplainedRef.current = true;
               queueDialogue([{
                 speaker: 'Moss', emoji: '🐸',
@@ -2067,6 +2077,16 @@ export function GameScene({ onShowWatershed, isContinue }: {
             .filter(({ x, y }) => x > 0 && x < MAP_W - 1 && y > 0 && y < MAP_H - 1)
         : [];
 
+      // Check if mesquite placement is valid (all 4 tiles have fertility >= 25%)
+      const isMesquiteValid = currentUI.mesquiteMode === 'positioning'
+        ? MESQUITE_OFFSETS.every(({ dx, dy }) => {
+            const tx = gs.playerTX + dx;
+            const ty = gs.playerTY + dy;
+            if (tx <= 0 || tx >= MAP_W - 1 || ty <= 0 || ty >= MAP_H - 1) return false;
+            const tile = getTile(gs.tiles, tx, ty);
+            return tile && tile.fertility >= 25 && tile.terrain !== 'rock' && tile.terrain !== 'water' && tile.terrain !== 'bund' && !tile.plant;
+          })
+        : false;
 
       // Moss proximity hint
       const playerNearMoss =
@@ -2088,7 +2108,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         canvas.style.cursor = 'pointer';
       }
 
-      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles, showMossHint, inspectFlashRef.current, mesquiteStencilTiles);
+      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles, showMossHint, inspectFlashRef.current, mesquiteStencilTiles, isMesquiteValid);
       rafRef.current = requestAnimationFrame(loop);
     };
 
