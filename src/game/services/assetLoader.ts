@@ -35,9 +35,18 @@ export async function loadCdnAsset(filename: string): Promise<string> {
 }
 
 /**
- * Preload multiple assets at once
+ * Preload multiple assets at once and wait for images to decode
  * @param filenames - Array of filenames to preload
  */
 export async function preloadCdnAssets(filenames: string[]): Promise<void> {
-  await Promise.all(filenames.map(filename => loadCdnAsset(filename)));
+  await Promise.all(filenames.map(async (filename) => {
+    const blobUrl = await loadCdnAsset(filename);
+    // Create image and wait for it to load/decode
+    const img = new Image();
+    img.src = blobUrl;
+    return new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error(`Failed to load image: ${filename}`));
+    });
+  }));
 }
