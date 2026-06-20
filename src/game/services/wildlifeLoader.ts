@@ -12,6 +12,7 @@ export interface WildlifeSpriteConfig {
 // Wildlife sprite configurations - only includes sprites that have been uploaded
 export const WILDLIFE_SPRITES: Record<string, WildlifeSpriteConfig> = {
   // Chapter 1 available sprites
+  ant: { filename: 'ant' },
   beetle: { filename: 'beetle' },
   bee: { filename: 'bee' },
   hoverfly: { filename: 'hoverfly' },
