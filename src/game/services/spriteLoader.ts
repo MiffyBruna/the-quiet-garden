@@ -97,7 +97,14 @@ class SpriteLoader {
    * Get cached sprite without loading (returns undefined if not loaded yet).
    */
   getLoadedSprite(plantType: string, stage: number): HTMLImageElement | undefined {
-    return this.loadedSprites.get(this.getCacheKey(plantType, stage));
+    const cacheKey = this.getCacheKey(plantType, stage);
+    const sprite = this.loadedSprites.get(cacheKey);
+    if (!sprite) {
+      console.log(`[spriteLoader] getLoadedSprite(${plantType}, stage ${stage}): NOT found. Cache has: ${Array.from(this.loadedSprites.keys()).join(', ')}`);
+    } else {
+      console.log(`[spriteLoader] getLoadedSprite(${plantType}, stage ${stage}): Found, dimensions: ${sprite.width}x${sprite.height}`);
+    }
+    return sprite;
   }
 
   /**

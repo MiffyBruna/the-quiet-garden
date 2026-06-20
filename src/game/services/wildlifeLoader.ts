@@ -82,7 +82,13 @@ class WildlifeLoader {
    * Get cached sprite without loading (returns undefined if not loaded yet).
    */
   getLoadedSprite(wildlifeType: string): HTMLImageElement | undefined {
-    return this.loadedSprites.get(wildlifeType);
+    const sprite = this.loadedSprites.get(wildlifeType);
+    if (!sprite) {
+      console.log(`[wildlifeLoader] getLoadedSprite(${wildlifeType}): NOT found. Cache has: ${Array.from(this.loadedSprites.keys()).join(', ')}`);
+    } else {
+      console.log(`[wildlifeLoader] getLoadedSprite(${wildlifeType}): Found, dimensions: ${sprite.width}x${sprite.height}`);
+    }
+    return sprite;
   }
 
   /**

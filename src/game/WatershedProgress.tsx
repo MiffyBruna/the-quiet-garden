@@ -46,25 +46,35 @@ export function WatershedProgress({
 
   // Ensure fairy and wildlife sprites are loaded when journal opens
   useEffect(() => {
+    console.log(`[WatershedProgress] Opening journal with ${discoveredFairies.length} fairies and ${discoveredWildlife.length} wildlife`);
+
     const spritePromises: Promise<any>[] = [];
 
     if (discoveredFairies.length > 0) {
+      console.log(`[WatershedProgress] Loading fairy sprites: ${discoveredFairies.join(', ')}`);
       discoveredFairies.forEach((fairyType) => {
-        spritePromises.push(fairyLoader.loadSprite(fairyType).catch(() => {}));
+        spritePromises.push(fairyLoader.loadSprite(fairyType).catch((err) => {
+          console.error(`[WatershedProgress] Failed to load fairy sprite ${fairyType}:`, err);
+        }));
       });
     }
 
     if (discoveredWildlife.length > 0) {
+      console.log(`[WatershedProgress] Loading wildlife sprites: ${discoveredWildlife.join(', ')}`);
       discoveredWildlife.forEach((wildlifeType) => {
-        spritePromises.push(wildlifeLoader.loadSprite(wildlifeType).catch(() => {}));
+        spritePromises.push(wildlifeLoader.loadSprite(wildlifeType).catch((err) => {
+          console.error(`[WatershedProgress] Failed to load wildlife sprite ${wildlifeType}:`, err);
+        }));
       });
     }
 
     if (spritePromises.length > 0) {
       Promise.all(spritePromises).then(() => {
+        console.log(`[WatershedProgress] All sprites loaded, triggering re-render`);
         setSpritesLoaded(true);
       });
     } else {
+      console.log(`[WatershedProgress] No sprites to load`);
       setSpritesLoaded(true);
     }
   }, [discoveredFairies, discoveredWildlife]);
@@ -201,19 +211,28 @@ export function WatershedProgress({
                   >
                     {(() => {
                       const sprite = wildlifeLoader.getLoadedSprite(wildlifeType);
+                      console.log(`[WatershedProgress] Rendering wildlife ${wildlifeType}: sprite=${sprite ? 'loaded' : 'not loaded'}`);
                       return sprite ? (
                         <canvas
                           ref={(canvas) => {
                             if (canvas && sprite) {
+                              console.log(`[WatershedProgress] Canvas ref callback for ${wildlifeType}, sprite dimensions: ${sprite.width}x${sprite.height}`);
+                              // Set canvas dimensions FIRST
+                              canvas.width = 40;
+                              canvas.height = 40;
+                              // THEN get context (must be after setting dimensions)
                               const ctx = canvas.getContext('2d');
                               if (ctx) {
-                                canvas.width = 40;
-                                canvas.height = 40;
                                 ctx.clearRect(0, 0, 40, 40);
                                 const w = sprite.width * (36 / Math.max(sprite.width, sprite.height));
                                 const h = sprite.height * (36 / Math.max(sprite.width, sprite.height));
+                                console.log(`[WatershedProgress] Drawing ${wildlifeType} to canvas, scaled size: ${w.toFixed(1)}x${h.toFixed(1)}`);
                                 ctx.drawImage(sprite, 20 - w / 2, 20 - h / 2, w, h);
+                              } else {
+                                console.error(`[WatershedProgress] Failed to get canvas context for ${wildlifeType}`);
                               }
+                            } else {
+                              console.warn(`[WatershedProgress] Canvas ref callback called but sprite missing for ${wildlifeType}`);
                             }
                           }}
                           style={{ imageRendering: 'pixelated', width: 40, height: 40, minWidth: 40 }}
@@ -271,10 +290,12 @@ export function WatershedProgress({
                         <canvas
                           ref={(canvas) => {
                             if (canvas && sprite) {
+                              // Set canvas dimensions FIRST
+                              canvas.width = 32;
+                              canvas.height = 32;
+                              // THEN get context (must be after setting dimensions)
                               const ctx = canvas.getContext('2d');
                               if (ctx) {
-                                canvas.width = 32;
-                                canvas.height = 32;
                                 ctx.clearRect(0, 0, 32, 32);
                                 const w = sprite.width * (28 / Math.max(sprite.width, sprite.height));
                                 const h = sprite.height * (28 / Math.max(sprite.width, sprite.height));
@@ -333,19 +354,28 @@ export function WatershedProgress({
                   >
                     {(() => {
                       const sprite = fairyLoader.getLoadedSprite(fairyType);
+                      console.log(`[WatershedProgress] Rendering fairy ${fairyType}: sprite=${sprite ? 'loaded' : 'not loaded'}`);
                       return sprite ? (
                         <canvas
                           ref={(canvas) => {
                             if (canvas && sprite) {
+                              console.log(`[WatershedProgress] Canvas ref callback for ${fairyType}, sprite dimensions: ${sprite.width}x${sprite.height}`);
+                              // Set canvas dimensions FIRST
+                              canvas.width = 56;
+                              canvas.height = 56;
+                              // THEN get context (must be after setting dimensions)
                               const ctx = canvas.getContext('2d');
                               if (ctx) {
-                                canvas.width = 56;
-                                canvas.height = 56;
                                 ctx.clearRect(0, 0, 56, 56);
                                 const w = sprite.width * (50 / Math.max(sprite.width, sprite.height));
                                 const h = sprite.height * (50 / Math.max(sprite.width, sprite.height));
+                                console.log(`[WatershedProgress] Drawing ${fairyType} to canvas, scaled size: ${w.toFixed(1)}x${h.toFixed(1)}`);
                                 ctx.drawImage(sprite, 28 - w / 2, 28 - h / 2, w, h);
+                              } else {
+                                console.error(`[WatershedProgress] Failed to get canvas context for ${fairyType}`);
                               }
+                            } else {
+                              console.warn(`[WatershedProgress] Canvas ref callback called but sprite missing for ${fairyType}`);
                             }
                           }}
                           style={{ imageRendering: 'pixelated', width: 56, height: 56, minWidth: 56, borderRadius: 4 }}

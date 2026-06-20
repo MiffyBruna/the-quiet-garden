@@ -27,10 +27,12 @@ class FairyLoader {
    */
   async loadSprite(fairyType: string): Promise<HTMLImageElement> {
     if (this.loadedSprites.has(fairyType)) {
+      console.log(`[fairyLoader] Returning cached sprite for ${fairyType}`);
       return this.loadedSprites.get(fairyType)!;
     }
 
     if (this.loadingPromises.has(fairyType)) {
+      console.log(`[fairyLoader] Sprite ${fairyType} already loading, returning pending promise`);
       return this.loadingPromises.get(fairyType)!;
     }
 
@@ -39,22 +41,34 @@ class FairyLoader {
       throw new Error(`No sprite configuration found for fairy type: ${fairyType}`);
     }
 
+    console.log(`[fairyLoader] Starting load for ${fairyType} from ${config.filename}.png`);
+
     const promise = (async () => {
       try {
         const filename = `${config.filename}.png`;
         const blobUrl = await loadCdnAsset(filename);
+        console.log(`[fairyLoader] Got blob URL for ${fairyType}: ${blobUrl.substring(0, 50)}...`);
 
         const img = new Image();
         img.src = blobUrl;
+        console.log(`[fairyLoader] Created Image element for ${fairyType}, waiting for onload...`);
 
         await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error(`Failed to load sprite: ${filename}`));
+          img.onload = () => {
+            console.log(`[fairyLoader] Image onload fired for ${fairyType}, dimensions: ${img.width}x${img.height}`);
+            resolve();
+          };
+          img.onerror = () => {
+            console.error(`[fairyLoader] Image onerror fired for ${fairyType}`);
+            reject(new Error(`Failed to load sprite: ${filename}`));
+          };
         });
 
         this.loadedSprites.set(fairyType, img);
+        console.log(`[fairyLoader] Cached sprite for ${fairyType}`);
         return img;
       } catch (error) {
+        console.error(`[fairyLoader] Failed to load fairy sprite ${fairyType}: ${error}`);
         throw new Error(`Failed to load fairy sprite ${fairyType}: ${error}`);
       }
     })();
@@ -67,7 +81,13 @@ class FairyLoader {
    * Get cached sprite without loading (returns undefined if not loaded yet).
    */
   getLoadedSprite(fairyType: string): HTMLImageElement | undefined {
-    return this.loadedSprites.get(fairyType);
+    const sprite = this.loadedSprites.get(fairyType);
+    if (!sprite) {
+      console.log(`[fairyLoader] getLoadedSprite(${fairyType}): NOT found. Cache has: ${Array.from(this.loadedSprites.keys()).join(', ')}`);
+    } else {
+      console.log(`[fairyLoader] getLoadedSprite(${fairyType}): Found, dimensions: ${sprite.width}x${sprite.height}`);
+    }
+    return sprite;
   }
 
   /**
