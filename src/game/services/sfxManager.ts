@@ -41,6 +41,11 @@ const SOUND_DESCRIPTIONS = {
     description: 'Soft whoosh sound, reversing action, magical undo effect, light and whimsical',
     durationSec: 0.6,
   },
+  confirm: {
+    type: 'sfx' as const,
+    description: 'Confirmation sound, gentle belt handle click, satisfying action confirm',
+    durationSec: 0.5,
+  },
 };
 
 type SFXType = keyof typeof SOUND_DESCRIPTIONS;
@@ -51,6 +56,7 @@ let sfxCache: Record<SFXType, CachedSFX | null> = {
   rain: null,
   bund: null,
   undo: null,
+  confirm: null,
 };
 
 let isGenerating: Record<SFXType, boolean> = {
@@ -59,6 +65,7 @@ let isGenerating: Record<SFXType, boolean> = {
   rain: false,
   bund: false,
   undo: false,
+  confirm: false,
 };
 
 /**
@@ -182,6 +189,16 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
       }
     }
 
+    // For confirm (mesquite/bund placement confirmation), try to load user-uploaded sound first
+    if (sfxType === 'confirm') {
+      try {
+        url = await loadCdnAsset('beltHandle2.ogg');
+      } catch (e) {
+        console.debug(`User confirm audio not available, falling back to generated: ${e}`);
+        url = null; // Fall back to generated audio
+      }
+    }
+
     // If no user audio was loaded, get generated SFX
     if (!url) {
       url = await getSFX(sfxType);
@@ -257,6 +274,7 @@ export function clearSFXCache(): void {
     rain: null,
     bund: null,
     undo: null,
+    confirm: null,
   };
   localStorage.removeItem(CACHE_KEY);
 }

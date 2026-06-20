@@ -690,54 +690,48 @@ export function GameScene({ onShowWatershed, isContinue }: {
         } catch (e) {
           console.warn('Failed to load moss portrait:', e);
         }
+
+        // Ensure music is playing in the game
+        if (isMusicEnabled()) {
+          playMusic('soundtrack.mp3');
+        }
+
+        // Preload sprites and other assets BEFORE marking game as loaded
+        await Promise.all([
+          preloadCdnAssets(SPRITE_FILENAMES).catch((e) => {
+            console.warn('Failed to preload sprites:', e);
+          }),
+          spriteLoader.preloadPlants(['blue_grama', 'desert_marigold', 'lupine', 'milkweed', 'sage', 'mesquite']).catch((e) => {
+            console.warn('Failed to preload plant sprites:', e);
+          }),
+          wildlifeLoader.preloadAll().catch((e) => {
+            console.warn('Failed to preload wildlife sprites:', e);
+          }),
+          wildlifeLoader.loadSprite('moss').catch((e) => {
+            console.warn('Failed to preload Moss sprite:', e);
+          }),
+          fairyLoader.preloadAll().catch((e) => {
+            console.warn('Failed to preload fairy sprites:', e);
+          }),
+          Promise.all([
+            fairyLoader.loadSprite('sprig').catch(() => {}),
+            fairyLoader.loadSprite('nima').catch(() => {}),
+            fairyLoader.loadSprite('bloom').catch(() => {}),
+            fairyLoader.loadSprite('ripple').catch(() => {}),
+            fairyLoader.loadSprite('tampopo').catch(() => {}),
+          ]).catch(() => {}),
+        ]);
+
+        // Preload sound effects in background (after game is loaded)
+        preloadSFX().catch((e) => {
+          console.warn('Failed to preload SFX:', e);
+        });
       } catch (e) {
         console.warn('Failed to load game state:', e);
       } finally {
         setGameLoaded(true);
       }
     })();
-
-    // Ensure music is playing in the game
-    if (isMusicEnabled()) {
-      playMusic('soundtrack.mp3');
-    }
-
-    // Preload sprites and other assets in background
-    preloadCdnAssets(SPRITE_FILENAMES).catch((e) => {
-      console.warn('Failed to preload sprites:', e);
-    });
-
-    // Preload plant sprites
-    spriteLoader.preloadPlants(['blue_grama', 'desert_marigold', 'lupine', 'milkweed', 'sage', 'mesquite']).catch((e) => {
-      console.warn('Failed to preload plant sprites:', e);
-    });
-
-    // Preload wildlife sprites (including Moss)
-    wildlifeLoader.preloadAll().catch((e) => {
-      console.warn('Failed to preload wildlife sprites:', e);
-    });
-    // Prioritize loading Moss sprite
-    wildlifeLoader.loadSprite('moss').catch((e) => {
-      console.warn('Failed to preload Moss sprite:', e);
-    });
-
-    // Preload fairy sprites
-    fairyLoader.preloadAll().catch((e) => {
-      console.warn('Failed to preload fairy sprites:', e);
-    });
-    // Prioritize loading main fairies
-    Promise.all([
-      fairyLoader.loadSprite('sprig').catch(() => {}),
-      fairyLoader.loadSprite('nima').catch(() => {}),
-      fairyLoader.loadSprite('bloom').catch(() => {}),
-      fairyLoader.loadSprite('ripple').catch(() => {}),
-      fairyLoader.loadSprite('tampopo').catch(() => {}),
-    ]).catch(() => {});
-
-    // Preload sound effects in background
-    preloadSFX().catch((e) => {
-      console.warn('Failed to preload SFX:', e);
-    });
 
     // Save on quit
     const quitHandler = () => {
@@ -1096,6 +1090,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
       }]);
     }
 
+    // Play confirmation sound when bund placement is confirmed
+    playSFX('confirm', 0.8).catch(() => {});
+
     // Remember where the bund was placed so seed spots stay relative to it
     gs.bundCenterTX = gs.playerTX;
     gs.bundCenterTY = gs.playerTY;
@@ -1144,6 +1141,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
   // -------------------------------------------------------------------------
   const confirmMesquite = useCallback(() => {
     const gs = gsRef.current;
+    // Play confirmation sound when mesquite placement is confirmed
+    playSFX('confirm', 0.8).catch(() => {});
     const result = applyMesquitePlant(gs, gs.playerTX, gs.playerTY);
     if (result.planted) {
       playSFX('planting', 0.8).catch(() => {});
