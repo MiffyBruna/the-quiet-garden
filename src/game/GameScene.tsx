@@ -450,6 +450,15 @@ function renderFrame(
           ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
         }
       }
+
+      // Mesquite growth indicator — border around growing mesquite trees (not yet fully grown)
+      if (tile.plant?.type === 'mesquite' && !tile.plant.isMesquiteOccupied && tile.plant.stage < 4) {
+        const mpulse = 0.5 + 0.5 * Math.sin(tick * 0.08);
+        ctx.strokeStyle = `rgba(139, 115, 85, ${0.5 + mpulse * 0.4})`; // Brown border, pulsing
+        ctx.lineWidth = 3;
+        // Draw border around 2x2 mesquite area
+        ctx.strokeRect(sx + 1, sy + 1, T * 2 - 2, T * 2 - 2);
+      }
     }
   }
 
@@ -1511,10 +1520,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
           // If already in positioning mode, a canvas tap just moves the player; confirm via button
           if (currentUI.mesquiteMode !== 'positioning') {
             setUI((p) => ({ ...p, mesquiteMode: 'positioning' }));
-            queueDialogue([{
-              speaker: 'Moss', emoji: '🐸',
-              text: 'Walk to a spot with fertile soil across all 4 tiles, then press ✓ to plant the mesquite.',
-            }]);
+            // Only explain mesquite placement once per session
+            if (!mesquiteExplainedRef.current) {
+              mesquiteExplainedRef.current = true;
+              queueDialogue([{
+                speaker: 'Moss', emoji: '🐸',
+                text: 'Walk to a spot with fertile soil across all 4 tiles, then press ✓ to plant the mesquite.',
+              }]);
+            }
           }
           return;
         }
@@ -1650,6 +1663,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
   // Track which seed type has already shown Moss's "seed goes in" message this selection.
   // Resets when the player switches tools or changes seed type.
   const seedMsgShownRef = useRef<PlantType | null>(null);
+
+  // Track if mesquite placement explanation has been shown (only show once per session)
+  const mesquiteExplainedRef = useRef(false);
 
   const keydownRef = useRef<(e: KeyboardEvent) => void>(() => {});
   const keyCooldown = useRef(false);
