@@ -1,10 +1,11 @@
 /**
- * LoadingScreen — animated loading screen with rain, dancing bar, and flying bee
+ * LoadingScreen — animated loading screen with rain, dancing bar, flying bee, and floating moss
  */
 import { useEffect, useState } from 'react';
 
 export function LoadingScreen() {
   const [beeX, setBeeX] = useState(0);
+  const [mossImg, setMossImg] = useState<string | null>(null);
 
   useEffect(() => {
     // Animate bee position
@@ -12,6 +13,21 @@ export function LoadingScreen() {
       setBeeX((prev) => (prev > 120 ? 0 : prev + 1));
     }, 30);
     return () => clearInterval(interval);
+  }, []);
+
+  // Load moss sprite
+  useEffect(() => {
+    const loadMoss = async () => {
+      try {
+        const response = await fetch('/cdn-assets/moss.png');
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setMossImg(url);
+      } catch (e) {
+        console.warn('Failed to load moss sprite:', e);
+      }
+    };
+    loadMoss();
   }, []);
 
   return (
@@ -48,6 +64,11 @@ export function LoadingScreen() {
           50% { transform: translateY(-25px) rotate(0deg); }
           75% { transform: translateY(-35px) rotate(-10deg); }
           100% { transform: translateY(-20px) rotate(0deg); }
+        }
+
+        @keyframes floatMoss {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
         }
 
         .rain-drop {
@@ -120,6 +141,30 @@ export function LoadingScreen() {
           🐝
         </div>
       </div>
+
+      {/* Floating Moss */}
+      {mossImg && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '15%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            animation: 'floatMoss 3s ease-in-out infinite',
+            zIndex: 5,
+          }}
+        >
+          <img
+            src={mossImg}
+            alt="Moss"
+            style={{
+              width: '80px',
+              height: 'auto',
+              filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))',
+            }}
+          />
+        </div>
+      )}
 
       {/* Loading content */}
       <div
