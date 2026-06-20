@@ -14031,11 +14031,24 @@
       "timestamp": 1781926371023,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "1781926374129-hbudsrc5l",
+      "role": "system",
+      "content": "Compacting project...",
+      "isShownToUser": true,
+      "timestamp": 1781926374129,
+      "type": "compaction",
+      "metadata": {
+        "compaction": {
+          "trigger": "auto"
+        }
+      }
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1781926371139,
-  "tokenUsage": 100652,
+  "updatedAt": 1781926441384,
+  "tokenUsage": 0,
   "script": "default",
   "claudeSessionId": "7c710745-5c51-4e9b-a2e0-1a5469470ee3"
 }
