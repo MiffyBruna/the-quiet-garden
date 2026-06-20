@@ -713,7 +713,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           ]);
         } catch (e) {
           console.error('Failed to load fairy sprites — cannot continue:', e);
-          throw e;
+          throw new Error(`Fairy sprites failed to load: ${e}`);
         }
 
         // Optional assets load in background (non-blocking)
@@ -738,9 +738,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
         });
       } catch (e) {
         console.warn('Failed to load game state:', e);
-      } finally {
-        setGameLoaded(true);
+        // Don't mark game as loaded if fairy sprites failed
+        if (e instanceof Error && e.message.toLowerCase().includes('fairy')) {
+          console.error('Fairy sprite loading failed — game will not load');
+          return;
+        }
       }
+      // Only mark game as loaded if we get here (fairy sprites loaded successfully)
+      setGameLoaded(true);
     })();
 
     // Save on quit
