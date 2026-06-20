@@ -1733,12 +1733,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
         return;
       }
 
-      // Enter confirms bund/mesquite placement while in positioning mode
-      if (e.key === 'Enter' && currentUI.bundMode === 'positioning') {
+      // Enter or Space confirms bund/mesquite placement while in positioning mode
+      if ((e.key === 'Enter' || e.key === ' ') && currentUI.bundMode === 'positioning') {
         confirmBund();
         return;
       }
-      if (e.key === 'Enter' && currentUI.mesquiteMode === 'positioning') {
+      if ((e.key === 'Enter' || e.key === ' ') && currentUI.mesquiteMode === 'positioning') {
         confirmMesquite();
         return;
       }
