@@ -15,6 +15,7 @@ import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
 import { wildlifeLoader } from './services/wildlifeLoader';
+import { fairyLoader } from './services/fairyLoader';
 import {
   TILE_SIZE, MAP_W, MAP_H,
   GameState, UIState, ToolType, PlantType, PlantState, DialogueLine, QuestStep, Tile,
@@ -612,6 +613,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
     // Preload wildlife sprites
     wildlifeLoader.preloadAll().catch((e) => {
       console.warn('Failed to preload wildlife sprites:', e);
+    });
+
+    // Preload fairy sprites
+    fairyLoader.preloadAll().catch((e) => {
+      console.warn('Failed to preload fairy sprites:', e);
     });
 
     // Preload sound effects in background

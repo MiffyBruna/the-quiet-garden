@@ -8,6 +8,7 @@ import { theme } from '../theme';
 import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS, FAIRY_CONDITIONS } from './engine/gameEngine';
 import { spriteLoader } from './services/spriteLoader';
 import { wildlifeLoader } from './services/wildlifeLoader';
+import { fairyLoader } from './services/fairyLoader';
 import type { PlantType } from './engine/types';
 
 type CatalogTab = 'plants' | 'wildlife' | 'fairies';
@@ -304,7 +305,29 @@ export function WatershedProgress({
                       alignItems: 'flex-start',
                     }}
                   >
-                    <div style={{ fontSize: 28, minWidth: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✨</div>
+                    {(() => {
+                      const sprite = fairyLoader.getLoadedSprite(fairyType);
+                      return sprite ? (
+                        <canvas
+                          ref={(canvas) => {
+                            if (canvas && sprite) {
+                              const ctx = canvas.getContext('2d');
+                              if (ctx) {
+                                canvas.width = 56;
+                                canvas.height = 56;
+                                ctx.clearRect(0, 0, 56, 56);
+                                const w = sprite.width * (50 / Math.max(sprite.width, sprite.height));
+                                const h = sprite.height * (50 / Math.max(sprite.width, sprite.height));
+                                ctx.drawImage(sprite, 28 - w / 2, 28 - h / 2, w, h);
+                              }
+                            }
+                          }}
+                          style={{ imageRendering: 'pixelated', width: 56, height: 56, minWidth: 56, borderRadius: 4 }}
+                        />
+                      ) : (
+                        <div style={{ fontSize: 28, minWidth: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✨</div>
+                      );
+                    })()}
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary }}>
                         {info.name}
