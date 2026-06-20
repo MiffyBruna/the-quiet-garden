@@ -6,6 +6,8 @@ import {
   GameState, Tile, TerrainType, PlantType, PlantStage, FairyType,
   WildlifeEntity, FairyEntity, QuestStep, DialogueLine,
 } from './types';
+import { PLANTS } from '../journalData';
+import { ZONES } from '../gardenData';
 import {
   generateChapter1Map,
   PLAYER_START_TX, PLAYER_START_TY,
@@ -2422,8 +2424,12 @@ export function deserializeGameState(json: string): GameState | null {
     if (typeof data.workingBundCount === 'number') gs.workingBundCount = data.workingBundCount;
     if (typeof data.firstWiltSeen === 'boolean') gs.firstWiltSeen = data.firstWiltSeen;
 
-    // Restore discoveries
-    if (Array.isArray(data.discoveredWildlife)) gs.discoveredWildlife = data.discoveredWildlife;
+    // Restore discoveries and filter out invalid ones
+    if (Array.isArray(data.discoveredWildlife)) {
+      // Only keep wildlife that actually exist in the current game
+      const validWildlifeIds = new Set(ZONES.flatMap((z) => z.wildlife.map((w) => w.id)));
+      gs.discoveredWildlife = data.discoveredWildlife.filter((w: string) => validWildlifeIds.has(w));
+    }
     if (Array.isArray(data.discoveredFairies)) {
       // Migrate old fairy names (first_fairy, second_fairy, etc.) to new ones (sprig, nima, etc.)
       const fairyMigration: Record<string, string> = {
@@ -2433,9 +2439,16 @@ export function deserializeGameState(json: string): GameState | null {
         'fourth_fairy': 'ripple',
         'fifth_fairy': 'tampopo',
       };
-      gs.discoveredFairies = data.discoveredFairies.map((fairy: string) => fairyMigration[fairy] || fairy);
+      const migratedFairies = data.discoveredFairies.map((fairy: string) => fairyMigration[fairy] || fairy);
+      // Only keep fairies that actually exist in the current game
+      const validFairyIds = new Set(ZONES.flatMap((z) => z.fairies.map((f) => f.id)));
+      gs.discoveredFairies = migratedFairies.filter((f: string) => validFairyIds.has(f));
     }
-    if (Array.isArray(data.discoveredPlants)) gs.discoveredPlants = data.discoveredPlants;
+    if (Array.isArray(data.discoveredPlants)) {
+      // Only keep plants that actually exist in the current game
+      const validPlantIds = new Set(PLANTS.map((p) => p.id));
+      gs.discoveredPlants = data.discoveredPlants.filter((plant: string) => validPlantIds.has(plant));
+    }
     if (Array.isArray(data.discoveredGuideNotes)) gs.discoveredGuideNotes = data.discoveredGuideNotes;
 
     // Recreate wildlife entities based on discoveries
