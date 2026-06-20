@@ -9,6 +9,7 @@ import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS, FAIRY_CONDITIONS } from './eng
 import { spriteLoader } from './services/spriteLoader';
 import { wildlifeLoader } from './services/wildlifeLoader';
 import { fairyLoader } from './services/fairyLoader';
+import { playMenuSelect } from './services/audioManager';
 import { PLANTS } from './journalData';
 import { ZONES } from './gardenData';
 import type { PlantType } from './engine/types';
@@ -118,7 +119,10 @@ export function WatershedProgress({
           <div style={{ fontSize: 10, opacity: 0.65 }}>restored</div>
         </div>
         <button
-          onClick={onClose}
+          onClick={() => {
+            playMenuSelect();
+            onClose();
+          }}
           style={{
             background: 'rgba(255,255,255,0.15)',
             border: '1px solid rgba(255,255,255,0.25)',
@@ -150,7 +154,10 @@ export function WatershedProgress({
         ].map((item) => (
           <button
             key={item.label}
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => {
+              playMenuSelect();
+              setActiveTab(item.id);
+            }}
             style={{
               flex: 1,
               padding: '10px 8px',
