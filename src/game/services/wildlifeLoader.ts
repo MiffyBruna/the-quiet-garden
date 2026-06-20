@@ -9,25 +9,19 @@ export interface WildlifeSpriteConfig {
   filename: string; // e.g., 'bee' -> 'bee.png'
 }
 
-// Wildlife sprite configurations
+// Wildlife sprite configurations - only includes sprites that have been uploaded
 export const WILDLIFE_SPRITES: Record<string, WildlifeSpriteConfig> = {
-  ant: { filename: 'ant' },
+  // Chapter 1 available sprites
   beetle: { filename: 'beetle' },
   bee: { filename: 'bee' },
   hoverfly: { filename: 'hoverfly' },
-  painted_lady: { filename: 'painted_lady' },
   monarch: { filename: 'monarch' },
   cottontail: { filename: 'cottontail' },
   frog: { filename: 'frog' },
-  dragonfly: { filename: 'dragonfly' },
   quail: { filename: 'quail' },
   finch: { filename: 'finch' },
-  hawk: { filename: 'hawk' },
-  // Chapter 2
-  mason_bee: { filename: 'mason_bee' },
-  bumblebee: { filename: 'bumblebee' },
+  // Chapter 2 available sprites
   swallowtail: { filename: 'swallowtail' },
-  hummingbird: { filename: 'hummingbird' },
   swallow: { filename: 'swallow' },
   // NPCs
   moss: { filename: 'moss' },
