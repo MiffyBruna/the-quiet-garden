@@ -458,13 +458,14 @@ function renderFrame(
       ctx.fillText('🐸', sx + T / 2, sy + T / 2 + bob);
     }
 
+    // Moss name tag below sprite
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.fillRect(sx + T / 2 - 20, sy - 4, 40, 13);
+    ctx.fillRect(sx + T / 2 - 20, sy + T / 2 + 22, 40, 13);
     ctx.fillStyle = '#fff';
     ctx.font = '8px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Moss', sx + T / 2, sy + 2);
+    ctx.fillText('Moss', sx + T / 2, sy + T / 2 + 28);
 
     // Speech bubble above Moss when player is nearby
     if (showMossHint) {
