@@ -132,3 +132,25 @@ export function getMusicVolume(): number {
 export function isMusicEnabled(): boolean {
   return currentSettings.musicEnabled;
 }
+
+/**
+ * Set SFX volume (0-100)
+ */
+export function setSfxVolume(volume: number): void {
+  const normalizedVolume = Math.max(0, Math.min(100, volume));
+  saveAudioSettings({ sfxVolume: normalizedVolume });
+}
+
+/**
+ * Get current SFX volume
+ */
+export function getSfxVolume(): number {
+  return currentSettings.sfxVolume;
+}
+
+/**
+ * Check if SFX is enabled
+ */
+export function isSfxEnabled(): boolean {
+  return currentSettings.sfxEnabled;
+}

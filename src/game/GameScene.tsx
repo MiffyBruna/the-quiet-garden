@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, loadAudioSettings } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -773,6 +773,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [isMusicOn, setIsMusicOn] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(70);
+  const [sfxVolume, setSfxVolumeState] = useState(80);
 
   // Intro animation: track if dialogue was shown last frame
   const introDialogueWasShownRef = useRef(false);
@@ -788,6 +789,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     const settings = loadAudioSettings();
     setIsMusicOn(settings.musicEnabled);
     setMusicVolumeState(settings.musicVolume);
+    setSfxVolumeState(settings.sfxVolume);
   }, []);
 
   // Sync UI state to loaded game state (especially quest progression)
@@ -3052,6 +3054,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   toggleMusic(!isMusicOn);
                   setIsMusicOn(!isMusicOn);
                   track('custom_game_music_toggled');
+                  RundotGameAPI.analytics.recordCustomEvent('audio_music_toggled', { enabled: !isMusicOn });
                 }}
                 style={{
                   background: isMusicOn ? '#7CCA7C' : '#4a6d4a',
@@ -3104,6 +3107,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     const newVolume = parseInt(e.target.value);
                     setMusicVolumeState(newVolume);
                     setMusicVolume(newVolume);
+                    RundotGameAPI.analytics.recordCustomEvent('audio_music_volume_changed', { volume: newVolume });
                   }}
                   style={{
                     width: '100%',
@@ -3114,6 +3118,45 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 />
               </div>
             )}
+
+            {/* FX Volume Slider */}
+            <div
+              style={{
+                marginBottom: '20px',
+                padding: '12px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '6px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  color: '#7CCA7C',
+                  marginBottom: '10px',
+                }}
+              >
+                FX Volume: {sfxVolume}%
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sfxVolume}
+                onChange={(e) => {
+                  const newVolume = parseInt(e.target.value);
+                  setSfxVolumeState(newVolume);
+                  setSfxVolume(newVolume);
+                  RundotGameAPI.analytics.recordCustomEvent('audio_sfx_volume_changed', { volume: newVolume });
+                }}
+                style={{
+                  width: '100%',
+                  cursor: 'pointer',
+                  accentColor: '#7CCA7C',
+                }}
+                title="Sound Effects Volume"
+              />
+            </div>
 
             {/* Close Button */}
             <button

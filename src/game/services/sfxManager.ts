@@ -4,6 +4,7 @@
  */
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { loadCdnAsset } from './assetLoader';
+import { getSfxVolume, isSfxEnabled } from './audioManager';
 
 interface CachedSFX {
   url: string;
@@ -150,6 +151,9 @@ export async function getSFX(sfxType: SFXType): Promise<string | null> {
  */
 export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<void> {
   try {
+    // Check if SFX is enabled
+    if (!isSfxEnabled()) return;
+
     let url: string | null = null;
 
     // For footsteps, try to load user-uploaded audio first
@@ -172,7 +176,9 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
 
     if (url) {
       const audio = new Audio(url);
-      audio.volume = volume;
+      // Apply both the passed-in volume and the global SFX volume setting (0-100)
+      const sfxVolume = getSfxVolume() / 100;
+      audio.volume = volume * sfxVolume;
 
       // Wait for the audio to be loadable before playing
       return new Promise<void>((resolve) => {
