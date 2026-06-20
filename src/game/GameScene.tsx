@@ -639,6 +639,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
     fairyLoader.preloadAll().catch((e) => {
       console.warn('Failed to preload fairy sprites:', e);
     });
+    // Prioritize loading main fairies
+    Promise.all([
+      fairyLoader.loadSprite('sprig').catch(() => {}),
+      fairyLoader.loadSprite('nima').catch(() => {}),
+      fairyLoader.loadSprite('bloom').catch(() => {}),
+      fairyLoader.loadSprite('ripple').catch(() => {}),
+      fairyLoader.loadSprite('tampopo').catch(() => {}),
+    ]).catch(() => {});
 
     // Preload sound effects in background
     preloadSFX().catch((e) => {

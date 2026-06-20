@@ -3,7 +3,7 @@
  * Accessible from the Journal button in-game.
  * Replaces the old dashboard as the primary screen.
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { theme } from '../theme';
 import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS, FAIRY_CONDITIONS } from './engine/gameEngine';
 import { spriteLoader } from './services/spriteLoader';
@@ -42,6 +42,32 @@ export function WatershedProgress({
 }: WatershedProgressProps) {
   const c = theme.colors;
   const [activeTab, setActiveTab] = useState<CatalogTab>('plants');
+  const [, setSpritesLoaded] = useState(false);
+
+  // Ensure fairy and wildlife sprites are loaded when journal opens
+  useEffect(() => {
+    const spritePromises: Promise<any>[] = [];
+
+    if (discoveredFairies.length > 0) {
+      discoveredFairies.forEach((fairyType) => {
+        spritePromises.push(fairyLoader.loadSprite(fairyType).catch(() => {}));
+      });
+    }
+
+    if (discoveredWildlife.length > 0) {
+      discoveredWildlife.forEach((wildlifeType) => {
+        spritePromises.push(wildlifeLoader.loadSprite(wildlifeType).catch(() => {}));
+      });
+    }
+
+    if (spritePromises.length > 0) {
+      Promise.all(spritePromises).then(() => {
+        setSpritesLoaded(true);
+      });
+    } else {
+      setSpritesLoaded(true);
+    }
+  }, [discoveredFairies, discoveredWildlife]);
 
   return (
     <div
