@@ -2507,21 +2507,35 @@ export function deserializeGameState(json: string): GameState | null {
       }
     }
 
-    // Restore entities
+    // Restore fairies with missing fields regenerated
     if (Array.isArray(data.fairies)) {
-      gs.fairies = data.fairies.map((f: any) => ({
-        px: f.px,
-        py: f.py,
-        glowPhase: f.glowPhase,
-      }));
+      gs.fairies = data.fairies.map((f: any) => {
+        const milestone = FAIRY_MILESTONES.find((m) => m.type === f.type);
+        return {
+          id: nextId(),
+          type: f.type,
+          px: f.px,
+          py: f.py,
+          glowPhase: f.glowPhase ?? Math.random() * Math.PI * 2,
+          wisdom: milestone?.wisdom ?? 'The garden grows.',
+        };
+      });
     }
+    // Restore entities with missing fields regenerated
     if (Array.isArray(data.entities)) {
-      gs.entities = data.entities.map((e: any) => ({
-        px: e.px,
-        py: e.py,
-        emoji: e.emoji,
-        type: e.type,
-      }));
+      gs.entities = data.entities.map((e: any) => {
+        const cond = WILDLIFE_CONDITIONS.find((w) => w.type === e.type);
+        return {
+          id: nextId(),
+          type: e.type,
+          px: e.px,
+          py: e.py,
+          emoji: e.emoji ?? cond?.emoji ?? '🦌',
+          vx: (Math.random() - 0.5) * 20,
+          vy: (Math.random() - 0.5) * 20,
+          wanderTimer: 2000 + Math.random() * 3000,
+        };
+      });
     }
     gs.mossTX = data.mossTX ?? gs.mossTX;
     gs.mossTY = data.mossTY ?? gs.mossTY;
