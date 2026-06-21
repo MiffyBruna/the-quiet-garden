@@ -45447,11 +45447,29 @@
       "timestamp": 1782034185719,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782034226035",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "why if i have 89 i cant see the hack",
+      "timestamp": 1782034226035,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782034235104-kn97i5q0w",
+      "role": "assistant",
+      "content": "You need to **reload the game** to load the code change! 🔄\n\nThe hawk now requires **80%** instead of 90%, but your game is still running the old code. \n\n**Reload/refresh the page** and the Hawk should appear at your current 89% restoration! 🦅",
+      "isShownToUser": true,
+      "timestamp": 1782034235712,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782034185972,
-  "tokenUsage": 77219,
+  "updatedAt": 1782034235998,
+  "tokenUsage": 77411,
   "script": "default",
   "claudeSessionId": "85d86ca3-6789-4fd3-9f33-4270dd25b5e6"
 }
