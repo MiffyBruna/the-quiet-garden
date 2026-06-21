@@ -1206,8 +1206,17 @@ export function simulateWater(gs: GameState, restoration: number): void {
         // Upgrades (require more moisture to prevent instant bounce-back)
         if (tile.terrain === 'cracked_soil' && tile.moisture > 28) tile.terrain = 'dry_soil';
         if (tile.terrain === 'dry_soil' && tile.moisture > 45) tile.terrain = 'moist_soil';
-        // Grass only appears when restoration is 88%+ (close to the 90% target)
-        if (tile.terrain === 'moist_soil' && tile.fertility > 40 && tile.moisture > 58 && restoration >= 88) tile.terrain = 'grass';
+        // Grass conversion starts at 60% restoration (very rare) and speeds up toward 95%
+        if (tile.terrain === 'moist_soil' && tile.fertility > 40 && tile.moisture > 58) {
+          if (restoration >= 60) {
+            // Probability curve: very low at 60%, ramping up dramatically toward 95%
+            const restoreProgress = Math.min(1, (restoration - 60) / 35); // 0 at 60%, 1 at 95%
+            const convertChance = Math.pow(restoreProgress, 2.2) * 0.85; // Slow at first, fast near 95%
+            if (Math.random() < convertChance) {
+              tile.terrain = 'grass';
+            }
+          }
+        }
 
         // Degradation (lower thresholds than upgrades — hysteresis gap prevents flapping)
         if (tile.terrain === 'grass' && tile.moisture < 36) tile.terrain = 'moist_soil';
