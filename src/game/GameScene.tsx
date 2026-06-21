@@ -659,8 +659,8 @@ function renderFrame(
     // Try to render Moss sprite, fall back to emoji + nameplate
     const mossSprite = wildlifeLoader.getLoadedSprite('moss');
     if (mossSprite) {
-      const w = mossSprite.width * (40 / Math.max(mossSprite.width, mossSprite.height));
-      const h = mossSprite.height * (40 / Math.max(mossSprite.width, mossSprite.height));
+      const w = mossSprite.width * (46 / Math.max(mossSprite.width, mossSprite.height));  // Scaled up 15%
+      const h = mossSprite.height * (46 / Math.max(mossSprite.width, mossSprite.height));
 
       // Add glow effect
       const glowIntensity = 0.6 + 0.4 * Math.sin(tick * 0.08); // Pulsing glow
@@ -712,9 +712,9 @@ function renderFrame(
     const sprite = getPlayerSprite(gs.playerFacing, isMoving, tick);
     if (sprite && sprite.complete && sprite.naturalWidth > 0) {
       // Sprite is loaded and ready
-      // Display size for all frames
-      const spriteDisplayWidth = 32;
-      const spriteDisplayHeight = 32;
+      // Display size for all frames (scaled up 15%)
+      const spriteDisplayWidth = 37;
+      const spriteDisplayHeight = 37;
       // Anchor at feet (bottom center)
       const spriteX = sx + T / 2 - spriteDisplayWidth / 2;
       const spriteY = sy + T - spriteDisplayHeight;
@@ -2923,8 +2923,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                             canvas.width = 24;
                             canvas.height = 24;
                             ctx.clearRect(0, 0, 24, 24);
-                            const w = sprite.width * (20 / Math.max(sprite.width, sprite.height));
-                            const h = sprite.height * (20 / Math.max(sprite.width, sprite.height));
+                            const w = sprite.width * (23 / Math.max(sprite.width, sprite.height));  // Scaled up 15%
+                            const h = sprite.height * (23 / Math.max(sprite.width, sprite.height));
                             ctx.drawImage(sprite, 12 - w / 2, 12 - h / 2, w, h);
                           }
                         }
