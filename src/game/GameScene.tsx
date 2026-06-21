@@ -253,9 +253,9 @@ function renderFrame(
   ctx.fillStyle = '#D4C49A';
   ctx.fillRect(0, 0, W, H);
 
-  // Calculate restoration for grass/flower spawning (1 per 12%)
+  // Calculate restoration for grass/flower spawning (1 per 10%)
   const restoration = Math.round(calculateRestoration(gs));
-  const grassSpawnCount = Math.floor(restoration / 12);
+  const grassSpawnCount = Math.floor(restoration / 10);
 
   // Helper: seeded random for consistent grass placement
   const seededRandom = (x: number, y: number, seed: number): number => {
