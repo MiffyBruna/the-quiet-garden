@@ -408,55 +408,10 @@ function renderFrame(
       // --- Restoration grass & flowers: spawn max 8-12 sprouts spread across terrain ---
       if (sproutTiles.has(`${tx},${ty}`)) {
         const spawnTypeRand = seededRandom(tx + 100, ty + 200, grassSpawnCount);
-        const sproutType = spawnTypeRand < 0.4 ? 'grass' : spawnTypeRand < 0.7 ? 'marigold' : 'milkweed';
+        const plantType = spawnTypeRand < 0.4 ? 'blue_grama' : spawnTypeRand < 0.7 ? 'desert_marigold' : 'milkweed';
 
-        const cx = sx + T / 2;
-        const cy = sy + T / 2;
-
-        if (sproutType === 'grass') {
-          // Draw grass tuft: simple green lines
-          ctx.strokeStyle = '#228B22';
-          ctx.lineWidth = 1.5;
-          for (let i = 0; i < 5; i++) {
-            const angle = (i / 5) * Math.PI;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy + T * 0.15);
-            ctx.lineTo(cx + Math.cos(angle - Math.PI / 2) * T * 0.2, cy + Math.sin(angle - Math.PI / 2) * T * 0.2 - T * 0.15);
-            ctx.stroke();
-          }
-        } else if (sproutType === 'marigold') {
-          // Draw marigold: orange petals in a circle
-          ctx.fillStyle = '#FF8C00';
-          for (let i = 0; i < 6; i++) {
-            const angle = (i / 6) * Math.PI * 2;
-            const px = cx + Math.cos(angle) * T * 0.18;
-            const py = cy + Math.sin(angle) * T * 0.18;
-            ctx.beginPath();
-            ctx.arc(px, py, T * 0.08, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          // Center of flower
-          ctx.fillStyle = '#FFD700';
-          ctx.beginPath();
-          ctx.arc(cx, cy, T * 0.06, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          // Draw milkweed: purple/pink flower clusters
-          ctx.fillStyle = '#DA70D6';
-          for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2;
-            const px = cx + Math.cos(angle) * T * 0.15;
-            const py = cy + Math.sin(angle) * T * 0.15;
-            ctx.beginPath();
-            ctx.arc(px, py, T * 0.06, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          // Center pod
-          ctx.fillStyle = '#C868BE';
-          ctx.beginPath();
-          ctx.ellipse(cx, cy, T * 0.07, T * 0.12, 0, 0, Math.PI * 2);
-          ctx.fill();
-        }
+        // Draw actual plant sprite at stage 0 (young sprout)
+        spriteLoader.drawSprite(ctx, plantType, 0, sx + T / 2, sy + T / 2, T * 0.7);
       }
 
       // --- Water tile (permanent pond / pool) ---
