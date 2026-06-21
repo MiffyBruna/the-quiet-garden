@@ -162,7 +162,7 @@ export function LoadingScreen() {
           key={`cloud-${i}`}
           className="cloud"
           style={{
-            top: `${20 + Math.random() * 30}%`,
+            top: `${5 + Math.random() * 15}%`,
             animation: `floatCloud ${14 + Math.random() * 8}s ease-in-out infinite`,
             animationDelay: `${Math.random() * 5}s`,
             opacity: 0.65,
