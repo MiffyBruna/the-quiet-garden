@@ -162,6 +162,10 @@ export function LoadingScreen() {
           textAlign: 'center',
           zIndex: 10,
           position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <h1
