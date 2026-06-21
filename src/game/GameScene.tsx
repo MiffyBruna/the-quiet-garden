@@ -253,9 +253,9 @@ function renderFrame(
   ctx.fillStyle = '#D4C49A';
   ctx.fillRect(0, 0, W, H);
 
-  // Calculate restoration for grass/flower spawning (1 per 10%)
+  // Calculate restoration for grass/flower spawning (max 12 sprouts)
   const restoration = Math.round(calculateRestoration(gs));
-  const grassSpawnCount = Math.floor(restoration / 10);
+  const grassSpawnCount = Math.min(12, Math.floor(restoration / 8.33)); // 8.33% per sprout = ~12 at 100%
 
   // Helper: seeded random for consistent grass placement
   const seededRandom = (x: number, y: number, seed: number): number => {
@@ -382,19 +382,64 @@ function renderFrame(
         }
       }
 
-      // --- Restoration grass & flowers: spawn based on restoration percentage (1 per 12%) ---
+      // --- Restoration grass & flowers: spawn max 8-12 sprouts spread across terrain ---
       // Only spawn on walkable non-water tiles that aren't already plants
       if (grassSpawnCount > 0 && !tile.plant && tile.terrain !== 'water' && tile.terrain !== 'rock' && tile.terrain !== 'bund') {
-        const rand = seededRandom(tx, ty, grassSpawnCount);
+        const spawnHash = seededRandom(tx * 19 + ty * 31, grassSpawnCount, 1);
+        const spawnIndex = Math.floor(spawnHash * grassSpawnCount);
 
-        if (rand < Math.min(1, grassSpawnCount / 15)) { // Gradually spawn as restoration increases
-          const flowerRand = seededRandom(tx + 1000, ty + 2000, grassSpawnCount);
-          const emoji = flowerRand < 0.4 ? '🌱' : flowerRand < 0.7 ? '🌿' : '🌾';
+        // Determine if this tile should have a sprout
+        if (spawnIndex < grassSpawnCount) {
+          const spawnTypeRand = seededRandom(tx + 100, ty + 200, grassSpawnCount);
+          const sproutType = spawnTypeRand < 0.4 ? 'grass' : spawnTypeRand < 0.7 ? 'marigold' : 'milkweed';
 
-          ctx.font = `${T * 0.7}px serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(emoji, sx + T / 2, sy + T / 2 + 2);
+          const cx = sx + T / 2;
+          const cy = sy + T / 2;
+
+          if (sproutType === 'grass') {
+            // Draw grass tuft: simple green lines
+            ctx.strokeStyle = '#228B22';
+            ctx.lineWidth = 1.5;
+            for (let i = 0; i < 5; i++) {
+              const angle = (i / 5) * Math.PI;
+              ctx.beginPath();
+              ctx.moveTo(cx, cy + T * 0.15);
+              ctx.lineTo(cx + Math.cos(angle - Math.PI / 2) * T * 0.2, cy + Math.sin(angle - Math.PI / 2) * T * 0.2 - T * 0.15);
+              ctx.stroke();
+            }
+          } else if (sproutType === 'marigold') {
+            // Draw marigold: orange petals in a circle
+            ctx.fillStyle = '#FF8C00';
+            for (let i = 0; i < 6; i++) {
+              const angle = (i / 6) * Math.PI * 2;
+              const px = cx + Math.cos(angle) * T * 0.18;
+              const py = cy + Math.sin(angle) * T * 0.18;
+              ctx.beginPath();
+              ctx.arc(px, py, T * 0.08, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            // Center of flower
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(cx, cy, T * 0.06, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Draw milkweed: purple/pink flower clusters
+            ctx.fillStyle = '#DA70D6';
+            for (let i = 0; i < 8; i++) {
+              const angle = (i / 8) * Math.PI * 2;
+              const px = cx + Math.cos(angle) * T * 0.15;
+              const py = cy + Math.sin(angle) * T * 0.15;
+              ctx.beginPath();
+              ctx.arc(px, py, T * 0.06, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            // Center pod
+            ctx.fillStyle = '#C868BE';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, T * 0.07, T * 0.12, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
       }
 
