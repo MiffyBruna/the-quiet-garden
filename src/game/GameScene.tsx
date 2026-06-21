@@ -1916,16 +1916,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
           { x: gs.bundCenterTX - 1, y: gs.bundCenterTY + 2 },
           { x: gs.bundCenterTX + 1, y: gs.bundCenterTY + 2 },
         ];
-        if (gs.questStep === 'plant_seed') {
-          const inSpot = seedSpots.some(({ x, y }) => x === tx && y === ty);
-          if (!inSpot) {
-            queueDialogue([{
-              speaker: 'Moss', emoji: '🐸',
-              text: 'Plant in the two glowing spots inside the cup. The moisture retention is best there.',
-            }]);
-            return;
-          }
-        }
         // Move Moss away if she's blocking the seed spot
         if (tx === gs.mossTX && ty === gs.mossTY) {
           moveMossAway(tx, ty);
