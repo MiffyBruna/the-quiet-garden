@@ -1570,7 +1570,7 @@ export const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
   },
   {
     type: 'hawk', emoji: '🦅',
-    check: (_, s) => s.restoration >= 90,
+    check: (_, s) => s.restoration >= 80,
     wisdom: 'The hawk watches over everything. Its presence means the web is complete.',
   },
 
