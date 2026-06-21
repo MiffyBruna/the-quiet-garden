@@ -253,6 +253,16 @@ function renderFrame(
   ctx.fillStyle = '#D4C49A';
   ctx.fillRect(0, 0, W, H);
 
+  // Calculate restoration for grass/flower spawning (1 per 12%)
+  const restoration = Math.round(calculateRestoration(gs));
+  const grassSpawnCount = Math.floor(restoration / 12);
+
+  // Helper: seeded random for consistent grass placement
+  const seededRandom = (x: number, y: number, seed: number): number => {
+    const n = Math.sin(x * 12.9898 + y * 78.233 + seed * 43.14) * 43758.5453;
+    return n - Math.floor(n);
+  };
+
   // Compute visible tile range
   const startTX = Math.max(0, Math.floor(camX / T));
   const endTX = Math.min(MAP_W - 1, Math.ceil((camX + W) / T));
@@ -369,6 +379,22 @@ function renderFrame(
           // Lighter green overlay
           ctx.fillStyle = `rgba(150, 210, 90, ${0.08 + ((hlSeed % 10) * 0.015)})`;
           ctx.fillRect(hx, hy, hw, hh);
+        }
+      }
+
+      // --- Restoration grass & flowers: spawn based on restoration percentage (1 per 12%) ---
+      // Only spawn on walkable non-water tiles that aren't already plants
+      if (grassSpawnCount > 0 && !tile.plant && tile.terrain !== 'water' && tile.terrain !== 'rock' && tile.terrain !== 'bund') {
+        const rand = seededRandom(tx, ty, grassSpawnCount);
+
+        if (rand < Math.min(1, grassSpawnCount / 15)) { // Gradually spawn as restoration increases
+          const flowerRand = seededRandom(tx + 1000, ty + 2000, grassSpawnCount);
+          const emoji = flowerRand < 0.4 ? '🌱' : flowerRand < 0.7 ? '🌿' : '🌾';
+
+          ctx.font = `${T * 0.7}px serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(emoji, sx + T / 2, sy + T / 2 + 2);
         }
       }
 
