@@ -44,6 +44,14 @@ export function getMissingPlants(gs: GameState): string[] {
   return missing;
 }
 
+export function getMissingWildlife(gs: GameState): string[] {
+  const discoveredSet = new Set(gs.discoveredWildlife);
+  const allWildlife = ZONES.flatMap(z => z.wildlife.map(w => w.type));
+  const uniqueWildlife = Array.from(new Set(allWildlife));
+  const missing = uniqueWildlife.filter(type => !discoveredSet.has(type));
+  return missing;
+}
+
 export function setTile(tiles: Tile[][], x: number, y: number, patch: Partial<Tile>): void {
   const row = tiles[y];
   if (!row) return;
@@ -1873,9 +1881,10 @@ export function calculateRestoration(gs: GameState): number {
   // Apply bund removal penalty (cumulative reduction from removing bund clusters)
   const penalizedScore = Math.max(0, score - gs.bundRemovalPenalty);
 
-  // Cap restoration at 89% if not all plant types have been planted
+  // Cap restoration at 89% if not all plant types or wildlife have been discovered
   const missingPlants = getMissingPlants(gs);
-  const maxAllowedRestoration = missingPlants.length > 0 ? 89 : 100;
+  const missingWildlife = getMissingWildlife(gs);
+  const maxAllowedRestoration = (missingPlants.length > 0 || missingWildlife.length > 0) ? 89 : 100;
   const currentRestoration = Math.round(Math.min(maxAllowedRestoration, penalizedScore));
 
   // Restoration never goes below the maximum previously achieved
@@ -2284,20 +2293,34 @@ export function updateGame(
           if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
             gs.restorationMilestonesSeen.push(pct);
 
-            // Special handling for 85% milestone: check for missing plants
+            // Special handling for 85% milestone: check for missing plants and wildlife
             if (pct === 85) {
               const missingPlants = getMissingPlants(gs);
-              if (missingPlants.length > 0) {
-                // Get plant names for missing plants
-                const missingNames = missingPlants.map(id => {
-                  const plant = PLANTS.find(p => p.id === id);
-                  return plant?.name || id;
-                });
-                const plantList = missingNames.join(', ');
+              const missingWildlife = getMissingWildlife(gs);
+
+              if (missingPlants.length > 0 || missingWildlife.length > 0) {
+                let missingText = 'The valley is almost whole. But it is missing voices: ';
+                const missingItems: string[] = [];
+
+                if (missingPlants.length > 0) {
+                  const plantNames = missingPlants.map(id => {
+                    const plant = PLANTS.find(p => p.id === id);
+                    return plant?.name || id;
+                  });
+                  missingItems.push(...plantNames);
+                }
+
+                if (missingWildlife.length > 0) {
+                  missingItems.push(...missingWildlife);
+                }
+
+                missingText += missingItems.join(', ') + '. ';
+                missingText += 'Plant and nurture these and the land will be complete.';
+
                 const line: DialogueLine = {
                   speaker: 'Moss',
                   emoji: '🐸',
-                  text: `The valley is almost whole. But it is missing voices: ${plantList}. Plant these and the land will be complete.`,
+                  text: missingText,
                 };
                 onMilestone(pct, [line]);
                 break;

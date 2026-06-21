@@ -31249,11 +31249,113 @@
       "timestamp": 1782017565681,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782017589257",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "ALSO CAN WE ADD THAT IT CAN[T REACH 100 PERCENT IF A PLANT OR ANIMAL IS MISSING EVEN IF WE ARE MAKING RAIN STATS REMAIN THE SAME",
+      "timestamp": 1782017589257,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782017597271-slyct7z01",
+      "role": "assistant",
+      "content": "Good idea! Let me add the same requirement for wildlife/animals. Both plants AND wildlife need to be discovered to reach 100%:",
+      "isShownToUser": true,
+      "timestamp": 1782017597715,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782017598685-fp633zc5y",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782017598685,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782017603164-2pc9hav9p",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782017603164,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782017605710-psxno3rjz",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782017605710,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782017609559-yg8f5olbc",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782017609559,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782017612555-tbkermf94",
+      "role": "assistant",
+      "content": "Now let me update the 85% milestone dialogue to also mention missing wildlife:",
+      "isShownToUser": true,
+      "timestamp": 1782017612585,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782017612793-nue0f42i3",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782017612793,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782017618585-4zdknkxu9",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782017618585,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782017623167-676ygmv97",
+      "role": "assistant",
+      "content": "Done! Now restoration requires BOTH:\n\n✓ **All plants planted** — All 6 plant species must be in the ground\n✓ **All wildlife discovered** — All animal species must be encountered\n\nAt **85%**, Moss will tell you exactly what's missing:\n*\"The valley is almost whole. But it is missing voices: Desert Marigold, Sage, Ants, Beetles. Plant and nurture these and the land will be complete.\"*\n\nRestoration is **capped at 89%** until both conditions are met. This ensures a complete ecosystem discovery before completion!",
+      "isShownToUser": true,
+      "timestamp": 1782017624049,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782017565758,
-  "tokenUsage": 73802,
+  "updatedAt": 1782017624099,
+  "tokenUsage": 76606,
   "script": "default",
   "claudeSessionId": "e13f707d-08ae-498d-87d8-b5399b2967b3"
 }
