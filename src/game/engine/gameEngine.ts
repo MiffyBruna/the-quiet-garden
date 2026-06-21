@@ -3,7 +3,7 @@
  */
 import {
   MAP_W, MAP_H, TILE_SIZE,
-  GameState, Tile, TerrainType, PlantType, PlantStage, FairyType,
+  GameState, Tile, TerrainType, PlantType, PlantStage, PlantState, FairyType,
   WildlifeEntity, FairyEntity, QuestStep, DialogueLine,
 } from './types';
 import { PLANTS } from '../journalData';
@@ -671,8 +671,55 @@ export function applyLandscape(
     const canPlace = tile.terrain !== 'rock' && tile.terrain !== 'water' && !tile.plant && !(tx === gs.mossTX && ty === gs.mossTY);
 
     if (heldEntity.type === 'plant' && canPlace && tile.terrain !== 'bund') {
-      setTile(gs.tiles, tx, ty, { plant: { ...heldEntity.data }, isModified: true });
-      return { action: 'placed', entity: null };
+      const plantData = heldEntity.data as PlantState;
+
+      // Handle mesquite plants (2x2)
+      if (plantData.type === 'mesquite') {
+        // Check if all 4 tiles are valid for placement
+        let canPlaceMesquite = true;
+        for (const { dx, dy } of MESQUITE_OFFSETS) {
+          const checkX = tx + dx;
+          const checkY = ty + dy;
+          if (checkX <= 0 || checkX >= MAP_W - 1 || checkY <= 0 || checkY >= MAP_H - 1) {
+            canPlaceMesquite = false;
+            break;
+          }
+          if (checkX === gs.mossTX && checkY === gs.mossTY) {
+            canPlaceMesquite = false;
+            break;
+          }
+          const checkTile = getTile(gs.tiles, checkX, checkY);
+          if (!checkTile || checkTile.terrain === 'rock' || checkTile.terrain === 'water' || checkTile.plant || checkTile.terrain === 'bund') {
+            canPlaceMesquite = false;
+            break;
+          }
+        }
+
+        if (canPlaceMesquite) {
+          // Place mesquite on all 4 tiles
+          for (const { dx, dy } of MESQUITE_OFFSETS) {
+            const placeX = tx + dx;
+            const placeY = ty + dy;
+            const isAnchor = dx === 0 && dy === 0;
+            setTile(gs.tiles, placeX, placeY, {
+              plant: {
+                type: 'mesquite',
+                stage: plantData.stage,
+                age: plantData.age,
+                waterStress: plantData.waterStress,
+                isWilted: plantData.isWilted,
+                isMesquiteOccupied: !isAnchor,
+              },
+              isModified: true,
+            });
+          }
+          return { action: 'placed', entity: null };
+        }
+      } else {
+        // Single-tile plant
+        setTile(gs.tiles, tx, ty, { plant: { ...heldEntity.data }, isModified: true });
+        return { action: 'placed', entity: null };
+      }
     }
 
     if (heldEntity.type === 'mulch' && canPlace) {
@@ -730,9 +777,40 @@ export function applyLandscape(
   // Move mode: pick up any plant
   if (mode === 'move' && !heldEntity) {
     if (tile.plant) {
-      const picked = { ...tile.plant };
-      setTile(gs.tiles, tx, ty, { plant: undefined, isModified: true });
-      return { action: 'picked', entity: { type: 'plant', data: picked } };
+      // Handle mesquite plants (2x2)
+      if (tile.plant.type === 'mesquite') {
+        // Find the anchor tile if we clicked on an occupied tile
+        let anchorTX = tx;
+        let anchorTY = ty;
+        if (tile.plant.isMesquiteOccupied) {
+          // Search nearby tiles for the anchor
+          for (const { dx, dy } of MESQUITE_OFFSETS) {
+            const candidateX = tx - dx;
+            const candidateY = ty - dy;
+            const candidateTile = getTile(gs.tiles, candidateX, candidateY);
+            if (candidateTile?.plant?.type === 'mesquite' && !candidateTile.plant.isMesquiteOccupied) {
+              anchorTX = candidateX;
+              anchorTY = candidateY;
+              break;
+            }
+          }
+        }
+
+        // Get the plant data from the anchor tile
+        const anchorTile = getTile(gs.tiles, anchorTX, anchorTY);
+        const picked = anchorTile?.plant ? { ...anchorTile.plant } : { ...tile.plant };
+
+        // Remove all 4 tiles
+        for (const { dx, dy } of MESQUITE_OFFSETS) {
+          setTile(gs.tiles, anchorTX + dx, anchorTY + dy, { plant: undefined, isModified: true });
+        }
+        return { action: 'picked', entity: { type: 'plant', data: picked } };
+      } else {
+        // Single-tile plant
+        const picked = { ...tile.plant };
+        setTile(gs.tiles, tx, ty, { plant: undefined, isModified: true });
+        return { action: 'picked', entity: { type: 'plant', data: picked } };
+      }
     }
   }
 
