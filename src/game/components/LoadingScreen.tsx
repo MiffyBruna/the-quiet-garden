@@ -19,7 +19,7 @@ export function LoadingScreen() {
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'linear-gradient(180deg, #87CEEB 0%, #B0E0E6 30%, #A8A878 80%, #8B7355 100%)',
+        background: 'linear-gradient(180deg, #D4C49A 0%, #C9B896 40%, #9B9080 75%, #6B5A42 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
