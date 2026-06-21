@@ -145,6 +145,7 @@ export interface GameState {
   entities: WildlifeEntity[];
   fairies: FairyEntity[];
   fairySpawnCooldown: number;       // ticks until next fairy can spawn (prevents bunching)
+  lastWildlifeSpawnTick: number;    // tick when last wildlife spawned (for staggered spawning)
 
   // Moss
   mossTX: number;

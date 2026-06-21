@@ -243,6 +243,7 @@ export function createInitialGameState(): GameState {
     entities: [],
     fairies: [],
     fairySpawnCooldown: 0,
+    lastWildlifeSpawnTick: 0,
 
     mossTX: MOSS_START_TX,
     mossTY: MOSS_START_TY,
@@ -309,6 +310,7 @@ export function createChapter2InitialState(): GameState {
     entities: [],
     fairies: [],
     fairySpawnCooldown: 0,
+    lastWildlifeSpawnTick: 0,
 
     mossTX: CHAPTER2_CLOVER_START_TX,
     mossTY: CHAPTER2_CLOVER_START_TY,
@@ -1681,7 +1683,15 @@ function computeGameStats(gs: GameState): GameStats {
   };
 }
 
+// Wildlife spawn cooldown: 2700 ticks = 45 seconds at 60fps
+const WILDLIFE_SPAWN_COOLDOWN = 2700;
+
 export function spawnWildlife(gs: GameState): void {
+  // Only allow one wildlife to spawn per cooldown period (staggered discoveries)
+  if (gs.tick - gs.lastWildlifeSpawnTick < WILDLIFE_SPAWN_COOLDOWN) {
+    return; // Not enough time has passed, skip spawning
+  }
+
   const stats = computeGameStats(gs);
   for (const cond of WILDLIFE_CONDITIONS) {
     if (gs.discoveredWildlife.includes(cond.type)) continue;
@@ -1707,9 +1717,9 @@ export function spawnWildlife(gs: GameState): void {
       };
       gs.entities.push(entity);
       gs.discoveredWildlife.push(cond.type);
-      break;
+      gs.lastWildlifeSpawnTick = gs.tick; // Record when we spawned
+      return; // Spawn only ONE creature per cooldown period
     }
-    // Spawn all eligible wildlife — no cooldown delay
   }
 }
 
@@ -2550,6 +2560,7 @@ export function serializeGameState(gs: GameState): string {
 
     // Game systems
     fairySpawnCooldown: gs.fairySpawnCooldown,
+    lastWildlifeSpawnTick: gs.lastWildlifeSpawnTick,
     grassSpreadingStarted: gs.grassSpreadingStarted,
     bundRemovalPenalty: gs.bundRemovalPenalty,
     lastRestorationBeforeRain: gs.lastRestorationBeforeRain,
@@ -2625,6 +2636,7 @@ export function deserializeGameState(json: string): GameState | null {
 
     // Restore game systems
     if (typeof data.fairySpawnCooldown === 'number') gs.fairySpawnCooldown = data.fairySpawnCooldown;
+    if (typeof data.lastWildlifeSpawnTick === 'number') gs.lastWildlifeSpawnTick = data.lastWildlifeSpawnTick;
     if (typeof data.grassSpreadingStarted === 'boolean') gs.grassSpreadingStarted = data.grassSpreadingStarted;
     if (typeof data.bundRemovalPenalty === 'number') gs.bundRemovalPenalty = data.bundRemovalPenalty;
     if (typeof data.lastRestorationBeforeRain === 'number') gs.lastRestorationBeforeRain = data.lastRestorationBeforeRain;
