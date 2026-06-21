@@ -3530,8 +3530,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   inspectedWildlife: null,
                   // When switching to seed tool, show the seed panel
                   ...(def.id === 'seed' && { showSeedPanel: true }),
-                  // When switching to landscape tool, hide the reshape menu so destination squares are visible
-                  ...(def.id === 'landscape' && { showReshapeMenu: false }),
+                  // When switching to landscape tool, show the reshape menu
+                  ...(def.id === 'landscape' && { showReshapeMenu: true }),
                 }));
                 playButton();
                 track('custom_tool_selected', { tool: def.id });
@@ -3775,7 +3775,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 // ---------------------------------------------------------------------------
 
 const TOOL_DEFS: Array<{ id: ToolType; emoji: string; label: string }> = [
-  { id: 'move',      emoji: '👟', label: 'Move Plant' },
+  { id: 'move',      emoji: '👟', label: 'Move' },
   { id: 'inspect',   emoji: '🔍', label: 'Inspect' },
   { id: 'bund',      emoji: '🌙', label: 'Dig Bund' },
   { id: 'shovel',    emoji: '⛏️',  label: 'Undo' },
