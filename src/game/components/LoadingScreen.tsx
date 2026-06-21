@@ -171,15 +171,13 @@ export function LoadingScreen() {
         <h1
           style={{
             fontSize: '37px',
-            color: '#6B5A42',
             marginBottom: '8px',
             fontWeight: 400,
             fontFamily: "'Abril Fatface', serif",
-            textShadow: '-2px -2px 0 #3D2817, 2px -2px 0 #3D2817, -2px 2px 0 #3D2817, 2px 2px 0 #3D2817, -1px 0 0 #3D2817, 1px 0 0 #3D2817, 0 -1px 0 #3D2817, 0 1px 0 #3D2817',
             letterSpacing: '1px',
           }}
         >
-          The Quiet Garden
+          <span style={{ color: '#6B5A42', textShadow: '-1px -1px 0 #3D2817, 1px -1px 0 #3D2817, -1px 1px 0 #3D2817, 1px 1px 0 #3D2817' }}>The Quiet</span> <span style={{ color: '#556B2F', textShadow: '-1px -1px 0 #3D2817, 1px -1px 0 #3D2817, -1px 1px 0 #3D2817, 1px 1px 0 #3D2817' }}>Garden</span>
         </h1>
         <p
           style={{
