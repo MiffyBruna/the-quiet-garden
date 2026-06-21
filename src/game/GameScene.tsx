@@ -2651,22 +2651,28 @@ export function GameScene({ onShowWatershed, isContinue }: {
         const closeHandler = () => setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null, inspectedWildlife: null }));
 
         return (
-          <>
+          <div
+            style={{
+              position: 'absolute',
+              top: HUD_H + safeArea.top + 8,
+              right: 8,
+              width: 170,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+              opacity: tileInfoFading ? 0 : 1,
+              transition: 'opacity 150ms ease-in-out',
+            }}
+          >
             {/* Plant + Terrain Card (Combined with separate sections) */}
             <div
               style={{
-                position: 'absolute',
-                top: HUD_H + safeArea.top + 8,
-                right: 8,
-                width: 170,
                 background: 'rgba(20,35,20,0.92)',
                 borderRadius: 10,
                 border: '1px solid rgba(124,202,124,0.3)',
                 padding: 12,
                 zIndex: 30,
                 color: '#F0FFF0',
-                opacity: tileInfoFading ? 0 : 1,
-                transition: 'opacity 150ms ease-in-out',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
@@ -2707,18 +2713,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
             {ui.inspectedWildlife && ui.inspectedWildlife.length > 0 && (
               <div
                 style={{
-                  position: 'absolute',
-                  top: HUD_H + safeArea.top + 160,
-                  right: 8,
-                  width: 170,
                   background: 'rgba(20,35,20,0.92)',
                   borderRadius: 10,
                   border: '1px solid rgba(124,202,124,0.3)',
                   padding: 12,
                   zIndex: 30,
                   color: '#F0FFF0',
-                  opacity: tileInfoFading ? 0 : 1,
-                  transition: 'opacity 150ms ease-in-out',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -2746,7 +2746,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 </div>
               </div>
             )}
-          </>
+          </div>
         );
       })()}
 
