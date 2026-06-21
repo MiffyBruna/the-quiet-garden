@@ -3185,7 +3185,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     }, 6000);
                   } else {
                     const restorationVal = calculateRestoration(gs);
-                    if (restorationVal > 0) {
+                    if (restorationVal > 0 && restorationVal < 100) {
                       setTimeout(() => {
                         queueDialogue([{ speaker: 'Moss', emoji: '🐸', text: `Moisture retention rises. The valley remembers a little more. ${restorationVal}% restored.` }]);
                       }, 4000);
