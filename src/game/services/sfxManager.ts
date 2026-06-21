@@ -169,13 +169,18 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         // Randomly pick one of two footstep variants for variety
         const variant = Math.floor(Math.random() * 2);
         const filename = `footstep0${variant}.ogg`;
+        console.debug(`Attempting to load footstep: ${filename}`);
         url = await loadCdnAsset(filename);
+        console.debug(`Successfully loaded footstep: ${filename}`);
       } catch (e) {
+        console.debug(`Failed to load footstep: ${e}`);
         // Fall back to snow footsteps if main ones aren't available
         try {
           const variant = Math.floor(Math.random() * 5);
           const filename = `footstep_snow_00${variant}.ogg`;
+          console.debug(`Attempting fallback footstep: ${filename}`);
           url = await loadCdnAsset(filename);
+          console.debug(`Successfully loaded fallback footstep: ${filename}`);
         } catch (e2) {
           console.debug(`User footstep audio not available, falling back to generated: ${e2}`);
           url = null; // Fall back to generated audio
