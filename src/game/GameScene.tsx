@@ -1833,15 +1833,16 @@ export function GameScene({ onShowWatershed, isContinue }: {
             advanceQuest('plant_seed');
           }, 6000);
         } else {
-          const restoration = calculateRestoration(gs);
-          if (restoration > 0) {
-            setTimeout(() => {
+          // Use UI's current restoration (will be updated by next game loop) instead of recalculating
+          setTimeout(() => {
+            const currentRestoration = uiRef.current.restoration;
+            if (currentRestoration > 0) {
               queueDialogue([{
                 speaker: 'Moss', emoji: '🐸',
-                text: `Moisture retention rises. The valley remembers a little more. ${restoration}% restored.`,
+                text: `Moisture retention rises. The valley remembers a little more. ${currentRestoration}% restored.`,
               }]);
-            }, 4000);
-          }
+            }
+          }, 4000);
         }
         return;
       }
