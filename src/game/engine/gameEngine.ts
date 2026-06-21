@@ -1602,6 +1602,31 @@ export const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
   },
 ];
 
+/**
+ * Debug function to see exactly what's blocking wildlife spawning
+ */
+export function debugWildlifeStatus(gs: GameState): void {
+  const stats = computeGameStats(gs);
+
+  console.log('=== WILDLIFE SPAWN DEBUG ===');
+  console.log(`Restoration: ${stats.restoration}%`);
+  console.log(`Bloom Count: ${stats.bloomCount}`);
+  console.log(`Plant Diversity: ${stats.plantDiversity}`);
+  console.log(`Water Tiles: ${stats.waterTileCount}`);
+  console.log(`Avg Fertility: ${stats.avgFertility.toFixed(1)}`);
+  console.log(`Mulch Count: ${stats.mulchCount}`);
+  console.log('');
+  console.log('Wildlife Status:');
+
+  for (const cond of WILDLIFE_CONDITIONS) {
+    const isDiscovered = gs.discoveredWildlife.includes(cond.type);
+    const conditionMet = cond.check(gs, stats);
+    const status = isDiscovered ? '✓ DISCOVERED' : conditionMet ? '⚠️ READY (not yet discovered)' : '✗ BLOCKED';
+    console.log(`  ${cond.emoji} ${cond.type.padEnd(15)} — ${status}`);
+  }
+  console.log('=== END DEBUG ===');
+}
+
 function computeGameStats(gs: GameState): GameStats {
   let totalFertility = 0;
   let tileCount = 0;
