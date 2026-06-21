@@ -115,7 +115,7 @@ function tileBaseColor(tile: Tile, tx: number = 0, ty: number = 0): string {
       return `rgb(${Math.max(0,Math.round(rBase*(1-dark)))},${Math.max(0,Math.round(gBase*(1-dark)))},${Math.max(0,Math.round(bBase*(1-dark)))})`;
     }
 
-    case 'soil': return '#8B6F47';  // Custom soil tile — solid brown
+    case 'soil': return '#6B5A3D';  // Custom soil tile — solid brown
 
     default: {
       // All natural soil types (cracked_soil, dry_soil, moist_soil):
