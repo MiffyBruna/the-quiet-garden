@@ -1804,19 +1804,21 @@ export function spawnFairies(gs: GameState, restoration: number): void {
   // Max 5 fairies cap
   if (gs.fairies.length >= 5) return;
 
-  // Prevent spawning too close together (cooldown: 180 ticks = ~3 seconds at 60fps)
-  if (gs.fairySpawnCooldown > 0) return;
-
-  console.log(`✨ Checking fairy spawn: restoration=${restoration}%, discovered=${gs.discoveredFairies.join(',')}, total fairies=${gs.fairies.length}`);
-
+  // Spawn ALL pending fairies at their thresholds (no cooldown delay)
+  // This ensures all eligible fairies appear when restoration reaches their milestone
   for (const milestone of FAIRY_MILESTONES) {
     if (gs.discoveredFairies.includes(milestone.id)) {
-      console.log(`  - ${milestone.id} already discovered, skip`);
+      console.log(`  - ${milestone.id} already discovered`);
       continue;
     }
     if (restoration < milestone.percent) {
       console.log(`  - ${milestone.id} requires ${milestone.percent}%, not ready (${restoration}%)`);
       continue;
+    }
+
+    if (gs.fairies.length >= 5) {
+      console.log(`  ⚠️  Max 5 fairies reached, skipping ${milestone.id}`);
+      break;
     }
 
     console.log(`  ✅ Spawning ${milestone.id} at ${restoration}%`);
@@ -1833,8 +1835,7 @@ export function spawnFairies(gs: GameState, restoration: number): void {
     };
     gs.fairies.push(fairy);
     gs.discoveredFairies.push(milestone.id);
-    gs.fairySpawnCooldown = 180;  // 3 second cooldown before next spawn
-    break; // spawn one per call to spread them out over time
+    // No cooldown — spawn all pending fairies immediately
   }
 }
 
