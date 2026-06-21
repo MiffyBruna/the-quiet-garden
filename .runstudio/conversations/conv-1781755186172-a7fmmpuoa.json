@@ -31351,11 +31351,29 @@
       "timestamp": 1782017624049,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782017651918",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "SO IS THAT ADDED PROGRAMATICALLY >",
+      "timestamp": 1782017651918,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782017660222-39jdd03hh",
+      "role": "assistant",
+      "content": "Yes! It's **fully programmatic and dynamic**. Here's what was added:\n\n✓ **`getMissingPlants()`** — Scans the entire map and dynamically checks which of the 6 plant types haven't been planted yet\n\n✓ **`getMissingWildlife()`** — Dynamically checks which wildlife species haven't been discovered in `gs.discoveredWildlife`\n\n✓ **Restoration cap** — In `calculateRestoration()`, it dynamically caps at 89% if EITHER plants OR wildlife are missing\n\n✓ **85% Dialogue** — Dynamically builds Moss's message listing exactly what's missing:\n- If plants are missing: includes their names\n- If wildlife is missing: includes their names\n- Combines both if either is incomplete\n\nSo the system works in real-time as you play:\n- Plant a new species → restoration can climb higher\n- Discover a new animal → restoration can climb higher\n- All 6 plants planted + all wildlife discovered → restoration reaches 100%\n\nIt's not hardcoded—it checks your current game state every time!",
+      "isShownToUser": true,
+      "timestamp": 1782017662639,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782017624099,
-  "tokenUsage": 76606,
+  "updatedAt": 1782017662689,
+  "tokenUsage": 77029,
   "script": "default",
   "claudeSessionId": "e13f707d-08ae-498d-87d8-b5399b2967b3"
 }
