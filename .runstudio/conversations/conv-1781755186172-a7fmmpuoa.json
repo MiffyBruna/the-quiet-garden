@@ -45746,11 +45746,29 @@
       "timestamp": 1782035242932,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782035311944",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "where do i put it",
+      "timestamp": 1782035311944,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782035321588-o5qgfe97w",
+      "role": "assistant",
+      "content": "Easy! Here's how to run it:\n\n1. **Open browser console** → Press **F12** (or right-click → Inspect → Console tab)\n2. **Find the input field at the bottom** of the console (where the cursor blinks)\n3. **Type this:**\n   ```\n   calculateRestoration(window.gsRef.current)\n   ```\n4. **Press Enter** ↵\n\nIt will show your **restoration % instantly**! You can run it anytime you want to check your stats. 📊",
+      "isShownToUser": true,
+      "timestamp": 1782035322452,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782035243759,
-  "tokenUsage": 83786,
+  "updatedAt": 1782035322508,
+  "tokenUsage": 84016,
   "script": "default",
   "claudeSessionId": "85d86ca3-6789-4fd3-9f33-4270dd25b5e6"
 }
