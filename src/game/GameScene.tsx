@@ -2763,6 +2763,59 @@ export function GameScene({ onShowWatershed, isContinue }: {
         onPointerMove={handleCanvasMouseMove}
       />
 
+      {/* ── Floating X button on top of bund (during digging mode) ──── */}
+      {ui.bundMode === 'digging' && !ui.dialogue && (() => {
+        const gs = gsRef.current;
+        const canvas = canvasRef.current;
+        if (!canvas) return null;
+
+        // Convert bund world position to screen position
+        const bundScreenX = (gs.bundCenterTX * TILE_SIZE) - (gs.playerTX * TILE_SIZE) + canvas.width / 2;
+        const bundScreenY = (gs.bundCenterTY * TILE_SIZE) - (gs.playerTY * TILE_SIZE) + canvas.height / 2;
+
+        return (
+          <button
+            onClick={() => {
+              playCancel();
+              cancelBund();
+            }}
+            style={{
+              position: 'absolute',
+              left: bundScreenX - 16,
+              top: bundScreenY - 16,
+              width: 32,
+              height: 32,
+              background: 'rgba(220,80,80,0.9)',
+              border: '2px solid rgba(255,150,150,0.8)',
+              borderRadius: '50%',
+              color: '#FFE0E0',
+              fontSize: 18,
+              fontWeight: 700,
+              cursor: 'pointer',
+              zIndex: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            }}
+            onMouseEnter={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.background = 'rgba(240,100,100,1)';
+              target.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.background = 'rgba(220,80,80,0.9)';
+              target.style.transform = 'scale(1)';
+            }}
+            title="Cancel bund placement"
+          >
+            ✕
+          </button>
+        );
+      })()}
+
       {/* ── Tile Inspect Panel (Separate Cards) ────────────────────────────── */}
       {displayedTileInfo && !ui.dialogue && (() => {
         const t = displayedTileInfo.tile;
@@ -3164,7 +3217,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
               🌙 Dig bund
             </div>
             <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.6)' }}>
-              Tap to dig the marked area
+              Tap each highlighted square to dig the marked area
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
