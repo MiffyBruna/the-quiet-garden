@@ -53,7 +53,7 @@ RundotGameAPI.lifecycles.onQuit(() => RundotGameAPI.analytics.recordCustomEvent(
  *  - Moisture darkens the result (dry = lighter, wet = visibly darker)
  *  - Blue is ONLY for permanent water terrain, never for "moist soil"
  */
-function tileBaseColor(tile: Tile): string {
+function tileBaseColor(tile: Tile, tx: number = 0, ty: number = 0): string {
   const f = tile.fertility / 100;  // 0–1
   const m = tile.moisture / 100;   // 0–1
 
@@ -320,7 +320,7 @@ function renderFrame(
         ctx.fillRect(sx, sy, T, T);
 
         // Draw rounded rock boulder on top
-        ctx.fillStyle = tileBaseColor(tile);
+        ctx.fillStyle = tileBaseColor(tile, tx, ty);
         const radius = T * 0.35;
         ctx.beginPath();
         ctx.moveTo(sx + radius, sy);
@@ -330,7 +330,7 @@ function renderFrame(
         ctx.arcTo(sx, sy, sx + radius, sy, radius);
         ctx.fill();
       } else {
-        ctx.fillStyle = tileBaseColor(tile);
+        ctx.fillStyle = tileBaseColor(tile, tx, ty);
         ctx.fillRect(sx, sy, T, T);
       }
 
