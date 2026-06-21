@@ -194,32 +194,23 @@ export function WatershedProgress({
       >
         {/* Catalog View (switches based on active tab) */}
         {activeTab === 'wildlife' && discoveredWildlife.length > 0 && (
-          <div
-            style={{
-              borderRadius: theme.borderRadius.lg,
-              border: `1px solid ${c.border}`,
-              background: c.surface,
-              padding: theme.spacing.md,
-              marginTop: theme.spacing.sm,
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
-              {discoveredWildlife.map((wildlifeType) => {
-                const info = WILDLIFE_CONDITIONS.find((w) => w.type === wildlifeType);
-                if (!info) return null;
-                return (
-                  <div
-                    key={wildlifeType}
-                    style={{
-                      borderRadius: 8,
-                      border: `1px solid ${c.border}`,
-                      background: 'rgba(0,0,0,0.05)',
-                      padding: theme.spacing.sm,
-                      display: 'flex',
-                      gap: theme.spacing.sm,
-                      alignItems: 'flex-start',
-                    }}
-                  >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
+            {discoveredWildlife.map((wildlifeType) => {
+              const info = WILDLIFE_CONDITIONS.find((w) => w.type === wildlifeType);
+              if (!info) return null;
+              return (
+                <div
+                  key={wildlifeType}
+                  style={{
+                    borderRadius: theme.borderRadius.lg,
+                    border: `1px solid ${c.border}`,
+                    background: c.surface,
+                    padding: theme.spacing.md,
+                    display: 'flex',
+                    gap: theme.spacing.sm,
+                    alignItems: 'flex-start',
+                  }}
+                >
                     {(() => {
                       const sprite = wildlifeLoader.getLoadedSprite(wildlifeType);
                       console.log(`[WatershedProgress] Rendering wildlife ${wildlifeType}: sprite=${sprite ? 'loaded' : 'not loaded'}`);
@@ -265,10 +256,9 @@ export function WatershedProgress({
                         &ldquo;{info.wisdom}&rdquo;
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
