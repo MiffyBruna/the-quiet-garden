@@ -2179,8 +2179,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
         return;
       }
 
-      // Clear highlights for other tools
-      gs.highlightTiles = [];
+      // Clear highlights for other tools (but NOT during quest steps that need them)
+      if (gs.questStep !== 'inspect_soil' && gs.questStep !== 'plant_seed') {
+        gs.highlightTiles = [];
+      }
     },
     [],
   );
