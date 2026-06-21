@@ -30510,11 +30510,60 @@
       "timestamp": 1782016840846,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782016857198",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "NOW CAN YOU REPLACE THE FROG EMOJI FOR  MOSSES SPRITE",
+      "timestamp": 1782016857198,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782016864454-d33i9qvl9",
+      "role": "assistant",
+      "content": "Sure! Let me replace the frog emoji with the Moss sprite in the dialogue:",
+      "isShownToUser": true,
+      "timestamp": 1782016864696,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782016865554-90b3rl9ul",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782016865554,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782016870590-9u4do6c1q",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782016870590,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782016873633-mby08wqlj",
+      "role": "assistant",
+      "content": "Done! Now when Moss speaks, the dialogue will display the Moss sprite (flipped) instead of the frog emoji!",
+      "isShownToUser": true,
+      "timestamp": 1782016873832,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782016840885,
-  "tokenUsage": 60244,
+  "updatedAt": 1782016873877,
+  "tokenUsage": 61089,
   "script": "default",
   "claudeSessionId": "e13f707d-08ae-498d-87d8-b5399b2967b3"
 }
