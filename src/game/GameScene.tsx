@@ -2637,30 +2637,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
           </div>
         </div>
 
-        {/* Held Plant Indicator */}
-        {ui.heldEntity && ui.heldEntity.type === 'plant' && (() => {
-          const plantData = ui.heldEntity.data as PlantState;
-          const req = PLANT_REQUIREMENTS[plantData.type];
-          const plantName = req?.name || plantData.type;
-          return (
-            <div style={{
-              position: 'absolute',
-              top: 8,
-              left: 8,
-              background: 'rgba(20, 50, 20, 0.95)',
-              border: '2px solid #7CCA7C',
-              borderRadius: 6,
-              padding: '8px 12px',
-              fontSize: 12,
-              color: '#A8E6A8',
-              fontWeight: 'bold',
-              zIndex: 100,
-            }}>
-              🌱 Holding: {plantName}
-            </div>
-          );
-        })()}
-
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, whiteSpace: 'nowrap' }}>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#7CCA7C', lineHeight: 1 }}>

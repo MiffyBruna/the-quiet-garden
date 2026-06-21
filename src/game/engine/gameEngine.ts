@@ -727,9 +727,9 @@ export function applyLandscape(
     return { action: 'none', entity: heldEntity }; // can't place here, keep holding
   }
 
-  // Move mode: only pick up mature+ plants
+  // Move mode: pick up any plant
   if (mode === 'move' && !heldEntity) {
-    if (tile.plant && tile.plant.stage >= 3) {
+    if (tile.plant) {
       const picked = { ...tile.plant };
       setTile(gs.tiles, tx, ty, { plant: undefined, isModified: true });
       return { action: 'picked', entity: { type: 'plant', data: picked } };
