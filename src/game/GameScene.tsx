@@ -2650,53 +2650,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
         const suggestion = suggMap[t.terrain] ?? 'Inspect nearby tiles to understand water flow.';
         const closeHandler = () => setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null, inspectedWildlife: null }));
 
-        const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (
-          <div
-            style={{
-              position: 'absolute',
-              top: HUD_H + safeArea.top + 8,
-              right: 8,
-              width: 170,
-              background: 'rgba(20,35,20,0.92)',
-              borderRadius: 10,
-              border: '1px solid rgba(124,202,124,0.3)',
-              padding: 12,
-              zIndex: 30,
-              color: '#F0FFF0',
-              opacity: tileInfoFading ? 0 : 1,
-              transition: 'opacity 150ms ease-in-out',
-              marginTop: '80px', // offset for stacking
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.07em' }}>
-                {title}
-              </div>
-              <button
-                onClick={closeHandler}
-                style={{ background: 'none', border: 'none', color: '#7CCA7C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
-              >
-                ×
-              </button>
-            </div>
-            <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.7 }}>
-              {children}
-            </div>
-          </div>
-        );
-
         return (
           <>
-            {/* Plant Card */}
-            {ui.inspectedEntity && ui.inspectedEntity.type === 'plant' && (
-              <Card title="Plant">
-                <div style={{ fontStyle: 'italic', color: '#A8E6A8' }}>
-                  {ui.inspectedEntity.name}
-                </div>
-              </Card>
-            )}
-
-            {/* Terrain Card */}
+            {/* Plant + Terrain Card (Combined) */}
             <div
               style={{
                 position: 'absolute',
@@ -2715,7 +2671,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.07em' }}>
-                  Terrain
+                  {ui.inspectedEntity?.type === 'plant' ? 'Plant & Terrain' : 'Terrain'}
                 </div>
                 <button
                   onClick={closeHandler}
@@ -2725,6 +2681,17 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 </button>
               </div>
               <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.7 }}>
+                {/* Plant info */}
+                {ui.inspectedEntity && ui.inspectedEntity.type === 'plant' && (
+                  <>
+                    <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(124,202,124,0.2)' }}>
+                      <div style={{ fontStyle: 'italic', color: '#A8E6A8', marginBottom: 4 }}>
+                        {ui.inspectedEntity.name}
+                      </div>
+                    </div>
+                  </>
+                )}
+                {/* Terrain info */}
                 <div><b>Type:</b> {label}</div>
                 <div><b>Moisture:</b> {Math.round(t.moisture)}%</div>
                 <div><b>Fertility:</b> {Math.round(t.fertility)}%</div>
@@ -2733,7 +2700,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
               </div>
             </div>
 
-            {/* Wildlife Card */}
+            {/* Wildlife Card (Separate) */}
             {ui.inspectedWildlife && ui.inspectedWildlife.length > 0 && (
               <div
                 style={{
