@@ -270,7 +270,11 @@ function renderFrame(
 
       // Base terrain colour
       if (tile.terrain === 'rock') {
-        // Draw rounded rock boulder instead of square tile
+        // Draw mulch-colored foundation underneath rock (so it doesn't float)
+        ctx.fillStyle = '#6B5A42';  // Mulch-like dark brown
+        ctx.fillRect(sx, sy, T, T);
+
+        // Draw rounded rock boulder on top
         ctx.fillStyle = tileBaseColor(tile);
         const radius = T * 0.35;
         ctx.beginPath();
