@@ -58,10 +58,8 @@ export function LoadingScreen() {
         }
 
         @keyframes floatCloud {
-          0% { left: -100px; opacity: 0; }
-          5% { opacity: 0.7; }
-          95% { opacity: 0.7; }
-          100% { left: 100vw; opacity: 0; }
+          0% { left: -150px; }
+          100% { left: calc(100vw + 150px); }
         }
 
         .rain-drop {
