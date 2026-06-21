@@ -2675,7 +2675,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 color: '#F0FFF0',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 2 }}>
                 <button
                   onClick={closeHandler}
                   style={{ background: 'none', border: 'none', color: '#7CCA7C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
@@ -2683,7 +2683,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   ×
                 </button>
               </div>
-              <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.7 }}>
+              <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.4 }}>
                 {/* Plant section */}
                 {ui.inspectedEntity && ui.inspectedEntity.type === 'plant' && (
                   <div style={{ marginBottom: 10 }}>
