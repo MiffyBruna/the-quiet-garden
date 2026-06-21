@@ -12,7 +12,7 @@ interface AudioSettings {
 
 const DEFAULT_SETTINGS: AudioSettings = {
   musicVolume: 70,
-  sfxVolume: 30,
+  sfxVolume: 10,
   musicEnabled: true,
   sfxEnabled: true,
 };
