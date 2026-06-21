@@ -4,15 +4,6 @@
 import { useEffect, useState } from 'react';
 
 export function LoadingScreen() {
-  const [beeX, setBeeX] = useState(0);
-
-  useEffect(() => {
-    // Animate bee position
-    const interval = setInterval(() => {
-      setBeeX((prev) => (prev > 120 ? 0 : prev + 1));
-    }, 30);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div
@@ -47,14 +38,6 @@ export function LoadingScreen() {
           25% { transform: scaleY(1.15); }
           50% { transform: scaleY(0.85); }
           75% { transform: scaleY(1.15); }
-        }
-
-        @keyframes flyBee {
-          0% { transform: translateY(-20px) rotate(0deg); }
-          25% { transform: translateY(-30px) rotate(10deg); }
-          50% { transform: translateY(-25px) rotate(0deg); }
-          75% { transform: translateY(-35px) rotate(-10deg); }
-          100% { transform: translateY(-20px) rotate(0deg); }
         }
 
         .rain-drop {
@@ -96,20 +79,6 @@ export function LoadingScreen() {
           box-shadow: 0 0 12px rgba(124, 202, 124, 0.6);
         }
 
-        .bee-container {
-          position: absolute;
-          left: 0;
-          top: -60px;
-          width: 100vw;
-          height: 100px;
-          pointer-events: none;
-        }
-
-        .bee-sprite {
-          position: absolute;
-          font-size: 32px;
-          animation: flyBee 2s ease-in-out infinite;
-        }
       `}</style>
 
       {/* Heavy rain drops */}
@@ -142,19 +111,6 @@ export function LoadingScreen() {
           }}
         />
       ))}
-
-      {/* Bee flying across top */}
-      <div className="bee-container">
-        <div
-          className="bee-sprite"
-          style={{
-            left: `${beeX}%`,
-            animation: 'flyBee 2s ease-in-out infinite',
-          }}
-        >
-          🐝
-        </div>
-      </div>
 
       {/* Loading content */}
       <div
