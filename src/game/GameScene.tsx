@@ -897,6 +897,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const [frogHeight, setFrogHeight] = useState<number>(280);
   const [gameLoaded, setGameLoaded] = useState(false);
   const [characterPortraits, setCharacterPortraits] = useState<Record<string, string>>({});
+  const [rainCooldownRemaining, setRainCooldownRemaining] = useState<number>(0); // seconds remaining
 
   // Calculate frog height based on screen size
   useEffect(() => {
@@ -910,6 +911,17 @@ export function GameScene({ onShowWatershed, isContinue }: {
     window.addEventListener('resize', calculateFrogHeight);
     return () => window.removeEventListener('resize', calculateFrogHeight);
   }, []);
+
+  // Rain cooldown timer countdown
+  useEffect(() => {
+    if (!ui.rainCooling || rainCooldownRemaining <= 0) return;
+
+    const interval = setInterval(() => {
+      setRainCooldownRemaining((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [ui.rainCooling, rainCooldownRemaining]);
 
   // Game State Persistence: Load full game state if continuing, save periodically + on quit
   useEffect(() => {
@@ -3477,6 +3489,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   if (!questNeedsRain) {
                     setUI((p) => ({ ...p, rainCooling: true }));
                     const cooldown = getRainCooldown(restoration);
+                    setRainCooldownRemaining(Math.ceil(cooldown / 1000)); // convert to seconds
                     setTimeout(() => setUI((p) => ({ ...p, rainCooling: false })), cooldown);
                   }
 
@@ -3640,7 +3653,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
             >
               <span style={{ fontSize: 18, lineHeight: '1' }}>{def.emoji}</span>
               <span style={{ fontSize: 7, color: active ? '#7CCA7C' : 'rgba(240,255,240,0.6)', textAlign: 'center', lineHeight: '1' }}>
-                {def.id === 'move' && ui.heldEntity?.type === 'plant' ? 'Holding Plant' : def.label}
+                {def.id === 'rain' && rainBlocked
+                  ? `${rainCooldownRemaining}s`
+                  : (def.id === 'move' && ui.heldEntity?.type === 'plant' ? 'Holding Plant' : def.label)}
               </span>
             </button>
           );
