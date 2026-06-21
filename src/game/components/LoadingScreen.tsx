@@ -57,6 +57,13 @@ export function LoadingScreen() {
           100% { transform: translateY(-20px) rotate(0deg); }
         }
 
+        @keyframes floatCloud {
+          0% { transform: translateX(-100px); opacity: 0; }
+          10% { opacity: 0.6; }
+          90% { opacity: 0.6; }
+          100% { transform: translateX(100vw); opacity: 0; }
+        }
+
         .rain-drop {
           position: absolute;
           width: 2px;
@@ -110,6 +117,12 @@ export function LoadingScreen() {
           font-size: 32px;
           animation: flyBee 2s ease-in-out infinite;
         }
+
+        .cloud {
+          position: absolute;
+          pointer-events: none;
+          font-size: 60px;
+        }
       `}</style>
 
       {/* Heavy rain drops */}
@@ -141,6 +154,22 @@ export function LoadingScreen() {
             height: `${2 + Math.random() * 4}px`,
           }}
         />
+      ))}
+
+      {/* Cartoon clouds floating */}
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={`cloud-${i}`}
+          className="cloud"
+          style={{
+            top: `${10 + Math.random() * 40}%`,
+            animation: `floatCloud ${8 + Math.random() * 6}s linear infinite`,
+            animationDelay: `${Math.random() * 3}s`,
+            opacity: 0.5 + Math.random() * 0.3,
+          }}
+        >
+          ☁️
+        </div>
       ))}
 
       {/* Bee flying across top */}
