@@ -165,7 +165,7 @@ export function LoadingScreen() {
         <h1
           style={{
             fontSize: '28px',
-            color: '#1A5A1A',
+            color: '#6B5A42',
             marginBottom: '8px',
             fontWeight: 'bold',
             textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
