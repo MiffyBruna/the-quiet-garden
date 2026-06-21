@@ -1233,6 +1233,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         // one tile each side of the bund center, two rows below it.
         const bcx = gsRef.current.bundCenterTX;
         const bcy = gsRef.current.bundCenterTY;
+        console.log('🌱 PLANT_SEED: bundCenter=', { bcx, bcy }, 'highlighting:', [{ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 }]);
         highlights.push({ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 });
         newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType, 'shovel' as ToolType])];
         break;
