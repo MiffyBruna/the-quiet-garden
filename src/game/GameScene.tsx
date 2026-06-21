@@ -2636,12 +2636,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           bund: 'Semicircular Bund', moist_soil: 'Moist Soil', grass: 'Grass',
           rock: 'Rock', water: 'Seasonal Pool',
         };
-        let label = terrainLabels[t.terrain] ?? t.terrain;
-        // If mulched, show the underlying soil type
-        if (t.terrain === 'mulch' && t.underlyingTerrain) {
-          const underlyingLabel = terrainLabels[t.underlyingTerrain] ?? t.underlyingTerrain;
-          label = `${underlyingLabel} Topped with Mulch`;
-        }
+        const label = terrainLabels[t.terrain] ?? t.terrain;
         const suggMap: Record<string, string> = {
           cracked_soil: 'Dig a bund uphill or add mulch to slow runoff.',
           dry_soil: 'Mulch will help this soil retain moisture.',
@@ -2700,17 +2695,30 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     </div>
                   </div>
                 )}
-                {/* Terrain section */}
+                {/* Soil section */}
                 <div>
                   <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.05em', marginBottom: 4 }}>
-                    Terrain
+                    Soil
                   </div>
-                  <div><b>Type:</b> {label}</div>
+                  <div style={{ fontStyle: 'italic', color: '#A8E6A8', marginBottom: 6 }}>
+                    {t.terrain === 'mulch' && t.underlyingTerrain ? terrainLabels[t.underlyingTerrain] : label}
+                  </div>
                   <div><b>Moisture:</b> {Math.round(t.moisture)}%</div>
                   <div><b>Fertility:</b> {Math.round(t.fertility)}%</div>
                   <div><b>Erosion:</b> {Math.round(t.erosion)}%</div>
                   <div style={{ marginTop: 6, fontStyle: 'italic', opacity: 0.8 }}>{renderDialogueText(suggestion)}</div>
                 </div>
+                {/* Enhancement section (if mulched) */}
+                {t.terrain === 'mulch' && (
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(124,202,124,0.2)' }}>
+                    <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.05em', marginBottom: 4 }}>
+                      Enhancement
+                    </div>
+                    <div style={{ fontStyle: 'italic', color: '#A8E6A8' }}>
+                      Mulch
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
