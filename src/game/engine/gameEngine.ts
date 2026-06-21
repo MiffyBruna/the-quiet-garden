@@ -46,9 +46,9 @@ export function getMissingPlants(gs: GameState): string[] {
 
 export function getMissingWildlife(gs: GameState): string[] {
   const discoveredSet = new Set(gs.discoveredWildlife);
-  const allWildlife = ZONES.flatMap(z => z.wildlife.map(w => w.type));
-  const uniqueWildlife = Array.from(new Set(allWildlife));
-  const missing = uniqueWildlife.filter(type => !discoveredSet.has(type));
+  // Only check Chapter 1 wildlife (not future Chapter 2 creatures)
+  const chapter1Wildlife = ['ant', 'beetle', 'bee', 'hoverfly', 'painted_lady', 'monarch', 'cottontail', 'frog', 'dragonfly', 'quail', 'finch', 'hawk', 'swallow'];
+  const missing = chapter1Wildlife.filter(type => !discoveredSet.has(type));
   return missing;
 }
 
