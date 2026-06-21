@@ -2639,14 +2639,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, maxWidth: '100%', minWidth: 0 }}>
                 {ui.dialogue.speaker === 'Moss' ? (
                   <img
-                    src={wildlifeLoader.getLoadedSprite('moss')?.src || ''}
+                    src="/cdn-assets/moss-portrait.png"
                     alt="Moss"
                     style={{
-                      width: 50,
-                      height: 50,
+                      width: 90,
+                      height: 90,
                       flexShrink: 0,
                       objectFit: 'contain',
-                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
                     }}
                   />
                 ) : (
