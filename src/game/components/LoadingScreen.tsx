@@ -177,7 +177,7 @@ export function LoadingScreen() {
             letterSpacing: '1px',
           }}
         >
-          <span style={{ color: '#6B5A42', textShadow: '-1px -1px 0 #3D2817, 1px -1px 0 #3D2817, -1px 1px 0 #3D2817, 1px 1px 0 #3D2817' }}>The Quiet</span> <span style={{ color: '#556B2F', textShadow: '-1px -1px 0 #3D2817, 1px -1px 0 #3D2817, -1px 1px 0 #3D2817, 1px 1px 0 #3D2817' }}>Garden</span>
+          <span style={{ color: '#FFF8DC', textShadow: '-1px -1px 0 #3D2817, 1px -1px 0 #3D2817, -1px 1px 0 #3D2817, 1px 1px 0 #3D2817' }}>The Quiet Garden</span>
         </h1>
         <p
           style={{
