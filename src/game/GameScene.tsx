@@ -1362,10 +1362,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
       playMulch();
       track('custom_mesquite_planted', { tx: gs.playerTX, ty: gs.playerTY });
       RundotGameAPI.analytics.recordCustomEvent('mesquite_planted', { tx: gs.playerTX, ty: gs.playerTY });
-      setUI((p) => ({
-        ...p,
-        mesquiteMode: null,
-      }));
       queueDialogue([{
         speaker: 'Moss', emoji: '🐸',
         text: 'The mesquite is in! Its deep roots will hold the soil and draw water up for years to come.',
