@@ -2637,16 +2637,15 @@ export function GameScene({ onShowWatershed, isContinue }: {
               onClick={handleDialogueInput}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, maxWidth: '100%', minWidth: 0 }}>
-                {ui.dialogue.speaker.toLowerCase() === 'moss' ? (
+                {ui.dialogue.speaker.toLowerCase() === 'moss' && wildlifeLoader.getLoadedSprite('moss') ? (
                   <img
-                    src={characterPortraits['moss']}
+                    src={wildlifeLoader.getLoadedSprite('moss')?.src || ''}
                     alt="Moss"
                     style={{
                       width: 40,
                       height: 40,
                       flexShrink: 0,
                       objectFit: 'contain',
-                      transform: 'scaleX(-1)',
                     }}
                   />
                 ) : (
