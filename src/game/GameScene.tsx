@@ -32,7 +32,7 @@ import {
   serializeDiscoveries, deserializeDiscoveries,
   serializeGameState, deserializeGameState,
   FAIRY_CONDITIONS, WILDLIFE_CONDITIONS,
-  debugWildlifeStatus,
+  debugWildlifeStatus, getDebugInfo,
 } from './engine/gameEngine';
 import {
   INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS, MESQUITE_OFFSETS,
@@ -880,6 +880,8 @@ const INITIAL_UI: UIState = {
   showReshapeMenu: false,
   reshapeMode: 'move',
   newlyDiscoveredSpecies: new Set<string>(),
+  showDebugPanel: false,
+  debugInfo: [],
 };
 
 export function GameScene({ onShowWatershed, isContinue }: {
@@ -2113,6 +2115,16 @@ export function GameScene({ onShowWatershed, isContinue }: {
       }
       if ((e.key === 'Enter' || e.key === ' ') && currentUI.mesquiteMode === 'positioning') {
         confirmMesquite();
+        return;
+      }
+
+      // Debug panel toggle (Shift+D)
+      if (e.shiftKey && e.key === 'D') {
+        setUI((p) => ({
+          ...p,
+          showDebugPanel: !p.showDebugPanel,
+          debugInfo: getDebugInfo(gsRef.current),
+        }));
         return;
       }
 
@@ -3867,6 +3879,38 @@ export function GameScene({ onShowWatershed, isContinue }: {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Debug Panel */}
+      {ui.showDebugPanel && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: safeArea.bottom + 10,
+            left: 10,
+            background: 'rgba(0, 0, 0, 0.9)',
+            border: '2px solid #7CCA7C',
+            borderRadius: 6,
+            padding: 12,
+            zIndex: 100,
+            fontFamily: 'monospace',
+            fontSize: 12,
+            color: '#7CCA7C',
+            lineHeight: 1.4,
+            maxWidth: '90vw',
+            maxHeight: '40vh',
+            overflow: 'auto',
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word',
+          }}
+        >
+          {ui.debugInfo.map((line, i) => (
+            <div key={i}>{line}</div>
+          ))}
+          <div style={{ marginTop: 8, fontSize: 10, color: '#999' }}>
+            Press Shift+D to toggle
           </div>
         </div>
       )}

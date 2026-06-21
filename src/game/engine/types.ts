@@ -259,4 +259,8 @@ export interface UIState {
 
   // Journal: newly discovered species (cleared when journal opens)
   newlyDiscoveredSpecies: Set<string>; // plant IDs or wildlife IDs that are new discoveries
+
+  // Debug panel
+  showDebugPanel: boolean;
+  debugInfo: string[];
 }

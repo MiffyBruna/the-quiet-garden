@@ -1627,6 +1627,29 @@ export function debugWildlifeStatus(gs: GameState): void {
   console.log('=== END DEBUG ===');
 }
 
+/**
+ * Generate debug info as array of strings for UI display
+ */
+export function getDebugInfo(gs: GameState): string[] {
+  const stats = computeGameStats(gs);
+  const lines: string[] = [];
+
+  lines.push('=== WILDLIFE DEBUG ===');
+  lines.push(`Restoration: ${stats.restoration}% | Discovered: ${gs.discoveredWildlife.length}/13`);
+  lines.push(`Bloom: ${stats.bloomCount} | Diversity: ${stats.plantDiversity} | Water: ${stats.waterTileCount}`);
+  lines.push(`Fertility: ${stats.avgFertility.toFixed(1)}`);
+  lines.push('');
+
+  for (const cond of WILDLIFE_CONDITIONS) {
+    const isDiscovered = gs.discoveredWildlife.includes(cond.type);
+    const conditionMet = cond.check(gs, stats);
+    const status = isDiscovered ? '✓' : conditionMet ? '⚠️' : '✗';
+    lines.push(`${status} ${cond.emoji} ${cond.type}`);
+  }
+
+  return lines;
+}
+
 function computeGameStats(gs: GameState): GameStats {
   let totalFertility = 0;
   let tileCount = 0;
