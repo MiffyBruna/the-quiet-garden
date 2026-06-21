@@ -115,6 +115,15 @@ function tileBaseColor(tile: Tile, tx: number = 0, ty: number = 0): string {
       return `rgb(${Math.max(0,Math.round(rBase*(1-dark)))},${Math.max(0,Math.round(gBase*(1-dark)))},${Math.max(0,Math.round(bBase*(1-dark)))})`;
     }
 
+    case 'soil': {
+      // Custom soil tile — warm golden-brown, distinct from natural soils
+      const rBase = Math.round(180 - f * 60);  // 180 (light tan) → 120 (warm brown)
+      const gBase = Math.round(140 - f * 45);  // 140             → 95
+      const bBase = Math.round(70  - f * 25);  //  70             → 45
+      const dark = m * 0.25;
+      return `rgb(${Math.round(rBase*(1-dark))},${Math.round(gBase*(1-dark))},${Math.round(bBase*(1-dark))})`;
+    }
+
     default: {
       // All natural soil types (cracked_soil, dry_soil, moist_soil):
       // fertility is the primary signal — pale sandy tan at low fertility,
@@ -1804,13 +1813,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
             track('custom_landscape_created_grass', { tx, ty });
             RundotGameAPI.analytics.recordCustomEvent('landscape_created_grass', { tx, ty });
             playMove();
-          } else if (currentUI.reshapeMode === 'create_dry_soil') {
-            track('custom_landscape_created_dry_soil', { tx, ty });
-            RundotGameAPI.analytics.recordCustomEvent('landscape_created_dry_soil', { tx, ty });
-            playMove();
-          } else if (currentUI.reshapeMode === 'create_moist_soil') {
-            track('custom_landscape_created_moist_soil', { tx, ty });
-            RundotGameAPI.analytics.recordCustomEvent('landscape_created_moist_soil', { tx, ty });
+          } else if (currentUI.reshapeMode === 'create_soil') {
+            track('custom_landscape_created_soil', { tx, ty });
+            RundotGameAPI.analytics.recordCustomEvent('landscape_created_soil', { tx, ty });
             playMove();
           } else {
             track('custom_landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
@@ -3228,9 +3233,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
               { mode: 'create_water', emoji: '💧', label: 'Water', desc: 'Create water' },
               { mode: 'create_rocks', emoji: '🪨', label: 'Rocks', desc: 'Create rocks' },
               { mode: 'destroy_rocks', emoji: '💥', label: 'Destroy', desc: 'Break rocks/water' },
-              { mode: 'create_grass', emoji: '🌾', label: 'Grass', desc: 'Create grass' },
-              { mode: 'create_dry_soil', emoji: '🟫', label: 'Dry Soil', desc: 'Create dry soil' },
-              { mode: 'create_moist_soil', emoji: '🟪', label: 'Moist Soil', desc: 'Create moist soil' },
+              { mode: 'create_grass', emoji: '🟩', label: 'Grass', desc: 'Create grass' },
+              { mode: 'create_soil', emoji: '🟨', label: 'Soil', desc: 'Create custom soil' },
             ].map((opt: any) => {
               const selected = ui.reshapeMode === opt.mode;
               return (
@@ -3241,7 +3245,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     track('custom_reshape_mode_selected', { mode: opt.mode });
                     // Clear held entity when switching to creation modes (since you can't hold and create)
                     const shouldClearEntity = opt.mode !== 'move';
-                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' | 'create_grass' | 'create_dry_soil' | 'create_moist_soil', heldEntity: shouldClearEntity ? null : prev.heldEntity }));
+                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' | 'create_grass' | 'create_soil', heldEntity: shouldClearEntity ? null : prev.heldEntity }));
                   }}
                   style={{
                     flex: 1,

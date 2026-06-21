@@ -659,7 +659,7 @@ export function applyLandscape(
   gs: GameState,
   tx: number, ty: number,
   heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null,
-  mode: 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' | 'create_grass' | 'create_dry_soil' | 'create_moist_soil' = 'move',
+  mode: 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' | 'create_grass' | 'create_soil' = 'move',
 ): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null } {
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return { action: 'none', entity: null };
@@ -814,20 +814,11 @@ export function applyLandscape(
     }
   }
 
-  // Create dry soil: turn terrain into dry soil — but not if plant is on the tile
-  if (mode === 'create_dry_soil' && !heldEntity) {
-    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil'];
+  // Create soil: turn terrain into custom soil — but not if plant is on the tile
+  if (mode === 'create_soil' && !heldEntity) {
+    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil'];
     if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
-      setTile(gs.tiles, tx, ty, { terrain: 'dry_soil', isModified: true });
-      return { action: 'placed', entity: null };
-    }
-  }
-
-  // Create moist soil: turn terrain into moist soil — but not if plant is on the tile
-  if (mode === 'create_moist_soil' && !heldEntity) {
-    const convertibleTerrains = ['grass', 'mulch', 'bund', 'cracked_soil', 'dry_soil'];
-    if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
-      setTile(gs.tiles, tx, ty, { terrain: 'moist_soil', isModified: true });
+      setTile(gs.tiles, tx, ty, { terrain: 'soil', isModified: true });
       return { action: 'placed', entity: null };
     }
   }
