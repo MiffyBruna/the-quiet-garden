@@ -1,11 +1,10 @@
 /**
- * LoadingScreen — animated loading screen with rain, dancing bar, flying bee, and floating moss
+ * LoadingScreen — animated loading screen with rain, sparkles, dancing bar, and flying bee
  */
 import { useEffect, useState } from 'react';
 
 export function LoadingScreen() {
   const [beeX, setBeeX] = useState(0);
-  const [mossImg, setMossImg] = useState<string | null>(null);
 
   useEffect(() => {
     // Animate bee position
@@ -15,27 +14,12 @@ export function LoadingScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  // Load moss sprite
-  useEffect(() => {
-    const loadMoss = async () => {
-      try {
-        const response = await fetch('/cdn-assets/moss.png');
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setMossImg(url);
-      } catch (e) {
-        console.warn('Failed to load moss sprite:', e);
-      }
-    };
-    loadMoss();
-  }, []);
-
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'linear-gradient(180deg, #4A7C59 0%, #7CCA7C 100%)',
+        background: 'linear-gradient(180deg, #87CEEB 0%, #B0E0E6 30%, #A8A878 80%, #8B7355 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -49,6 +33,11 @@ export function LoadingScreen() {
           10% { opacity: 1; }
           90% { opacity: 1; }
           100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        @keyframes sparkle {
+          0%, 100% { opacity: 0; transform: scale(0) translateY(0); }
+          50% { opacity: 1; transform: scale(1) translateY(-30px); }
         }
 
         @keyframes danceBar {
@@ -66,17 +55,23 @@ export function LoadingScreen() {
           100% { transform: translateY(-20px) rotate(0deg); }
         }
 
-        @keyframes floatMoss {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-
         .rain-drop {
           position: absolute;
           width: 2px;
           height: 20px;
-          background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0));
+          background: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0));
           opacity: 0;
+          box-shadow: 0 0 2px rgba(255,255,255,0.6);
+        }
+
+        .sparkle {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          background: radial-gradient(circle, #FFD700 0%, rgba(255,255,255,0.8) 70%);
+          border-radius: 50%;
+          opacity: 0;
+          box-shadow: 0 0 4px rgba(255,215,0,0.8);
         }
 
         .loading-bar-container {
@@ -115,16 +110,33 @@ export function LoadingScreen() {
         }
       `}</style>
 
-      {/* Rain drops */}
-      {Array.from({ length: 30 }).map((_, i) => (
+      {/* Heavy rain drops */}
+      {Array.from({ length: 80 }).map((_, i) => (
         <div
-          key={i}
+          key={`rain-${i}`}
           className="rain-drop"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
-            animation: `rainDrop ${2 + Math.random() * 1.5}s linear infinite`,
+            animation: `rainDrop ${1.5 + Math.random() * 2}s linear infinite`,
             animationDelay: `${Math.random() * 2}s`,
+            height: `${12 + Math.random() * 12}px`,
+          }}
+        />
+      ))}
+
+      {/* Sparkles/particles in sky */}
+      {Array.from({ length: 40 }).map((_, i) => (
+        <div
+          key={`sparkle-${i}`}
+          className="sparkle"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 50}%`,
+            animation: `sparkle ${2 + Math.random() * 2}s ease-in-out infinite`,
+            animationDelay: `${Math.random() * 2}s`,
+            width: `${2 + Math.random() * 4}px`,
+            height: `${2 + Math.random() * 4}px`,
           }}
         />
       ))}
@@ -141,30 +153,6 @@ export function LoadingScreen() {
           🐝
         </div>
       </div>
-
-      {/* Floating Moss */}
-      {mossImg && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '15%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            animation: 'floatMoss 3s ease-in-out infinite',
-            zIndex: 5,
-          }}
-        >
-          <img
-            src={mossImg}
-            alt="Moss"
-            style={{
-              width: '80px',
-              height: 'auto',
-              filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))',
-            }}
-          />
-        </div>
-      )}
 
       {/* Loading content */}
       <div
