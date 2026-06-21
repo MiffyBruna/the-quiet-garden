@@ -2636,7 +2636,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
           bund: 'Semicircular Bund', moist_soil: 'Moist Soil', grass: 'Grass',
           rock: 'Rock', water: 'Seasonal Pool',
         };
-        const label = terrainLabels[t.terrain] ?? t.terrain;
+        let label = terrainLabels[t.terrain] ?? t.terrain;
+        // If mulched, show the underlying soil type
+        if (t.terrain === 'mulch' && t.underlyingTerrain) {
+          const underlyingLabel = terrainLabels[t.underlyingTerrain] ?? t.underlyingTerrain;
+          label = `${underlyingLabel} Topped with Mulch`;
+        }
         const suggMap: Record<string, string> = {
           cracked_soil: 'Dig a bund uphill or add mulch to slow runoff.',
           dry_soil: 'Mulch will help this soil retain moisture.',

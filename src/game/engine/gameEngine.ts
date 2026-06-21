@@ -576,6 +576,7 @@ export function applyMulch(gs: GameState, tx: number, ty: number): boolean {
     fertility: Math.min(100, tile.fertility + 8),
     erosion: Math.max(0, tile.erosion - 20),
     isModified: true,
+    underlyingTerrain: tile.terrain, // track what soil is underneath
   });
   return true;
 }

@@ -81,6 +81,7 @@ export interface Tile {
   plant?: PlantState;
   water: number;      // 0–100, transient water on tile for viz
   isModified: boolean; // set true when player changes this tile
+  underlyingTerrain?: TerrainType; // tracks what soil is under mulch
 }
 
 // ---------------------------------------------------------------------------
