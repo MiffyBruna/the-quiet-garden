@@ -245,8 +245,6 @@ export interface UIState {
   // Bund placement stencil system
   bundMode: 'positioning' | 'digging' | null; // positioning: stencil follows player; digging: locked tiles
   bundTargetTiles: Array<{ x: number; y: number }>; // locked tile set after stencil is confirmed
-  bundXButtonX: number; // fixed screen X position of cancel button
-  bundXButtonY: number; // fixed screen Y position of cancel button
 
   // Mesquite 2x2 placement stencil (active when seed=mesquite and tool=seed)
   mesquiteMode: 'positioning' | null; // stencil follows player until confirmed

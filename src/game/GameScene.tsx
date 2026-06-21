@@ -874,8 +874,6 @@ const INITIAL_UI: UIState = {
   fastDialogue: false,
   bundMode: null,
   bundTargetTiles: [],
-  bundXButtonX: 0,
-  bundXButtonY: 0,
   mesquiteMode: null,
   showSeedPanel: true,
   showReshapeMenu: false,
@@ -1386,23 +1384,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
     gs.bundCenterTY = gs.playerTY;
     gs.highlightTiles = validTiles;
 
-    // Calculate fixed X button position (won't follow player movement)
-    const canvas = canvasRef.current;
-    let bundXButtonX = 0;
-    let bundXButtonY = 0;
-    if (canvas) {
-      const bundScreenX = (gs.bundCenterTX * TILE_SIZE) - (gs.playerTX * TILE_SIZE) + canvas.width / 2;
-      const bundScreenY = (gs.bundCenterTY * TILE_SIZE) - (gs.playerTY * TILE_SIZE) + canvas.height / 2;
-      bundXButtonX = bundScreenX - 16;
-      bundXButtonY = bundScreenY - 60;
-    }
-
     setUI((p) => ({
       ...p,
       bundMode: 'digging',
       bundTargetTiles: validTiles,
-      bundXButtonX,
-      bundXButtonY,
       questObjective: gs.questStep === 'dig_bund'
         ? `Dig the half-moon bund (0/${validTiles.length})`
         : p.questObjective,
@@ -2795,51 +2780,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
         onPointerUp={handleCanvasClick}
         onPointerMove={handleCanvasMouseMove}
       />
-
-      {/* ── Floating X button above bund (during digging mode) ──── */}
-      {ui.bundMode === 'digging' && !ui.dialogue && (() => {
-        return (
-          <button
-            onClick={() => {
-              playCancel();
-              cancelBund();
-            }}
-            style={{
-              position: 'absolute',
-              left: ui.bundXButtonX,
-              top: ui.bundXButtonY,
-              width: 32,
-              height: 32,
-              background: 'rgba(220,80,80,0.9)',
-              border: '2px solid rgba(255,150,150,0.8)',
-              borderRadius: '50%',
-              color: '#FFE0E0',
-              fontSize: 18,
-              fontWeight: 700,
-              cursor: 'pointer',
-              zIndex: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-            }}
-            onMouseEnter={(e) => {
-              const target = e.target as HTMLButtonElement;
-              target.style.background = 'rgba(240,100,100,1)';
-              target.style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              const target = e.target as HTMLButtonElement;
-              target.style.background = 'rgba(220,80,80,0.9)';
-              target.style.transform = 'scale(1)';
-            }}
-            title="Cancel bund placement"
-          >
-            ✕
-          </button>
-        );
-      })()}
 
       {/* ── Tile Inspect Panel (Separate Cards) ────────────────────────────── */}
       {displayedTileInfo && !ui.dialogue && (() => {
