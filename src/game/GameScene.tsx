@@ -2108,17 +2108,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
     [useTool, handleDialogueInput],
   );
 
-  // Handle mouse movement to highlight destination tiles when moving plants
+  // Handle mouse movement to highlight destination tiles when moving plants or using reshape tool
   const handleCanvasMouseMove = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       const gs = gsRef.current;
       const currentUI = uiRef.current;
-
-      // Only highlight when in move mode and holding a plant
-      if (currentUI.activeTool !== 'move' || !currentUI.heldEntity || currentUI.heldEntity.type !== 'plant') {
-        gs.highlightTiles = [];
-        return;
-      }
 
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -2134,24 +2128,34 @@ export function GameScene({ onShowWatershed, isContinue }: {
       const tx = Math.floor(worldX / TILE_SIZE);
       const ty = Math.floor(worldY / TILE_SIZE);
 
-      // Determine if this is a 2x2 plant (mesquite)
-      const plantData = currentUI.heldEntity.data as PlantState;
-      const isMesquite = plantData.type === 'mesquite';
+      // Highlight when moving plants
+      if (currentUI.activeTool === 'move' && currentUI.heldEntity && currentUI.heldEntity.type === 'plant') {
+        const plantData = currentUI.heldEntity.data as PlantState;
+        const isMesquite = plantData.type === 'mesquite';
 
-      // Highlight destination tiles
-      const highlightTiles: Array<{ x: number; y: number }> = [];
-      if (isMesquite) {
-        // Mesquite is 2x2 — highlight all 4 tiles
-        highlightTiles.push({ x: tx, y: ty });
-        highlightTiles.push({ x: tx + 1, y: ty });
-        highlightTiles.push({ x: tx, y: ty + 1 });
-        highlightTiles.push({ x: tx + 1, y: ty + 1 });
-      } else {
-        // Single tile
-        highlightTiles.push({ x: tx, y: ty });
+        const highlightTiles: Array<{ x: number; y: number }> = [];
+        if (isMesquite) {
+          // Mesquite is 2x2 — highlight all 4 tiles
+          highlightTiles.push({ x: tx, y: ty });
+          highlightTiles.push({ x: tx + 1, y: ty });
+          highlightTiles.push({ x: tx, y: ty + 1 });
+          highlightTiles.push({ x: tx + 1, y: ty + 1 });
+        } else {
+          // Single tile
+          highlightTiles.push({ x: tx, y: ty });
+        }
+        gs.highlightTiles = highlightTiles;
+        return;
       }
 
-      gs.highlightTiles = highlightTiles;
+      // Highlight when using reshape tool
+      if (currentUI.activeTool === 'landscape') {
+        gs.highlightTiles = [{ x: tx, y: ty }];
+        return;
+      }
+
+      // Clear highlights for other tools
+      gs.highlightTiles = [];
     },
     [],
   );
