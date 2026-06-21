@@ -947,12 +947,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
               RundotGameAPI.analytics.recordCustomEvent('game_continue_loaded');
             }
           }
-        }
 
-        // Always load discoveries (for both new and continue)
-        const discoveries = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
-        if (discoveries) {
-          deserializeDiscoveries(gsRef.current, discoveries);
+          // Only load discoveries when continuing (not for new game)
+          const discoveries = await RundotGameAPI.appStorage.getItem('quiet-garden-discoveries');
+          if (discoveries) {
+            deserializeDiscoveries(gsRef.current, discoveries);
+          }
         }
 
         // Load all character portraits (Moss + Fairies)
