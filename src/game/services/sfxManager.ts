@@ -163,9 +163,17 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
 
     let url: string | null = null;
 
-    // For footsteps, use generated audio (RUN.game CDN may not support custom user uploads)
+    // For footsteps, try to load user-uploaded footstep sounds first
     if (sfxType === 'footstep') {
-      url = null; // Use generated audio
+      try {
+        // Randomly pick one of the two footstep sound variants
+        const variant = Math.floor(Math.random() * 2);
+        const filename = variant === 0 ? 'footstep00.ogg' : 'footstep01.ogg';
+        url = await loadCdnAsset(filename);
+      } catch (e) {
+        console.debug(`User footstep audio not available, falling back to generated: ${e}`);
+        url = null; // Fall back to generated audio
+      }
     }
 
     // For bund digging, try to load user-uploaded leather handle sounds first
