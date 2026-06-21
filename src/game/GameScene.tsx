@@ -2671,7 +2671,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.07em' }}>
-                  {ui.inspectedEntity?.type === 'plant' ? 'Plant & Terrain' : 'Terrain'}
+                  {ui.inspectedEntity?.type === 'plant' ? 'Plant' : 'Terrain'}
                 </div>
                 <button
                   onClick={closeHandler}
