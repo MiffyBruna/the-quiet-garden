@@ -31,7 +31,7 @@ import {
   getTile,
   serializeDiscoveries, deserializeDiscoveries,
   serializeGameState, deserializeGameState,
-  FAIRY_CONDITIONS,
+  FAIRY_CONDITIONS, WILDLIFE_CONDITIONS,
 } from './engine/gameEngine';
 import {
   INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS, MESQUITE_OFFSETS,
@@ -804,6 +804,7 @@ const INITIAL_UI: UIState = {
   selectedSeed: 'blue_grama',
   inspectedTile: null,
   inspectedEntity: null,
+  inspectedWildlife: null,
   dialogue: null,
   dialogueQueue: [],
   questStep: 'intro',
@@ -1597,6 +1598,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
         // Check for entities (plant, wildlife, fairy) at this location
         let inspectedEntity: { type: 'plant' | 'wildlife' | 'fairy'; name: string } | null = null;
+        let inspectedWildlife: Array<{ name: string; wisdom: string }> | null = null;
 
         // Check for plant
         if (tile.plant) {
@@ -1606,29 +1608,32 @@ export function GameScene({ onShowWatershed, isContinue }: {
           }
         }
 
-        // Check for wildlife at pixel location (convert tile to pixel coords)
+        // Check for all wildlife at pixel location (convert tile to pixel coords)
         if (!inspectedEntity) {
           const tileCenterX = tx * TILE_SIZE + TILE_SIZE / 2;
           const tileCenterY = ty * TILE_SIZE + TILE_SIZE / 2;
           const tolerance = TILE_SIZE * 0.7; // Check within tile bounds
 
+          const wildlifeOnTile: Array<{ name: string; wisdom: string }> = [];
           for (const entity of gs.entities) {
             if (
               Math.abs(entity.px - tileCenterX) < tolerance &&
               Math.abs(entity.py - tileCenterY) < tolerance
             ) {
-              // Found wildlife - capitalize the type name
-              inspectedEntity = {
-                type: 'wildlife',
-                name: entity.type.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-              };
-              break;
+              // Found wildlife - get name and wisdom
+              const wildlifeInfo = WILDLIFE_CONDITIONS.find((w) => w.type === entity.type);
+              const name = entity.type.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+              const wisdom = wildlifeInfo?.wisdom || '';
+              wildlifeOnTile.push({ name, wisdom });
             }
+          }
+          if (wildlifeOnTile.length > 0) {
+            inspectedWildlife = wildlifeOnTile;
           }
         }
 
         // Check for fairy at pixel location
-        if (!inspectedEntity) {
+        if (!inspectedEntity && !inspectedWildlife) {
           const tileCenterX = tx * TILE_SIZE + TILE_SIZE / 2;
           const tileCenterY = ty * TILE_SIZE + TILE_SIZE / 2;
           const tolerance = TILE_SIZE * 0.7;
@@ -1648,7 +1653,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           }
         }
 
-        setUI((prev) => ({ ...prev, inspectedTile: { x: tx, y: ty, tile: { ...tile } }, inspectedEntity }));
+        setUI((prev) => ({ ...prev, inspectedTile: { x: tx, y: ty, tile: { ...tile } }, inspectedEntity, inspectedWildlife }));
         // Trigger inspect flash animation
         inspectFlashRef.current = { x: tx, y: ty, startTick: gs.tick };
         track('custom_tile_inspected', { terrain: tile.terrain, moisture: Math.round(tile.moisture) });
@@ -1990,7 +1995,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
       if (e.key === 'Escape') {
         if (currentUI.bundMode === 'positioning') { cancelBund(); return; }
         if (currentUI.mesquiteMode === 'positioning') { cancelMesquite(); return; }
-        if (currentUI.inspectedTile) setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null }));
+        if (currentUI.inspectedTile) setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null, inspectedWildlife: null }));
         return;
       }
 
@@ -2652,7 +2657,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
               Tile Info
             </div>
             <button
-              onClick={() => setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null }))}
+              onClick={() => setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null, inspectedWildlife: null }))}
               style={{ background: 'none', border: 'none', color: '#7CCA7C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
             >
               ×
@@ -2687,6 +2692,23 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     <div style={{ fontStyle: 'italic', color: '#A8E6A8' }}>
                       {ui.inspectedEntity.name}
                     </div>
+                  </div>
+                )}
+                {ui.inspectedWildlife && ui.inspectedWildlife.length > 0 && (
+                  <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(124,202,124,0.2)' }}>
+                    {ui.inspectedWildlife.map((wildlife, idx) => (
+                      <div key={idx} style={{ marginBottom: idx < ui.inspectedWildlife!.length - 1 ? 6 : 0 }}>
+                        <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.05em', marginBottom: 2 }}>
+                          Wildlife
+                        </div>
+                        <div style={{ fontWeight: 600, color: '#A8E6A8', marginBottom: 2 }}>
+                          {wildlife.name}
+                        </div>
+                        <div style={{ fontStyle: 'italic', color: 'rgba(168,230,168,0.8)', fontSize: 9, lineHeight: 1.3 }}>
+                          "{wildlife.wisdom}"
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
                 <div><b>Terrain:</b> {label}</div>
@@ -3366,6 +3388,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                       bundTargetTiles: [],
                       inspectedTile: null,
                       inspectedEntity: null,
+                      inspectedWildlife: null,
                     }));
                     playButton();
                     track('custom_tool_selected', { tool: def.id });
@@ -3385,6 +3408,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     bundTargetTiles: [],
                     inspectedTile: null,
                     inspectedEntity: null,
+                    inspectedWildlife: null,
                   }));
                   playButton();
                   track('custom_tool_selected', { tool: def.id });
@@ -3397,6 +3421,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   activeTool: def.id,
                   inspectedTile: null,
                   inspectedEntity: null,
+                  inspectedWildlife: null,
                   // When switching to seed tool, show the seed panel
                   ...(def.id === 'seed' && { showSeedPanel: true }),
                   // When switching to landscape tool, show the reshape menu
