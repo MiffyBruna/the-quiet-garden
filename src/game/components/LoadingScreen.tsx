@@ -28,7 +28,7 @@ export function LoadingScreen() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
 
         @keyframes rainDrop {
           0% { transform: translateY(-10px); opacity: 0; }
@@ -173,8 +173,8 @@ export function LoadingScreen() {
             fontSize: '37px',
             color: '#6B5A42',
             marginBottom: '8px',
-            fontWeight: 900,
-            fontFamily: "'Cinzel', serif",
+            fontWeight: 400,
+            fontFamily: "'Abril Fatface', serif",
             textShadow: '-2px -2px 0 #3D2817, 2px -2px 0 #3D2817, -2px 2px 0 #3D2817, 2px 2px 0 #3D2817, -1px 0 0 #3D2817, 1px 0 0 #3D2817, 0 -1px 0 #3D2817, 0 1px 0 #3D2817',
             letterSpacing: '1px',
           }}
