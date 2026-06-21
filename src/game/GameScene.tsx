@@ -91,7 +91,7 @@ function tileBaseColor(tile: Tile, tx: number = 0, ty: number = 0): string {
 
     case 'grass': {
       // 3 shades of green for visual variety
-      const shadeVariation = Math.sin(tile.x * 7.1 + tile.y * 13.3) * 0.5 + 0.5;
+      const shadeVariation = Math.sin(tx * 7.1 + ty * 13.3) * 0.5 + 0.5;
       const shadeType = Math.floor(shadeVariation * 3); // 0, 1, or 2
 
       let rBase: number, gBase: number, bBase: number;
@@ -148,8 +148,8 @@ function findValidSeedSpot(x: number, y: number, gs: GameState): { x: number; y:
   // Check if position is in bounds and doesn't have a rock
   const isValid = (tx: number, ty: number): boolean => {
     if (tx < 0 || tx >= MAP_W || ty < 0 || ty >= MAP_H) return false;
-    const tile = getTile(gs, tx, ty);
-    return tile && tile.terrain !== 'rock';
+    const tile = getTile(gs.tiles, tx, ty);
+    return !!tile && tile.terrain !== 'rock';
   };
 
   if (isValid(x, y)) {
@@ -1445,10 +1445,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
     const bcx = gs.bundCenterTX;
     const bcy = gs.bundCenterTY;
     if (bcx !== undefined && bcy !== undefined) {
-      BUND_SHAPE_OFFSETS.forEach(([ox, oy]) => {
+      BUND_SHAPE_OFFSETS.forEach(({ dx: ox, dy: oy }) => {
         const tx = bcx + ox;
         const ty = bcy + oy;
-        const tile = getTile(gs, tx, ty);
+        const tile = getTile(gs.tiles, tx, ty);
         if (tile && tile.terrain === 'bund') {
           tile.terrain = 'cracked_soil';
           tile.isModified = true;

@@ -1,7 +1,6 @@
 /**
  * LoadingScreen — animated loading screen with rain, sparkles, dancing bar, and flying bee
  */
-import { useEffect, useState } from 'react';
 
 export function LoadingScreen() {
 

@@ -12,11 +12,9 @@ import {
   generateChapter1Map,
   PLAYER_START_TX, PLAYER_START_TY,
   MOSS_START_TX, MOSS_START_TY,
-  INSPECT_HIGHLIGHTS,
   generateChapter2Map,
   CHAPTER2_PLAYER_START_TX, CHAPTER2_PLAYER_START_TY,
   CHAPTER2_CLOVER_START_TX, CHAPTER2_CLOVER_START_TY,
-  CHAPTER2_INSPECT_HIGHLIGHTS,
   MESQUITE_OFFSETS,
 } from './mapGen';
 
@@ -1690,7 +1688,6 @@ export function spawnWildlife(gs: GameState): void {
     if (!cond.check(gs, stats)) continue;
 
     // Find a non-rock tile anywhere on the map (search up to 20 attempts)
-    let spawned = false;
     for (let attempt = 0; attempt < 20; attempt++) {
       const cx = Math.floor(Math.random() * MAP_W);
       const cy = Math.floor(Math.random() * MAP_H);
@@ -1710,7 +1707,6 @@ export function spawnWildlife(gs: GameState): void {
       };
       gs.entities.push(entity);
       gs.discoveredWildlife.push(cond.type);
-      spawned = true;
       break;
     }
     // Spawn all eligible wildlife — no cooldown delay
