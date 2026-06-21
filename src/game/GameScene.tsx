@@ -2637,21 +2637,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
               onClick={handleDialogueInput}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, maxWidth: '100%', minWidth: 0 }}>
-                {ui.dialogue.speaker === 'Moss' ? (
-                  <img
-                    src="/cdn-assets/moss-portrait.png"
-                    alt="Moss"
-                    style={{
-                      width: 90,
-                      height: 90,
-                      flexShrink: 0,
-                      objectFit: 'contain',
-                      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
-                    }}
-                  />
-                ) : (
-                  <span style={{ fontSize: 30, flexShrink: 0, lineHeight: 1.1 }}>{ui.dialogue.emoji}</span>
-                )}
+                <span style={{ fontSize: 30, flexShrink: 0, lineHeight: 1.1 }}>{ui.dialogue.emoji}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10, color: '#7CCA7C', fontWeight: 700, marginBottom: 4 }}>
                     {ui.dialogue.speaker}
@@ -2693,9 +2679,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
       })()}
 
       {/* Character portrait — displays any speaker at full height */}
-      {ui.dialogue && frogHeight > 100 && ui.dialogue.speaker && characterPortraits[ui.dialogue.speaker] && (
+      {ui.dialogue && frogHeight > 100 && ui.dialogue.speaker && characterPortraits[ui.dialogue.speaker.toLowerCase()] && (
         <img
-          src={characterPortraits[ui.dialogue.speaker]}
+          src={characterPortraits[ui.dialogue.speaker.toLowerCase()]}
           alt=""
           style={{
             position: 'fixed',
@@ -2705,7 +2691,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             width: 'auto',
             zIndex: 42,
             pointerEvents: 'none',
-            transform: ui.dialogue.speaker === 'moss' ? 'scaleX(-1)' : 'none',
+            transform: ui.dialogue.speaker.toLowerCase() === 'moss' ? 'scaleX(-1)' : 'none',
           }}
         />
       )}
