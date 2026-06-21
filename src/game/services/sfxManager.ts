@@ -214,10 +214,14 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
     }
 
     if (url) {
-      const audio = new Audio(url);
+      const audio = new Audio();
       // Apply both the passed-in volume and the global SFX volume setting (0-100)
       const sfxVolume = getSfxVolume() / 100;
       audio.volume = volume * sfxVolume;
+
+      console.error(`🔊 AUDIO ELEMENT CREATED - Setting src to: ${url}`);
+      audio.src = url;
+      audio.crossOrigin = 'anonymous';
 
       // Wait for the audio to be loadable before playing
       return new Promise<void>((resolve) => {
@@ -232,15 +236,16 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
           resolve();
         };
 
-        const handleError = () => {
+        const handleError = (err: any) => {
           audio.removeEventListener('canplay', handleCanPlay);
           audio.removeEventListener('error', handleError);
-          console.warn(`Failed to load SFX ${sfxType}: ${url}`);
+          console.error(`🔊 AUDIO LOAD ERROR FOR ${sfxType}: ${err?.message || 'Unknown error'}`);
           resolve();
         };
 
         audio.addEventListener('canplay', handleCanPlay);
         audio.addEventListener('error', handleError);
+        audio.addEventListener('loadeddata', handleCanPlay);
 
         // Timeout after 5 seconds
         const timeout = setTimeout(() => {
