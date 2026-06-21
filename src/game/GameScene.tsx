@@ -840,6 +840,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const lastSaveTickRef = useRef<number>(0);
+  const lastFootstepTimeRef = useRef<number>(0);
   const [ui, setUI] = useState<UIState>(INITIAL_UI);
   const uiRef = useRef<UIState>(INITIAL_UI);
   const safeArea = getSafeArea();
@@ -1469,8 +1470,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
     if (dy > 0) gs.playerFacing = 's';
     if (dy < 0) gs.playerFacing = 'n';
 
-    // Play footstep sound
-    playSFX('footstep', 0.7).catch(() => {});
+    // Play footstep sound (with 250ms cooldown)
+    const now = Date.now();
+    if (now - lastFootstepTimeRef.current > 250) {
+      lastFootstepTimeRef.current = now;
+      playSFX('footstep', 0.7).catch(() => {});
+    }
     track('custom_sfx_footstep');
   }, [isWalkableTile]);
 
@@ -2228,8 +2233,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
           gs.playerDestTY = nextStep.y;
           gs.playerTX = nextStep.x;
           gs.playerTY = nextStep.y;
-          // Play footstep sound as player moves
-          playSFX('footstep', 0.8).catch((e) => console.warn('Failed to play footstep sound:', e));
+          // Play footstep sound as player moves (with 250ms cooldown to prevent rapid-fire)
+          const now = Date.now();
+          if (now - lastFootstepTimeRef.current > 250) {
+            lastFootstepTimeRef.current = now;
+            playSFX('footstep', 0.8).catch((e) => console.warn('Failed to play footstep sound:', e));
+          }
         } else {
           // Path is blocked - stop following it
           gs.playerPath = [];
