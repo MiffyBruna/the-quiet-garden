@@ -2628,93 +2628,157 @@ export function GameScene({ onShowWatershed, isContinue }: {
         onPointerUp={handleCanvasClick}
       />
 
-      {/* ── Tile Inspect Panel ───────────────────────────────────────────── */}
-      {displayedTileInfo && !ui.dialogue && (
-        <div
-          style={{
-            position: 'absolute',
-            top: HUD_H + safeArea.top + 8,
-            right: 8,
-            width: 170,
-            background: 'rgba(20,35,20,0.92)',
-            borderRadius: 10,
-            border: '1px solid rgba(124,202,124,0.3)',
-            padding: 12,
-            zIndex: 30,
-            color: '#F0FFF0',
-            opacity: tileInfoFading ? 0 : 1,
-            transition: 'opacity 150ms ease-in-out',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.07em' }}>
-              Tile Info
+      {/* ── Tile Inspect Panel (Separate Cards) ────────────────────────────── */}
+      {displayedTileInfo && !ui.dialogue && (() => {
+        const t = displayedTileInfo.tile;
+        const terrainLabels: Record<string, string> = {
+          cracked_soil: 'Cracked Soil', dry_soil: 'Dry Soil', mulch: 'Mulch',
+          bund: 'Semicircular Bund', moist_soil: 'Moist Soil', grass: 'Grass',
+          rock: 'Rock', water: 'Seasonal Pool',
+        };
+        const label = terrainLabels[t.terrain] ?? t.terrain;
+        const suggMap: Record<string, string> = {
+          cracked_soil: 'Dig a bund uphill or add mulch to slow runoff.',
+          dry_soil: 'Mulch will help this soil retain moisture.',
+          mulch: 'Ready for planting when moisture retention rises.',
+          bund: 'Catching rain — good placement!',
+          moist_soil: 'Good conditions — try planting a pioneer species.',
+          grass: 'This area is healing well.',
+          rock: 'Rocks shelter seeds and reduce wind erosion.',
+          water: 'A permanent water feature. Life will gather here.',
+        };
+        const suggestion = suggMap[t.terrain] ?? 'Inspect nearby tiles to understand water flow.';
+        const closeHandler = () => setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null, inspectedWildlife: null }));
+
+        const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (
+          <div
+            style={{
+              position: 'absolute',
+              top: HUD_H + safeArea.top + 8,
+              right: 8,
+              width: 170,
+              background: 'rgba(20,35,20,0.92)',
+              borderRadius: 10,
+              border: '1px solid rgba(124,202,124,0.3)',
+              padding: 12,
+              zIndex: 30,
+              color: '#F0FFF0',
+              opacity: tileInfoFading ? 0 : 1,
+              transition: 'opacity 150ms ease-in-out',
+              marginTop: '80px', // offset for stacking
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.07em' }}>
+                {title}
+              </div>
+              <button
+                onClick={closeHandler}
+                style={{ background: 'none', border: 'none', color: '#7CCA7C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
+              >
+                ×
+              </button>
             </div>
-            <button
-              onClick={() => setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null, inspectedWildlife: null }))}
-              style={{ background: 'none', border: 'none', color: '#7CCA7C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
-            >
-              ×
-            </button>
+            <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.7 }}>
+              {children}
+            </div>
           </div>
-          {((): React.ReactNode => {
-            const t = displayedTileInfo.tile;
-            const terrainLabels: Record<string, string> = {
-              cracked_soil: 'Cracked Soil', dry_soil: 'Dry Soil', mulch: 'Mulch',
-              bund: 'Semicircular Bund', moist_soil: 'Moist Soil', grass: 'Grass',
-              rock: 'Rock', water: 'Seasonal Pool',
-            };
-            const label = terrainLabels[t.terrain] ?? t.terrain;
-            const suggMap: Record<string, string> = {
-              cracked_soil: 'Dig a bund uphill or add mulch to slow runoff.',
-              dry_soil: 'Mulch will help this soil retain moisture.',
-              mulch: 'Ready for planting when moisture retention rises.',
-              bund: 'Catching rain — good placement!',
-              moist_soil: 'Good conditions — try planting a pioneer species.',
-              grass: 'This area is healing well.',
-              rock: 'Rocks shelter seeds and reduce wind erosion.',
-              water: 'A permanent water feature. Life will gather here.',
-            };
-            const suggestion = suggMap[t.terrain] ?? 'Inspect nearby tiles to understand water flow.';
-            return (
+        );
+
+        return (
+          <>
+            {/* Plant Card */}
+            {ui.inspectedEntity && ui.inspectedEntity.type === 'plant' && (
+              <Card title="Plant">
+                <div style={{ fontStyle: 'italic', color: '#A8E6A8' }}>
+                  {ui.inspectedEntity.name}
+                </div>
+              </Card>
+            )}
+
+            {/* Terrain Card */}
+            <div
+              style={{
+                position: 'absolute',
+                top: HUD_H + safeArea.top + 8,
+                right: 8,
+                width: 170,
+                background: 'rgba(20,35,20,0.92)',
+                borderRadius: 10,
+                border: '1px solid rgba(124,202,124,0.3)',
+                padding: 12,
+                zIndex: 30,
+                color: '#F0FFF0',
+                opacity: tileInfoFading ? 0 : 1,
+                transition: 'opacity 150ms ease-in-out',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.07em' }}>
+                  Terrain
+                </div>
+                <button
+                  onClick={closeHandler}
+                  style={{ background: 'none', border: 'none', color: '#7CCA7C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
+                >
+                  ×
+                </button>
+              </div>
               <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.7 }}>
-                {ui.inspectedEntity && (
-                  <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(124,202,124,0.2)' }}>
-                    <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.05em', marginBottom: 3 }}>
-                      {ui.inspectedEntity.type}
-                    </div>
-                    <div style={{ fontStyle: 'italic', color: '#A8E6A8' }}>
-                      {ui.inspectedEntity.name}
-                    </div>
-                  </div>
-                )}
-                {ui.inspectedWildlife && ui.inspectedWildlife.length > 0 && (
-                  <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(124,202,124,0.2)' }}>
-                    {ui.inspectedWildlife.map((wildlife, idx) => (
-                      <div key={idx} style={{ marginBottom: idx < ui.inspectedWildlife!.length - 1 ? 6 : 0 }}>
-                        <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.05em', marginBottom: 2 }}>
-                          Wildlife
-                        </div>
-                        <div style={{ fontWeight: 600, color: '#A8E6A8', marginBottom: 2 }}>
-                          {wildlife.name}
-                        </div>
-                        <div style={{ fontStyle: 'italic', color: 'rgba(168,230,168,0.8)', fontSize: 9, lineHeight: 1.3 }}>
-                          "{wildlife.wisdom}"
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div><b>Terrain:</b> {label}</div>
-                <div><b>Moisture Retention:</b> {Math.round(t.moisture)}%</div>
+                <div><b>Type:</b> {label}</div>
+                <div><b>Moisture:</b> {Math.round(t.moisture)}%</div>
                 <div><b>Fertility:</b> {Math.round(t.fertility)}%</div>
-                <div><b>Erosion risk:</b> {Math.round(t.erosion)}%</div>
+                <div><b>Erosion:</b> {Math.round(t.erosion)}%</div>
                 <div style={{ marginTop: 6, fontStyle: 'italic', opacity: 0.8 }}>{renderDialogueText(suggestion)}</div>
               </div>
-            );
-          })()}
-        </div>
-      )}
+            </div>
+
+            {/* Wildlife Card */}
+            {ui.inspectedWildlife && ui.inspectedWildlife.length > 0 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: HUD_H + safeArea.top + 160,
+                  right: 8,
+                  width: 170,
+                  background: 'rgba(20,35,20,0.92)',
+                  borderRadius: 10,
+                  border: '1px solid rgba(124,202,124,0.3)',
+                  padding: 12,
+                  zIndex: 30,
+                  color: '#F0FFF0',
+                  opacity: tileInfoFading ? 0 : 1,
+                  transition: 'opacity 150ms ease-in-out',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.07em' }}>
+                    Wildlife
+                  </div>
+                  <button
+                    onClick={closeHandler}
+                    style={{ background: 'none', border: 'none', color: '#7CCA7C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)' }}>
+                  {ui.inspectedWildlife.map((wildlife, idx) => (
+                    <div key={idx} style={{ marginBottom: idx < ui.inspectedWildlife!.length - 1 ? 8 : 0 }}>
+                      <div style={{ fontWeight: 600, color: '#A8E6A8', marginBottom: 2 }}>
+                        {wildlife.name}
+                      </div>
+                      <div style={{ fontStyle: 'italic', color: 'rgba(168,230,168,0.8)', fontSize: 9, lineHeight: 1.3 }}>
+                        "{wildlife.wisdom}"
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {/* ── Dialogue Box ─────────────────────────────────────────────────── */}
       {ui.dialogue && (() => {
