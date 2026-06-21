@@ -177,8 +177,9 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         const variant = Math.floor(Math.random() * 2);
         const filename = variant === 0 ? 'footstep00 (1).ogg' : 'footstep01 (1).ogg';
         console.error(`🔊 LOADING FOOTSTEP: ${filename}`);
-        url = await loadCdnAsset(filename);
-        console.error(`🔊 FOOTSTEP LOADED: ${filename}`);
+        // Try direct path first (uploaded files are in /uploads/)
+        url = `/uploads/${filename}`;
+        console.error(`🔊 FOOTSTEP LOADED: ${filename} - Using direct path: ${url}`);
       } catch (e) {
         console.error(`🔊 FOOTSTEP FAILED TO LOAD (${e}), USING GENERATED`);
         url = null; // Fall back to generated audio
