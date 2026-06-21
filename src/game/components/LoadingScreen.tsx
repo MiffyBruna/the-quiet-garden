@@ -29,7 +29,7 @@ export function LoadingScreen() {
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap');
-`}
+
         @keyframes rainDrop {
           0% { transform: translateY(-10px); opacity: 0; }
           10% { opacity: 1; }
