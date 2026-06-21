@@ -2108,6 +2108,54 @@ export function GameScene({ onShowWatershed, isContinue }: {
     [useTool, handleDialogueInput],
   );
 
+  // Handle mouse movement to highlight destination tiles when moving plants
+  const handleCanvasMouseMove = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      const gs = gsRef.current;
+      const currentUI = uiRef.current;
+
+      // Only highlight when in move mode and holding a plant
+      if (currentUI.activeTool !== 'move' || !currentUI.heldEntity || currentUI.heldEntity.type !== 'plant') {
+        gs.highlightTiles = [];
+        return;
+      }
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const camCenter = gs.cinematicCam ?? { px: gs.playerPX, py: gs.playerPY };
+      const camX = Math.round(camCenter.px - canvas.width / 2 + TILE_SIZE / 2);
+      const camY = Math.round(camCenter.py - canvas.height / 2 + TILE_SIZE / 2);
+
+      const worldX = (e.clientX - rect.left) * (canvas.width / rect.width) + camX;
+      const worldY = (e.clientY - rect.top) * (canvas.height / rect.height) + camY;
+
+      const tx = Math.floor(worldX / TILE_SIZE);
+      const ty = Math.floor(worldY / TILE_SIZE);
+
+      // Determine if this is a 2x2 plant (mesquite)
+      const plantData = currentUI.heldEntity.data as PlantState;
+      const isMesquite = plantData.type === 'mesquite';
+
+      // Highlight destination tiles
+      const highlightTiles: Array<{ x: number; y: number }> = [];
+      if (isMesquite) {
+        // Mesquite is 2x2 — highlight all 4 tiles
+        highlightTiles.push({ x: tx, y: ty });
+        highlightTiles.push({ x: tx + 1, y: ty });
+        highlightTiles.push({ x: tx, y: ty + 1 });
+        highlightTiles.push({ x: tx + 1, y: ty + 1 });
+      } else {
+        // Single tile
+        highlightTiles.push({ x: tx, y: ty });
+      }
+
+      gs.highlightTiles = highlightTiles;
+    },
+    [],
+  );
+
   // -------------------------------------------------------------------------
   // Game loop
   // -------------------------------------------------------------------------
@@ -2636,6 +2684,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           touchAction: 'none',
         }}
         onPointerUp={handleCanvasClick}
+        onPointerMove={handleCanvasMouseMove}
       />
 
       {/* ── Tile Inspect Panel (Separate Cards) ────────────────────────────── */}
@@ -3222,7 +3271,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {[
-              { mode: 'move', emoji: '↔️', label: 'Move', desc: 'Swap tiles' },
+              { mode: 'move', emoji: '↔️', label: 'Move', desc: 'Move plants' },
               { mode: 'create_water', emoji: '💧', label: 'Water', desc: 'Create water' },
               { mode: 'create_rocks', emoji: '🪨', label: 'Rocks', desc: 'Create rocks' },
               { mode: 'destroy_rocks', emoji: '💥', label: 'Destroy', desc: 'Break rocks/water' },
