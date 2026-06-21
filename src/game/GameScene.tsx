@@ -88,10 +88,28 @@ function tileBaseColor(tile: Tile): string {
     }
 
     case 'grass': {
-      // Dry / infertile grass is pale olive; rich grass is deep emerald
-      const rBase = Math.round(105 - f * 50);  // 105 → 55
-      const gBase = Math.round(138 + f * 32);  // 138 → 170
-      const bBase = Math.round(48  + f * 14);  //  48 → 62
+      // 3 shades of green for visual variety
+      const shadeVariation = Math.sin(tile.x * 7.1 + tile.y * 13.3) * 0.5 + 0.5;
+      const shadeType = Math.floor(shadeVariation * 3); // 0, 1, or 2
+
+      let rBase: number, gBase: number, bBase: number;
+      if (shadeType === 0) {
+        // Light olive-green (drier appearance)
+        rBase = Math.round(115 - f * 55);  // 115 → 60
+        gBase = Math.round(130 + f * 28);  // 130 → 158
+        bBase = Math.round(45  + f * 12);  //  45 → 57
+      } else if (shadeType === 1) {
+        // Mid forest-green (balanced)
+        rBase = Math.round(100 - f * 48);  // 100 → 52
+        gBase = Math.round(142 + f * 35);  // 142 → 177
+        bBase = Math.round(50  + f * 16);  //  50 → 66
+      } else {
+        // Deep emerald-green (lusher appearance)
+        rBase = Math.round(95 - f * 45);   //  95 → 50
+        gBase = Math.round(148 + f * 38);  // 148 → 186
+        bBase = Math.round(52  + f * 18);  //  52 → 70
+      }
+
       const dark = m * 0.22;
       return `rgb(${Math.max(0,Math.round(rBase*(1-dark)))},${Math.max(0,Math.round(gBase*(1-dark)))},${Math.max(0,Math.round(bBase*(1-dark)))})`;
     }
