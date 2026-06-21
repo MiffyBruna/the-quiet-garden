@@ -140,6 +140,40 @@ function isInsect(wildlifeType: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Find valid seed spot positions (avoiding rocks)
+// ---------------------------------------------------------------------------
+
+function findValidSeedSpot(x: number, y: number, gs: GameState): { x: number; y: number } {
+  // Check if position is in bounds and doesn't have a rock
+  const isValid = (tx: number, ty: number): boolean => {
+    if (tx < 0 || tx >= MAP_W || ty < 0 || ty >= MAP_H) return false;
+    const tile = getTile(gs, tx, ty);
+    return tile && tile.terrain !== 'rock';
+  };
+
+  if (isValid(x, y)) {
+    return { x, y };
+  }
+
+  // Search nearby positions in order: left, right, up, down
+  const searchOrder = [
+    { x: x - 1, y },  // left
+    { x: x + 1, y },  // right
+    { x, y: y - 1 },  // up
+    { x, y: y + 1 },  // down
+  ];
+
+  for (const pos of searchOrder) {
+    if (isValid(pos.x, pos.y)) {
+      return pos;
+    }
+  }
+
+  // Fallback to original position if no valid spot found
+  return { x, y };
+}
+
+// ---------------------------------------------------------------------------
 // Dialogue text formatting with bold quest hints
 // ---------------------------------------------------------------------------
 
@@ -1048,7 +1082,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
         case 'plant_seed': {
           const bcx = gs.bundCenterTX;
           const bcy = gs.bundCenterTY;
-          highlights.push({ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 });
+          const leftSpot = findValidSeedSpot(bcx - 1, bcy + 2, gs);
+          const rightSpot = findValidSeedSpot(bcx + 1, bcy + 2, gs);
+          highlights.push(leftSpot, rightSpot);
           unlockedTools.push('seed', 'mulch', 'shovel');
           break;
         }
@@ -1231,10 +1267,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
       case 'plant_seed': {
         // Seed spots are always inside the cup of wherever the bund was dug:
         // one tile each side of the bund center, two rows below it.
+        // If a spot has a rock, move it to a nearby empty position.
         const bcx = gsRef.current.bundCenterTX;
         const bcy = gsRef.current.bundCenterTY;
-        console.log('🌱 PLANT_SEED: bundCenter=', { bcx, bcy }, 'highlighting:', [{ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 }]);
-        highlights.push({ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 });
+        const leftSpot = findValidSeedSpot(bcx - 1, bcy + 2, gsRef.current);
+        const rightSpot = findValidSeedSpot(bcx + 1, bcy + 2, gsRef.current);
+        console.log('🌱 PLANT_SEED: bundCenter=', { bcx, bcy }, 'original spots:', [{ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 }], 'adjusted:', [leftSpot, rightSpot]);
+        highlights.push(leftSpot, rightSpot);
         newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType, 'shovel' as ToolType])];
         break;
       }
