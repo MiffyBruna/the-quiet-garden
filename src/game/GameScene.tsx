@@ -1800,6 +1800,18 @@ export function GameScene({ onShowWatershed, isContinue }: {
           } else if (currentUI.reshapeMode === 'destroy_rocks') {
             track('custom_landscape_destroyed_rocks', { tx, ty });
             playDestroy();
+          } else if (currentUI.reshapeMode === 'create_grass') {
+            track('custom_landscape_created_grass', { tx, ty });
+            RundotGameAPI.analytics.recordCustomEvent('landscape_created_grass', { tx, ty });
+            playMove();
+          } else if (currentUI.reshapeMode === 'create_dry_soil') {
+            track('custom_landscape_created_dry_soil', { tx, ty });
+            RundotGameAPI.analytics.recordCustomEvent('landscape_created_dry_soil', { tx, ty });
+            playMove();
+          } else if (currentUI.reshapeMode === 'create_moist_soil') {
+            track('custom_landscape_created_moist_soil', { tx, ty });
+            RundotGameAPI.analytics.recordCustomEvent('landscape_created_moist_soil', { tx, ty });
+            playMove();
           } else {
             track('custom_landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
             RundotGameAPI.analytics.recordCustomEvent('landscape_placed', { tx, ty, type: result.entity?.type ?? 'unknown' });
@@ -3216,6 +3228,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
               { mode: 'create_water', emoji: '💧', label: 'Water', desc: 'Create water' },
               { mode: 'create_rocks', emoji: '🪨', label: 'Rocks', desc: 'Create rocks' },
               { mode: 'destroy_rocks', emoji: '💥', label: 'Destroy', desc: 'Break rocks/water' },
+              { mode: 'create_grass', emoji: '🌾', label: 'Grass', desc: 'Create grass' },
+              { mode: 'create_dry_soil', emoji: '🟫', label: 'Dry Soil', desc: 'Create dry soil' },
+              { mode: 'create_moist_soil', emoji: '🟪', label: 'Moist Soil', desc: 'Create moist soil' },
             ].map((opt: any) => {
               const selected = ui.reshapeMode === opt.mode;
               return (
@@ -3224,7 +3239,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   onClick={() => {
                     playButton();
                     track('custom_reshape_mode_selected', { mode: opt.mode });
-                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' }));
+                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' | 'create_grass' | 'create_dry_soil' | 'create_moist_soil' }));
                   }}
                   style={{
                     flex: 1,
