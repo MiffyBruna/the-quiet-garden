@@ -1074,7 +1074,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
     gsRef.current.highlightTiles = highlights;
 
     setUI((prev) => {
-      const newActiveTool = newStep === 'inspect_soil' ? 'inspect' : prev.activeTool;
+      const newActiveTool = newStep === 'inspect_soil' ? 'inspect'
+        : newStep === 'first_rain' ? 'move'
+        : prev.activeTool;
       return {
         ...prev,
         questStep: newStep,
@@ -1810,7 +1812,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
   // Canvas click → tile coordinate → tool use
   // -------------------------------------------------------------------------
   const handleCanvasClick = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      // Only handle primary pointer (left mouse, first touch, etc.)
+      if (e.pointerType === 'touch' && !e.isPrimary) return;
+
       // When dialogue is showing: canvas tap advances it (same as tapping the dialogue box)
       if (uiRef.current.dialogue !== null) {
         handleDialogueInput();
@@ -1820,16 +1825,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
-      let clientX: number, clientY: number;
-      if ('touches' in e) {
-        const t = e.touches[0] ?? e.changedTouches[0];
-        if (!t) return;
-        clientX = t.clientX;
-        clientY = t.clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
+      const clientX = e.clientX;
+      const clientY = e.clientY;
 
       const gs = gsRef.current;
       const currentUI = uiRef.current;
@@ -1927,9 +1924,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
         gs.playerPY = destPY;
       }
 
-      // Follow queued path - move to next tile when current destination is reached
-      if (gs.playerPath && gs.playerPath.length > 0 &&
-          gs.playerTX === gs.playerDestTX && gs.playerTY === gs.playerDestTY) {
+      // Follow queued path - only advance when pixel position reaches current tile
+      const pathTargetPX = gs.playerDestTX * TILE_SIZE;
+      const pathTargetPY = gs.playerDestTY * TILE_SIZE;
+      const pixelDistToPathTarget = Math.abs(gs.playerPX - pathTargetPX) + Math.abs(gs.playerPY - pathTargetPY);
+      if (gs.playerPath && gs.playerPath.length > 0 && pixelDistToPathTarget < 3) {
         const nextStep = gs.playerPath[0]!;
 
         // Validate next step is still walkable (tile state may have changed)
@@ -2375,8 +2374,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           height: '100%',
           touchAction: 'none',
         }}
-        onClick={handleCanvasClick}
-        onTouchEnd={handleCanvasClick}
+        onPointerUp={handleCanvasClick}
       />
 
       {/* ── Tile Inspect Panel ───────────────────────────────────────────── */}
