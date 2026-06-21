@@ -1172,6 +1172,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
     });
   }, []);
 
+  // Show highlights when inspect_soil dialogue closes
+  useEffect(() => {
+    if (currentUI.dialogue === null && gsRef.current.questStep === 'inspect_soil' && gsRef.current.highlightTiles.length === 0) {
+      gsRef.current.highlightTiles = [...INSPECT_HIGHLIGHTS];
+    }
+  }, [currentUI.dialogue]);
+
   // Complete typewriter instantly (jump to full text without advancing the line)
   const completeTyping = useCallback(() => {
     if (typewriterRef.current) {
@@ -1287,12 +1294,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
       }, 100);
     } else if (dialogues.length > 0) {
       queueDialogue(dialogues);
-      // For inspect_soil, show highlights AFTER dialogue closes
-      if (newStep === 'inspect_soil') {
-        setTimeout(() => {
-          gsRef.current.highlightTiles = [...INSPECT_HIGHLIGHTS];
-        }, 6500); // Wait for dialogue to be read and closed
-      }
+      // Highlights are shown via useEffect when dialogue closes
     }
   }, [queueDialogue]);
 
