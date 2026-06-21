@@ -3220,26 +3220,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
               Tap each highlighted square to dig the marked area
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-            <button
-              onClick={() => {
-                playCancel();
-                cancelBund();
-              }}
-              style={{
-                background: 'rgba(200,80,80,0.15)',
-                border: '1px solid rgba(200,80,80,0.45)',
-                borderRadius: 8,
-                padding: '6px 12px',
-                color: '#FF9090',
-                fontSize: 14,
-                cursor: 'pointer',
-                fontWeight: 700,
-              }}
-            >
-              ✗
-            </button>
-          </div>
         </div>
       )}
 
