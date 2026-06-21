@@ -158,13 +158,8 @@ export async function getSFX(sfxType: SFXType): Promise<string | null> {
  */
 export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<void> {
   try {
-    const sfxEnabled = isSfxEnabled();
-    const sfxVolume = getSfxVolume();
-    console.error(`🔊 FOOTSTEP SOUND PLAYING - SFX Enabled: ${sfxEnabled}, SFX Volume: ${sfxVolume}/100`);
-
     // Check if SFX is enabled
-    if (!sfxEnabled) {
-      console.error(`🔊 SFX DISABLED - Not playing ${sfxType}`);
+    if (!isSfxEnabled()) {
       return;
     }
 
@@ -176,12 +171,9 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         // Randomly pick one of the two footstep sound variants
         const variant = Math.floor(Math.random() * 2);
         const filename = variant === 0 ? 'footstep00 (1).ogg' : 'footstep01 (1).ogg';
-        console.error(`🔊 LOADING FOOTSTEP: ${filename}`);
         // Try direct path first (uploaded files are in /uploads/)
         url = `/uploads/${filename}`;
-        console.error(`🔊 FOOTSTEP LOADED: ${filename} - Using direct path: ${url}`);
       } catch (e) {
-        console.error(`🔊 FOOTSTEP FAILED TO LOAD (${e}), USING GENERATED`);
         url = null; // Fall back to generated audio
       }
     }
@@ -220,7 +212,6 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
       const sfxVolume = getSfxVolume() / 100;
       audio.volume = volume * sfxVolume;
 
-      console.error(`🔊 AUDIO ELEMENT CREATED - Setting src to: ${url}`);
       audio.src = url;
       audio.crossOrigin = 'anonymous';
 
@@ -229,9 +220,8 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         const handleCanPlay = () => {
           audio.removeEventListener('canplay', handleCanPlay);
           audio.removeEventListener('error', handleError);
-          console.error(`🔊 ATTEMPTING TO PLAY ${sfxType.toUpperCase()} - Volume: ${audio.volume}`);
           audio.play().catch((e) => {
-            console.error(`❌🔊 PLAY FAILED FOR ${sfxType}: ${e.name || 'Unknown'} - ${e.message || String(e)}`);
+            console.warn(`Failed to play SFX ${sfxType}:`, e);
           });
           RundotGameAPI.analytics.recordCustomEvent('sfx_played', { type: sfxType });
           resolve();
@@ -240,7 +230,7 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         const handleError = (err: any) => {
           audio.removeEventListener('canplay', handleCanPlay);
           audio.removeEventListener('error', handleError);
-          console.error(`🔊 AUDIO LOAD ERROR FOR ${sfxType}: ${err?.message || 'Unknown error'}`);
+          console.warn(`Failed to load SFX ${sfxType}: ${err?.message || 'Unknown error'}`);
           resolve();
         };
 
@@ -252,9 +242,8 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         const timeout = setTimeout(() => {
           audio.removeEventListener('canplay', handleCanPlay);
           audio.removeEventListener('error', handleError);
-          console.error(`🔊 TIMEOUT - ATTEMPTING TO PLAY ${sfxType.toUpperCase()} ANYWAY - Volume: ${audio.volume}`);
           audio.play().catch((e) => {
-            console.error(`❌🔊 TIMEOUT PLAY FAILED FOR ${sfxType}: ${e.name || 'Unknown'} - ${e.message || String(e)}`);
+            console.warn(`Failed to play SFX ${sfxType} after timeout:`, e);
           });
           resolve();
         }, 5000);
