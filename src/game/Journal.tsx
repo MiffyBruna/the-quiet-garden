@@ -8,7 +8,7 @@
  *   2 — Observed:   zone ≥ 50%, ecological fact revealed
  *   3 — Documented: zone ≥ 90%, full entry, attracted wildlife, note
  */
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { theme } from '../theme';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
@@ -54,6 +54,25 @@ const SHADOW = '2px 3px 10px rgba(80,55,30,0.08)';
 export function Journal({ zoneHealthMap, onClose }: JournalProps) {
   const safeArea = getSafeArea();
   const [activeTab, setActiveTab] = useState<JournalTab>('plants');
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Handle arrow key scrolling for accessibility (users without mouse scroll)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!contentRef.current) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        contentRef.current.scrollBy({ top: 60, behavior: 'smooth' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        contentRef.current.scrollBy({ top: -60, behavior: 'smooth' });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const tabs: { id: JournalTab; label: string; emoji: string }[] = [
     { id: 'plants', label: 'Plants', emoji: '🌿' },
@@ -182,6 +201,7 @@ export function Journal({ zoneHealthMap, onClose }: JournalProps) {
 
       {/* ── Content ───────────────────────────────────────────────────────── */}
       <div
+        ref={contentRef}
         style={{
           flex: 1,
           overflowY: 'auto',
