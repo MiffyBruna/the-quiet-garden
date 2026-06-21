@@ -3471,9 +3471,15 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   const restoration = calculateRestoration(gs);
                   triggerRain(gs, restoration);
                   playRain();
-                  setUI((p) => ({ ...p, rainCooling: true }));
-                  const cooldown = getRainCooldown(restoration);
-                  setTimeout(() => setUI((p) => ({ ...p, rainCooling: false })), cooldown);
+
+                  // Skip cooldown during quest rain steps so button stays active
+                  const questNeedsRain = gs.questStep === 'first_rain' || gs.questStep === 'second_rain';
+                  if (!questNeedsRain) {
+                    setUI((p) => ({ ...p, rainCooling: true }));
+                    const cooldown = getRainCooldown(restoration);
+                    setTimeout(() => setUI((p) => ({ ...p, rainCooling: false })), cooldown);
+                  }
+
                   track('custom_rain_called', { rains: gs.rainsCount });
                   RundotGameAPI.analytics.recordCustomEvent('rain_called', { rains: gs.rainsCount });
 
