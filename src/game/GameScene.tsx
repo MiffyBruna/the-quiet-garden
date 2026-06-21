@@ -1205,7 +1205,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
     switch (newStep) {
       case 'inspect_soil':
-        highlights.push(...INSPECT_HIGHLIGHTS);
+        // Don't show highlights yet — they appear after dialogue closes
         newTools = [...new Set([...newTools, 'inspect' as ToolType])];
         objective = 'Inspect 3 cracked soil tiles';
         break;
@@ -1287,6 +1287,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
       }, 100);
     } else if (dialogues.length > 0) {
       queueDialogue(dialogues);
+      // For inspect_soil, show highlights AFTER dialogue closes
+      if (newStep === 'inspect_soil') {
+        setTimeout(() => {
+          gsRef.current.highlightTiles = [...INSPECT_HIGHLIGHTS];
+        }, dialogues.length * 4000); // 4 seconds per dialogue line
+      }
     }
   }, [queueDialogue]);
 
