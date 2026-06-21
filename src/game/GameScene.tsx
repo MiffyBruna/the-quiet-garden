@@ -2220,6 +2220,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
           gs.playerDestTY = nextStep.y;
           gs.playerTX = nextStep.x;
           gs.playerTY = nextStep.y;
+          // Play footstep sound as player moves
+          playSFX('footstep', 0.5);
         } else {
           // Path is blocked - stop following it
           gs.playerPath = [];
@@ -3276,7 +3278,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
               { mode: 'create_rocks', emoji: '🪨', label: 'Rocks', desc: 'Create rocks' },
               { mode: 'destroy_rocks', emoji: '💥', label: 'Destroy', desc: 'Break rocks/water' },
               { mode: 'create_grass', emoji: '🟩', label: 'Grass', desc: 'Create grass' },
-              { mode: 'create_soil', emoji: '🟨', label: 'Soil', desc: 'Create custom soil' },
+              { mode: 'create_soil', emoji: '🟫', label: 'Soil', desc: 'Create custom soil' },
             ].map((opt: any) => {
               const selected = ui.reshapeMode === opt.mode;
               return (
