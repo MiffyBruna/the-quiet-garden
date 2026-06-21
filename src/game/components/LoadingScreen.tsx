@@ -28,6 +28,8 @@ export function LoadingScreen() {
       }}
     >
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap');
+`}
         @keyframes rainDrop {
           0% { transform: translateY(-10px); opacity: 0; }
           10% { opacity: 1; }
@@ -164,11 +166,13 @@ export function LoadingScreen() {
       >
         <h1
           style={{
-            fontSize: '28px',
+            fontSize: '37px',
             color: '#6B5A42',
             marginBottom: '8px',
-            fontWeight: 'bold',
-            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
+            fontWeight: 900,
+            fontFamily: "'Cinzel', serif",
+            textShadow: '3px 3px 0px rgba(0, 0, 0, 0.3), 6px 6px 12px rgba(0, 0, 0, 0.2)',
+            letterSpacing: '1px',
           }}
         >
           The Quiet Garden
