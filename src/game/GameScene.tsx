@@ -2763,7 +2763,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         onPointerMove={handleCanvasMouseMove}
       />
 
-      {/* ── Floating X button on top of bund (during digging mode) ──── */}
+      {/* ── Floating X button above bund (during digging mode) ──── */}
       {ui.bundMode === 'digging' && !ui.dialogue && (() => {
         const gs = gsRef.current;
         const canvas = canvasRef.current;
@@ -2782,7 +2782,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             style={{
               position: 'absolute',
               left: bundScreenX - 16,
-              top: bundScreenY - 16,
+              top: bundScreenY - 60,
               width: 32,
               height: 32,
               background: 'rgba(220,80,80,0.9)',
