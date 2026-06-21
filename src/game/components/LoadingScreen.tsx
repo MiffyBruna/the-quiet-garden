@@ -19,7 +19,7 @@ export function LoadingScreen() {
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'linear-gradient(180deg, #D4C49A 0%, #C9B896 40%, #9B9080 75%, #6B5A42 100%)',
+        background: 'linear-gradient(180deg, #C8B896 0%, #B8A888 40%, #8B8070 75%, #5A4A32 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -58,10 +58,10 @@ export function LoadingScreen() {
         }
 
         @keyframes floatCloud {
-          0% { transform: translateX(-100px); opacity: 0; }
+          0% { transform: translateX(-100px) translateY(0px); opacity: 0; }
           10% { opacity: 0.6; }
           90% { opacity: 0.6; }
-          100% { transform: translateX(100vw); opacity: 0; }
+          100% { transform: translateX(100vw) translateY(0px); opacity: 0; }
         }
 
         .rain-drop {
