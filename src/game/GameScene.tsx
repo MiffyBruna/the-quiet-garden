@@ -1305,7 +1305,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     playSFX('confirm', 0.8).catch(() => {});
     const result = applyMesquitePlant(gs, gs.playerTX, gs.playerTY);
     if (result.planted) {
-      playSFX('planting', 0.8).catch(() => {});
+      playMulch();
       track('custom_mesquite_planted', { tx: gs.playerTX, ty: gs.playerTY });
       RundotGameAPI.analytics.recordCustomEvent('mesquite_planted', { tx: gs.playerTX, ty: gs.playerTY });
       setUI((p) => ({
@@ -1749,8 +1749,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
           track('custom_seed_planted', { plant: currentUI.selectedSeed });
           RundotGameAPI.analytics.recordCustomEvent('seed_planted', { plant: currentUI.selectedSeed });
 
-          // Play planting sound
-          playSFX('planting', 0.6).catch(() => {});
+          // Play planting sound (same as mulch)
+          playMulch();
           if (gs.questStep === 'plant_seed') {
             const bothPlanted = seedSpots.every(
               ({ x, y }) => getTile(gs.tiles, x, y)?.plant != null,
