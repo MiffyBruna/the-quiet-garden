@@ -2128,8 +2128,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
       const tx = Math.floor(worldX / TILE_SIZE);
       const ty = Math.floor(worldY / TILE_SIZE);
 
-      // Highlight when moving plants
-      if (currentUI.activeTool === 'move' && currentUI.heldEntity && currentUI.heldEntity.type === 'plant') {
+      // Highlight when moving plants (in landscape tool with heldEntity)
+      if (currentUI.activeTool === 'landscape' && currentUI.heldEntity && currentUI.heldEntity.type === 'plant') {
         const plantData = currentUI.heldEntity.data as PlantState;
         const isMesquite = plantData.type === 'mesquite';
 
@@ -2148,7 +2148,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         return;
       }
 
-      // Highlight when using reshape tool
+      // Highlight when using reshape tool (without holding a plant)
       if (currentUI.activeTool === 'landscape') {
         gs.highlightTiles = [{ x: tx, y: ty }];
         return;
