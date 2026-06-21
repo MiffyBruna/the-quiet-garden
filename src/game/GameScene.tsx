@@ -1159,6 +1159,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
         const restoredTool = (prev.previousTool && prev.unlockedTools.includes(prev.previousTool))
           ? prev.previousTool
           : prev.activeTool;
+        // Show highlights for inspect_soil after dialogue closes
+        if (gsRef.current.questStep === 'inspect_soil' && gsRef.current.highlightTiles.length === 0) {
+          gsRef.current.highlightTiles = [...INSPECT_HIGHLIGHTS];
+        }
         return { ...prev, dialogue: null, dialogueQueue: [], activeTool: restoredTool, previousTool: null };
       }
       const [next, ...rest] = prev.dialogueQueue;
@@ -1166,18 +1170,15 @@ export function GameScene({ onShowWatershed, isContinue }: {
         const restoredTool = (prev.previousTool && prev.unlockedTools.includes(prev.previousTool))
           ? prev.previousTool
           : prev.activeTool;
+        // Show highlights for inspect_soil after dialogue closes
+        if (gsRef.current.questStep === 'inspect_soil' && gsRef.current.highlightTiles.length === 0) {
+          gsRef.current.highlightTiles = [...INSPECT_HIGHLIGHTS];
+        }
         return { ...prev, dialogue: null, dialogueQueue: [], activeTool: restoredTool, previousTool: null };
       }
       return { ...prev, dialogue: next, dialogueQueue: rest };
     });
   }, []);
-
-  // Show highlights when inspect_soil dialogue closes
-  useEffect(() => {
-    if (currentUI.dialogue === null && gsRef.current.questStep === 'inspect_soil' && gsRef.current.highlightTiles.length === 0) {
-      gsRef.current.highlightTiles = [...INSPECT_HIGHLIGHTS];
-    }
-  }, [currentUI.dialogue]);
 
   // Complete typewriter instantly (jump to full text without advancing the line)
   const completeTyping = useCallback(() => {
