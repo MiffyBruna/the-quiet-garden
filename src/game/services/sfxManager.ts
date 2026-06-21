@@ -228,12 +228,16 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         const timeout = setTimeout(() => {
           audio.removeEventListener('canplay', handleCanPlay);
           audio.removeEventListener('error', handleError);
-          audio.play().catch(() => {});
+          audio.play().catch((e) => {
+            console.warn(`SFX ${sfxType} timeout, play error:`, e);
+          });
           resolve();
         }, 5000);
 
         audio.addEventListener('canplay', () => clearTimeout(timeout), { once: true });
       });
+    } else {
+      console.warn(`No URL generated for SFX ${sfxType}`);
     }
   } catch (e) {
     console.warn(`Error playing SFX ${sfxType}:`, e);
