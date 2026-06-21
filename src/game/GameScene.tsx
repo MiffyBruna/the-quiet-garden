@@ -255,6 +255,7 @@ function renderFrame(
   inspectFlash: { x: number; y: number; startTick: number } | null = null,
   mesquiteStencilTiles: Array<{ x: number; y: number }> = [],
   isMesquiteValid = false,
+  heldEntity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any } | null = null,
 ): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -778,6 +779,20 @@ function renderFrame(
       ctx.imageSmoothingEnabled = false; // Pixelated rendering
       ctx.drawImage(sprite, spriteX, spriteY, spriteDisplayWidth, spriteDisplayHeight);
       ctx.imageSmoothingEnabled = true; // Re-enable for other elements
+    }
+
+    // Draw held plant above player
+    if (heldEntity && heldEntity.type === 'plant') {
+      const plantData = heldEntity.data as PlantState;
+      const plantType = plantData.type as PlantType;
+      try {
+        // Draw plant sprite above player
+        const holdX = sx + T / 2;
+        const holdY = sy - 30;
+        spriteLoader.drawSprite(ctx, plantType, 3, holdX, holdY, 20);
+      } catch (e) {
+        // Sprite not loaded, skip
+      }
     }
   }
 
@@ -2484,7 +2499,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         canvas.style.cursor = 'pointer';
       }
 
-      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles, showMossHint, inspectFlashRef.current, mesquiteStencilTiles, isMesquiteValid);
+      renderFrame(canvas, gs, gs.highlightTiles, gs.tick, stencilTiles, showMossHint, inspectFlashRef.current, mesquiteStencilTiles, isMesquiteValid, uiRef.current.heldEntity);
       rafRef.current = requestAnimationFrame(loop);
     };
 
