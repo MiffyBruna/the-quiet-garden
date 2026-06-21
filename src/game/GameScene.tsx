@@ -3508,7 +3508,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
             >
               <span style={{ fontSize: 18, lineHeight: '1' }}>{def.emoji}</span>
               <span style={{ fontSize: 7, color: active ? '#7CCA7C' : 'rgba(240,255,240,0.6)', textAlign: 'center', lineHeight: '1' }}>
-                {def.label}
+                {def.id === 'move' && ui.heldEntity?.type === 'plant' ? 'Holding Plant' : def.label}
               </span>
             </button>
           );
@@ -3724,7 +3724,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 // ---------------------------------------------------------------------------
 
 const TOOL_DEFS: Array<{ id: ToolType; emoji: string; label: string }> = [
-  { id: 'move',      emoji: '👟', label: 'Move' },
+  { id: 'move',      emoji: '👟', label: 'Move Plant' },
   { id: 'inspect',   emoji: '🔍', label: 'Inspect' },
   { id: 'bund',      emoji: '🌙', label: 'Dig Bund' },
   { id: 'shovel',    emoji: '⛏️',  label: 'Undo' },
