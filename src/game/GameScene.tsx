@@ -1608,36 +1608,30 @@ export function GameScene({ onShowWatershed, isContinue }: {
           }
         }
 
-        // Check for all wildlife at pixel location (convert tile to pixel coords)
-        if (!inspectedEntity) {
-          const tileCenterX = tx * TILE_SIZE + TILE_SIZE / 2;
-          const tileCenterY = ty * TILE_SIZE + TILE_SIZE / 2;
-          const tolerance = TILE_SIZE * 0.7; // Check within tile bounds
+        // Check for all wildlife at pixel location (convert tile to pixel coords) — always check, regardless of plant
+        const tileCenterX = tx * TILE_SIZE + TILE_SIZE / 2;
+        const tileCenterY = ty * TILE_SIZE + TILE_SIZE / 2;
+        const tolerance = TILE_SIZE * 0.7; // Check within tile bounds
 
-          const wildlifeOnTile: Array<{ name: string; wisdom: string }> = [];
-          for (const entity of gs.entities) {
-            if (
-              Math.abs(entity.px - tileCenterX) < tolerance &&
-              Math.abs(entity.py - tileCenterY) < tolerance
-            ) {
-              // Found wildlife - get name and wisdom
-              const wildlifeInfo = WILDLIFE_CONDITIONS.find((w) => w.type === entity.type);
-              const name = entity.type.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-              const wisdom = wildlifeInfo?.wisdom || '';
-              wildlifeOnTile.push({ name, wisdom });
-            }
-          }
-          if (wildlifeOnTile.length > 0) {
-            inspectedWildlife = wildlifeOnTile;
+        const wildlifeOnTile: Array<{ name: string; wisdom: string }> = [];
+        for (const entity of gs.entities) {
+          if (
+            Math.abs(entity.px - tileCenterX) < tolerance &&
+            Math.abs(entity.py - tileCenterY) < tolerance
+          ) {
+            // Found wildlife - get name and wisdom
+            const wildlifeInfo = WILDLIFE_CONDITIONS.find((w) => w.type === entity.type);
+            const name = entity.type.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            const wisdom = wildlifeInfo?.wisdom || '';
+            wildlifeOnTile.push({ name, wisdom });
           }
         }
+        if (wildlifeOnTile.length > 0) {
+          inspectedWildlife = wildlifeOnTile;
+        }
 
-        // Check for fairy at pixel location
+        // Check for fairy at pixel location — only if no plant or wildlife
         if (!inspectedEntity && !inspectedWildlife) {
-          const tileCenterX = tx * TILE_SIZE + TILE_SIZE / 2;
-          const tileCenterY = ty * TILE_SIZE + TILE_SIZE / 2;
-          const tolerance = TILE_SIZE * 0.7;
-
           for (const fairy of gs.fairies) {
             if (
               Math.abs(fairy.px - tileCenterX) < tolerance &&
