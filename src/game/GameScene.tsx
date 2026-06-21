@@ -2229,8 +2229,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           gs.playerTX = nextStep.x;
           gs.playerTY = nextStep.y;
           // Play footstep sound as player moves
-          console.error('🔊 FOOTSTEP SOUND PLAYING');
-          playSFX('footstep', 0.8).catch((e) => console.error('🔊 FOOTSTEP ERROR:', e));
+          playSFX('footstep', 0.8).catch((e) => console.warn('Failed to play footstep sound:', e));
         } else {
           // Path is blocked - stop following it
           gs.playerPath = [];
