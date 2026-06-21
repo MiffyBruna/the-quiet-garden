@@ -33940,11 +33940,71 @@
       "timestamp": 1782020632696,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782020668215",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "TITLE plant then TITLE TERRAIN",
+      "timestamp": 1782020668215,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782020675554-obj95slxg",
+      "role": "assistant",
+      "content": "Ah! You want the card to have **two separate titled sections** — \"PLANT\" section and \"TERRAIN\" section — but all in the same card. Let me update that:",
+      "isShownToUser": true,
+      "timestamp": 1782020676021,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782020677086-rfvjg9j87",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782020677086,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782020685676-xbzspko84",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782020685676,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782020690381-gsd4nx0iy",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782020690381,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782020696914-by89qnk3d",
+      "role": "assistant",
+      "content": "Perfect! Now the card displays with **two separate titled sections** in the same card:\n\n1. **PLANT** section (if there's a plant) with the plant name\n2. **TERRAIN** section with all the terrain stats\n\nClean and organized! Try it now!",
+      "isShownToUser": true,
+      "timestamp": 1782020697640,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782020632834,
-  "tokenUsage": 31325,
+  "updatedAt": 1782020697690,
+  "tokenUsage": 33549,
   "script": "default",
   "claudeSessionId": "217baf61-bd1f-461d-8dc8-c92c0742f5a8"
 }

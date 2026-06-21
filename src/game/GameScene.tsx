@@ -2652,7 +2652,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
         return (
           <>
-            {/* Plant + Terrain Card (Combined) */}
+            {/* Plant + Terrain Card (Combined with separate sections) */}
             <div
               style={{
                 position: 'absolute',
@@ -2669,10 +2669,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 transition: 'opacity 150ms ease-in-out',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.07em' }}>
-                  {ui.inspectedEntity?.type === 'plant' ? 'Plant' : 'Terrain'}
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
                 <button
                   onClick={closeHandler}
                   style={{ background: 'none', border: 'none', color: '#7CCA7C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
@@ -2681,22 +2678,28 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 </button>
               </div>
               <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.7 }}>
-                {/* Plant info */}
+                {/* Plant section */}
                 {ui.inspectedEntity && ui.inspectedEntity.type === 'plant' && (
-                  <>
-                    <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(124,202,124,0.2)' }}>
-                      <div style={{ fontStyle: 'italic', color: '#A8E6A8', marginBottom: 4 }}>
-                        {ui.inspectedEntity.name}
-                      </div>
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.05em', marginBottom: 4 }}>
+                      Plant
                     </div>
-                  </>
+                    <div style={{ fontStyle: 'italic', color: '#A8E6A8', marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid rgba(124,202,124,0.2)' }}>
+                      {ui.inspectedEntity.name}
+                    </div>
+                  </div>
                 )}
-                {/* Terrain info */}
-                <div><b>Type:</b> {label}</div>
-                <div><b>Moisture:</b> {Math.round(t.moisture)}%</div>
-                <div><b>Fertility:</b> {Math.round(t.fertility)}%</div>
-                <div><b>Erosion:</b> {Math.round(t.erosion)}%</div>
-                <div style={{ marginTop: 6, fontStyle: 'italic', opacity: 0.8 }}>{renderDialogueText(suggestion)}</div>
+                {/* Terrain section */}
+                <div>
+                  <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.05em', marginBottom: 4 }}>
+                    Terrain
+                  </div>
+                  <div><b>Type:</b> {label}</div>
+                  <div><b>Moisture:</b> {Math.round(t.moisture)}%</div>
+                  <div><b>Fertility:</b> {Math.round(t.fertility)}%</div>
+                  <div><b>Erosion:</b> {Math.round(t.erosion)}%</div>
+                  <div style={{ marginTop: 6, fontStyle: 'italic', opacity: 0.8 }}>{renderDialogueText(suggestion)}</div>
+                </div>
               </div>
             </div>
 
