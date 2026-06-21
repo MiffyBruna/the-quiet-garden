@@ -8,7 +8,7 @@
 
 export const MAP_W = 32;
 export const MAP_H = 32;
-export const TILE_SIZE = 24;
+export const TILE_SIZE = 28;  // Increased from 24 (16.7% scale up)
 
 // ---------------------------------------------------------------------------
 // Terrain
