@@ -1268,11 +1268,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
         // Seed spots are always inside the cup of wherever the bund was dug:
         // one tile each side of the bund center, two rows below it.
         // If a spot has a rock, move it to a nearby empty position.
-        const bcx = gsRef.current.bundCenterTX;
-        const bcy = gsRef.current.bundCenterTY;
-        const leftSpot = findValidSeedSpot(bcx - 1, bcy + 2, gsRef.current);
-        const rightSpot = findValidSeedSpot(bcx + 1, bcy + 2, gsRef.current);
-        console.log('🌱 PLANT_SEED: bundCenter=', { bcx, bcy }, 'original spots:', [{ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 }], 'adjusted:', [leftSpot, rightSpot]);
+        const gs = gsRef.current;
+        const bcx = gs.bundCenterTX;
+        const bcy = gs.bundCenterTY;
+        const leftSpot = findValidSeedSpot(bcx - 1, bcy + 2, gs);
+        const rightSpot = findValidSeedSpot(bcx + 1, bcy + 2, gs);
+        // Store seed spots on GameState so quest completion uses the same spots
+        gs.seedSpots = [leftSpot, rightSpot];
+        console.log('🌱 PLANT_SEED: bundCenter=', { bcx, bcy }, 'original spots:', [{ x: bcx - 1, y: bcy + 2 }, { x: bcx + 1, y: bcy + 2 }], 'adjusted:', gs.seedSpots);
         highlights.push(leftSpot, rightSpot);
         newTools = [...new Set([...newTools, 'seed' as ToolType, 'mulch' as ToolType, 'shovel' as ToolType])];
         break;
@@ -1929,8 +1932,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
           return;
         }
 
-        // Seed spots always relative to wherever the bund was confirmed
-        const seedSpots = [
+        // Use stored seed spots (which account for rocks) — shared single source of truth
+        const seedSpots = gs.seedSpots.length > 0 ? gs.seedSpots : [
           { x: gs.bundCenterTX - 1, y: gs.bundCenterTY + 2 },
           { x: gs.bundCenterTX + 1, y: gs.bundCenterTY + 2 },
         ];

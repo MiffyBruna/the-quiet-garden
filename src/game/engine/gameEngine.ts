@@ -278,6 +278,7 @@ export function createInitialGameState(): GameState {
 
     bundCenterTX: 15,
     bundCenterTY: 15,
+    seedSpots: [],
     firstBundActivated: false,
     restorationMilestonesSeen: [],
     completionTriggered: false,
@@ -343,6 +344,7 @@ export function createChapter2InitialState(): GameState {
 
     bundCenterTX: 15,
     bundCenterTY: 15,
+    seedSpots: [],
     firstBundActivated: false,
     restorationMilestonesSeen: [],
     completionTriggered: false,
