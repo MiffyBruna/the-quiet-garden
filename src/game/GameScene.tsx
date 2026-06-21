@@ -522,8 +522,8 @@ function renderFrame(
       }
 
       // Quest highlights — golden tiles to inspect or interact with
-      const isHighlighted = highlights.some((h) => h.x === tx && h.y === ty);
-      if (isHighlighted) {
+      const isQuestHighlight = highlights.some((h) => h.x === tx && h.y === ty);
+      if (isQuestHighlight) {
         const hpulse = 0.5 + 0.5 * Math.sin(tick * 0.12 + tx * 0.3 + ty * 0.3);
         ctx.fillStyle = `rgba(255,215,0,${0.15 + hpulse * 0.10})`;
         ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
