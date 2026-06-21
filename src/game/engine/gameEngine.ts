@@ -28,6 +28,22 @@ export function getTile(tiles: Tile[][], x: number, y: number): Tile | undefined
   return tiles[y]?.[x];
 }
 
+export function getMissingPlants(gs: GameState): string[] {
+  const plantedTypes = new Set<string>();
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      const tile = getTile(gs.tiles, x, y);
+      if (tile?.plant) {
+        plantedTypes.add(tile.plant.type);
+      }
+    }
+  }
+
+  const allPlantIds = PLANTS.map(p => p.id);
+  const missing = allPlantIds.filter(id => !plantedTypes.has(id));
+  return missing;
+}
+
 export function setTile(tiles: Tile[][], x: number, y: number, patch: Partial<Tile>): void {
   const row = tiles[y];
   if (!row) return;
@@ -1856,7 +1872,11 @@ export function calculateRestoration(gs: GameState): number {
 
   // Apply bund removal penalty (cumulative reduction from removing bund clusters)
   const penalizedScore = Math.max(0, score - gs.bundRemovalPenalty);
-  const currentRestoration = Math.round(Math.min(100, penalizedScore));
+
+  // Cap restoration at 89% if not all plant types have been planted
+  const missingPlants = getMissingPlants(gs);
+  const maxAllowedRestoration = missingPlants.length > 0 ? 89 : 100;
+  const currentRestoration = Math.round(Math.min(maxAllowedRestoration, penalizedScore));
 
   // Restoration never goes below the maximum previously achieved
   // This locks restoration at 100% once reached, while allowing moisture to fluctuate dynamically
@@ -2259,10 +2279,31 @@ export function updateGame(
         }
       } else {
         // Chapter 1: Moss milestones (less frequent for a more natural feel)
-        const milestonePoints = [10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 95] as const;
+        const milestonePoints = [10, 15, 20, 30, 40, 50, 60, 70, 80, 85, 90, 95] as const;
         for (const pct of milestonePoints) {
           if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
             gs.restorationMilestonesSeen.push(pct);
+
+            // Special handling for 85% milestone: check for missing plants
+            if (pct === 85) {
+              const missingPlants = getMissingPlants(gs);
+              if (missingPlants.length > 0) {
+                // Get plant names for missing plants
+                const missingNames = missingPlants.map(id => {
+                  const plant = PLANTS.find(p => p.id === id);
+                  return plant?.name || id;
+                });
+                const plantList = missingNames.join(', ');
+                const line: DialogueLine = {
+                  speaker: 'Moss',
+                  emoji: '🐸',
+                  text: `The valley is almost whole. But it is missing voices: ${plantList}. Plant these and the land will be complete.`,
+                };
+                onMilestone(pct, [line]);
+                break;
+              }
+            }
+
             const line = MOSS_MILESTONE_DIALOGUES[pct];
             if (line) onMilestone(pct, [line]);  // Wrap in array for consistency
             break; // Queue one at a time so lines don't pile up
