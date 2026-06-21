@@ -1884,9 +1884,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           }, 6000);
         } else {
           // Use UI's current restoration (will be updated by next game loop) instead of recalculating
+          // Skip dialogue if game is already 100% complete (no need for Moss to keep talking)
           setTimeout(() => {
             const currentRestoration = uiRef.current.restoration;
-            if (currentRestoration > 0) {
+            if (currentRestoration > 0 && currentRestoration < 100) {
               queueDialogue([{
                 speaker: 'Moss', emoji: '🐸',
                 text: `Moisture retention rises. The valley remembers a little more. ${currentRestoration}% restored.`,
