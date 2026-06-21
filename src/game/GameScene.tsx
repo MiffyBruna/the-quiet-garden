@@ -1547,50 +1547,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
       if (gs.introAnimationState) return;
 
       if (tool === 'move') {
-        // If holding a plant, click to place it
-        if (currentUI.heldEntity && currentUI.heldEntity.type === 'plant') {
-          const plantData = currentUI.heldEntity.data as PlantState;
-          const isMesquite = plantData.type === 'mesquite';
-
-          // Check if destination tile(s) are valid for placement
-          const tilesToCheck = isMesquite
-            ? [{ x: tx, y: ty }, { x: tx + 1, y: ty }, { x: tx, y: ty + 1 }, { x: tx + 1, y: ty + 1 }]
-            : [{ x: tx, y: ty }];
-
-          // Verify all tiles are in bounds and empty
-          const canPlace = tilesToCheck.every(({ x, y }) => {
-            if (x < 0 || x >= MAP_W || y < 0 || y >= MAP_H) return false;
-            const tile = getTile(gs.tiles, x, y);
-            return tile && !tile.plant && tile.terrain !== 'water';
-          });
-
-          if (canPlace) {
-            // Place the plant
-            if (isMesquite) {
-              applyMesquitePlant(gs, tx, ty);
-            } else {
-              applyPlantSeed(gs, tx, ty, plantData.type);
-            }
-            setUI((p) => ({ ...p, heldEntity: null }));
-            gs.highlightTiles = [];
-            playMove();
-            RundotGameAPI.analytics.recordCustomEvent('plant_moved', { type: plantData.type, isMesquite });
-            track('custom_plant_moved');
-          }
-          return;
-        }
-
-        // Check if clicked on a plant to pick it up
-        const tile = getTile(gs.tiles, tx, ty);
-        if (tile?.plant) {
-          setUI((p) => ({ ...p, heldEntity: { type: 'plant', data: tile.plant! } }));
-          playMove();
-          RundotGameAPI.analytics.recordCustomEvent('plant_picked_up', { type: tile.plant.type });
-          track('custom_plant_picked_up');
-          return;
-        }
-
-        // No plant here - move the player
+        // Walk button: ONLY walk, don't interact with plants
+        // Plant moving is handled by the Reshape > Move option instead
         // Use centralized walkability check
         if (!isWalkableTile(tx, ty)) {
           // Clicked a blocked tile - try to find nearest adjacent walkable tile
