@@ -874,6 +874,8 @@ const INITIAL_UI: UIState = {
   fastDialogue: false,
   bundMode: null,
   bundTargetTiles: [],
+  bundXButtonX: 0,
+  bundXButtonY: 0,
   mesquiteMode: null,
   showSeedPanel: true,
   showReshapeMenu: false,
@@ -1383,10 +1385,24 @@ export function GameScene({ onShowWatershed, isContinue }: {
     gs.bundCenterTX = gs.playerTX;
     gs.bundCenterTY = gs.playerTY;
     gs.highlightTiles = validTiles;
+
+    // Calculate fixed X button position (won't follow player movement)
+    const canvas = canvasRef.current;
+    let bundXButtonX = 0;
+    let bundXButtonY = 0;
+    if (canvas) {
+      const bundScreenX = (gs.bundCenterTX * TILE_SIZE) - (gs.playerTX * TILE_SIZE) + canvas.width / 2;
+      const bundScreenY = (gs.bundCenterTY * TILE_SIZE) - (gs.playerTY * TILE_SIZE) + canvas.height / 2;
+      bundXButtonX = bundScreenX - 16;
+      bundXButtonY = bundScreenY - 60;
+    }
+
     setUI((p) => ({
       ...p,
       bundMode: 'digging',
       bundTargetTiles: validTiles,
+      bundXButtonX,
+      bundXButtonY,
       questObjective: gs.questStep === 'dig_bund'
         ? `Dig the half-moon bund (0/${validTiles.length})`
         : p.questObjective,
@@ -1413,7 +1429,24 @@ export function GameScene({ onShowWatershed, isContinue }: {
   }, [queueDialogue]);
 
   const cancelBund = useCallback(() => {
-    gsRef.current.highlightTiles = [];
+    const gs = gsRef.current;
+
+    // Undo any dug tiles by reverting them back to cracked_soil
+    const bcx = gs.bundCenterTX;
+    const bcy = gs.bundCenterTY;
+    if (bcx !== undefined && bcy !== undefined) {
+      BUND_SHAPE_OFFSETS.forEach(([ox, oy]) => {
+        const tx = bcx + ox;
+        const ty = bcy + oy;
+        const tile = getTile(gs, tx, ty);
+        if (tile && tile.terrain === 'bund') {
+          tile.terrain = 'cracked_soil';
+          tile.isModified = true;
+        }
+      });
+    }
+
+    gs.highlightTiles = [];
     setUI((p) => ({
       ...p,
       bundMode: null,
@@ -2765,14 +2798,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
       {/* ── Floating X button above bund (during digging mode) ──── */}
       {ui.bundMode === 'digging' && !ui.dialogue && (() => {
-        const gs = gsRef.current;
-        const canvas = canvasRef.current;
-        if (!canvas) return null;
-
-        // Convert bund world position to screen position
-        const bundScreenX = (gs.bundCenterTX * TILE_SIZE) - (gs.playerTX * TILE_SIZE) + canvas.width / 2;
-        const bundScreenY = (gs.bundCenterTY * TILE_SIZE) - (gs.playerTY * TILE_SIZE) + canvas.height / 2;
-
         return (
           <button
             onClick={() => {
@@ -2781,8 +2806,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
             }}
             style={{
               position: 'absolute',
-              left: bundScreenX - 16,
-              top: bundScreenY - 60,
+              left: ui.bundXButtonX,
+              top: ui.bundXButtonY,
               width: 32,
               height: 32,
               background: 'rgba(220,80,80,0.9)',
