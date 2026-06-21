@@ -259,6 +259,11 @@ function renderFrame(
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
+  // Debug: log highlights array
+  if (highlights && highlights.length > 0 && tick % 30 === 0) {
+    console.log('🔍 Rendering with highlights:', highlights, 'questStep:', gs.questStep);
+  }
+
   const W = canvas.width;
   const H = canvas.height;
   const T = TILE_SIZE;
@@ -522,7 +527,7 @@ function renderFrame(
       }
 
       // Quest highlights — golden tiles to inspect or interact with
-      const isQuestHighlight = highlights.some((h) => h.x === tx && h.y === ty);
+      const isQuestHighlight = highlights && highlights.some((h) => h.x === tx && h.y === ty);
       if (isQuestHighlight) {
         const hpulse = 0.5 + 0.5 * Math.sin(tick * 0.12 + tx * 0.3 + ty * 0.3);
         ctx.fillStyle = `rgba(255,215,0,${0.15 + hpulse * 0.10})`;
