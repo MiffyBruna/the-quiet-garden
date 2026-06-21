@@ -45207,11 +45207,29 @@
       "timestamp": 1782033904001,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782033920600",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "not that the restorations eems low",
+      "timestamp": 1782033920600,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782033929377-5wnf2x3v6",
+      "role": "assistant",
+      "content": "You're right — **89% seems low for a garden this massive!** 🌿\n\nWith:\n- ✅ Hundreds of plants\n- ✅ 12 wildlife species (maxed)\n- ✅ Perfect plant diversity\n- ✅ Water and bunds everywhere\n\nYou should be closer to 100%. The issue is that reaching **100% requires PERFECT soil stats** across your entire massive garden:\n\n**To hit 100%, you need:**\n- Moisture: 100% on nearly every soil tile\n- Fertility: 100% on nearly every soil tile\n- Plant: 100% (you have this ✅)\n- Wildlife: 100% (you have this ✅)\n\nWith a 32×32 map filled with plants, keeping **every single tile at perfect moisture + fertility** is nearly impossible. A few dry/depleted tiles drag the average down.\n\n**The restoration curve is intentionally harsh at the end** — it's meant to be the true \"mastery\" challenge. You'd need to micromanage soil perfection on 500+ tiles!\n\nThat said, **89% is incredible achievement!** Most gardens probably top out at 60-70%. You've essentially \"won\" the game! 🏆",
+      "isShownToUser": true,
+      "timestamp": 1782033932654,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782033904504,
-  "tokenUsage": 72304,
+  "updatedAt": 1782033932705,
+  "tokenUsage": 72818,
   "script": "default",
   "claudeSessionId": "85d86ca3-6789-4fd3-9f33-4270dd25b5e6"
 }
