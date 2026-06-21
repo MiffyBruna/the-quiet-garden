@@ -1641,24 +1641,30 @@ export function spawnWildlife(gs: GameState): void {
     if (gs.discoveredWildlife.includes(cond.type)) continue;
     if (!cond.check(gs, stats)) continue;
 
-    // Find a non-rock tile near center of map
-    const cx = 12 + Math.floor(Math.random() * 8);
-    const cy = 14 + Math.floor(Math.random() * 8);
-    const tile = getTile(gs.tiles, cx, cy);
-    if (!tile || tile.terrain === 'rock') continue;
+    // Find a non-rock tile anywhere on the map (search up to 20 attempts)
+    let spawned = false;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const cx = Math.floor(Math.random() * MAP_W);
+      const cy = Math.floor(Math.random() * MAP_H);
+      const tile = getTile(gs.tiles, cx, cy);
 
-    const entity: WildlifeEntity = {
-      id: nextId(),
-      type: cond.type as WildlifeEntity['type'],
-      px: cx * TILE_SIZE + Math.random() * TILE_SIZE,
-      py: cy * TILE_SIZE + Math.random() * TILE_SIZE,
-      vx: (Math.random() - 0.5) * 20,
-      vy: (Math.random() - 0.5) * 20,
-      wanderTimer: 2000 + Math.random() * 3000,
-      emoji: cond.emoji,
-    };
-    gs.entities.push(entity);
-    gs.discoveredWildlife.push(cond.type);
+      if (!tile || tile.terrain === 'rock') continue;
+
+      const entity: WildlifeEntity = {
+        id: nextId(),
+        type: cond.type as WildlifeEntity['type'],
+        px: cx * TILE_SIZE + Math.random() * TILE_SIZE,
+        py: cy * TILE_SIZE + Math.random() * TILE_SIZE,
+        vx: (Math.random() - 0.5) * 20,
+        vy: (Math.random() - 0.5) * 20,
+        wanderTimer: 2000 + Math.random() * 3000,
+        emoji: cond.emoji,
+      };
+      gs.entities.push(entity);
+      gs.discoveredWildlife.push(cond.type);
+      spawned = true;
+      break;
+    }
     // Spawn all eligible wildlife — no cooldown delay
   }
 }
