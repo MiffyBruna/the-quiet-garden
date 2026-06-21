@@ -1959,47 +1959,6 @@ export function calculateRestoration(gs: GameState): number {
   const maxAllowedRestoration = (missingPlants.length > 0 || missingWildlife.length > 0) ? 89 : 100;
   const currentRestoration = Math.round(Math.min(maxAllowedRestoration, penalizedScore));
 
-  // Debug logging: Show restoration stats every 180 ticks
-  if (gs.tick % 180 === 0) {
-    console.log(`
-📊 RESTORATION STATS:
-  ✨ Restoration: ${currentRestoration}% (max allowed: ${maxAllowedRestoration}%)
-
-  📈 SCORES:
-    • Moisture: ${Math.round(moistureScore)}% (avg: ${Math.round(avgMoisture)}%, baseline: 8)
-    • Fertility: ${Math.round(fertilityScore)}% (avg: ${Math.round(avgFertility)}%, baseline: 12)
-    • Plants: ${Math.round(plantScore)}% (${plantTypes.size} types)
-    • Wildlife: ${Math.round(wildlifeScore)}% (${gs.discoveredWildlife.length} species)
-
-  ⚖️  WEIGHTS (${baseScore >= 70 ? 'late game' : 'early game'}):
-    • Moisture: ${moistureWeight} × ${Math.round(moistureScore)} = ${Math.round(moistureScore * moistureWeight)}
-    • Fertility: ${fertilityWeight} × ${Math.round(fertilityScore)} = ${Math.round(fertilityScore * fertilityWeight)}
-    • Plants: ${plantWeight} × ${Math.round(plantScore)} = ${Math.round(plantScore * plantWeight)}
-    • Wildlife: ${wildlifeWeight} × ${Math.round(wildlifeScore)} = ${Math.round(wildlifeScore * wildlifeWeight)}
-
-  🚫 BLOCKERS:
-    ${missingPlants.length > 0 ? `• Missing plants: ${missingPlants.join(', ')}` : '✅ All plants discovered'}
-    ${missingWildlife.length > 0 ? `• Missing wildlife: ${missingWildlife.join(', ')}` : '✅ All wildlife discovered'}
-
-  📍 Soil tiles: ${soilTileCount}
-    `);
-
-    // Find low fertility tiles
-    const lowFertilityTiles: Array<{x: number, y: number, fertility: number}> = [];
-    for (let y = 0; y < MAP_H; y++) {
-      for (let x = 0; x < MAP_W; x++) {
-        const tile = getTile(gs.tiles, x, y);
-        if (tile && tile.fertility < 30 && ['cracked_soil', 'moist_soil', 'bund', 'mulch', 'grass'].includes(tile.terrain)) {
-          lowFertilityTiles.push({x, y, fertility: tile.fertility});
-        }
-      }
-    }
-    if (lowFertilityTiles.length > 0) {
-      console.log(`⚠️  LOW FERTILITY TILES (${lowFertilityTiles.length} total, < 30%):`);
-      console.log(lowFertilityTiles.slice(0, 10)); // Show first 10
-    }
-  }
-
   // Restoration never goes below the maximum previously achieved
   // This locks restoration at 100% once reached, while allowing moisture to fluctuate dynamically
   return Math.max(currentRestoration, gs.maxRestorationAchieved);
