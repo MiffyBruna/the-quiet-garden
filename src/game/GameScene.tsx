@@ -1291,7 +1291,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
       if (newStep === 'inspect_soil') {
         setTimeout(() => {
           gsRef.current.highlightTiles = [...INSPECT_HIGHLIGHTS];
-        }, dialogues.length * 4000); // 4 seconds per dialogue line
+        }, 6500); // Wait for dialogue to be read and closed
       }
     }
   }, [queueDialogue]);
