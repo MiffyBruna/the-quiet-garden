@@ -59,7 +59,15 @@ function tileBaseColor(tile: Tile): string {
 
   switch (tile.terrain) {
     case 'water': return '#4A90C4';   // permanent pond / pool — stays blue
-    case 'rock':  return '#8A8680';
+    case 'rock': {
+      // Rocks with subtle color variation based on position (quarried stone look)
+      // Base: medium gray, with slight warm/cool shifts for natural rock appearance
+      const baseHue = (tile.elevation ?? 5) * 2;
+      const r = Math.round(138 + (Math.sin(baseHue * 0.1) * 8));  // 130–146
+      const g = Math.round(134 + (Math.cos(baseHue * 0.15) * 6)); // 128–140
+      const b = Math.round(128 + (Math.sin(baseHue * 0.08) * 6)); // 122–134
+      return `rgb(${r},${g},${b})`;
+    }
 
     case 'bund': {
       // Earth berm — slightly enriched by water; moisture darkens it
@@ -263,6 +271,62 @@ function renderFrame(
       // Base terrain colour
       ctx.fillStyle = tileBaseColor(tile);
       ctx.fillRect(sx, sy, T, T);
+
+      // --- Rock texture: cracks, shadows, highlights ---
+      if (tile.terrain === 'rock') {
+        const seed = tx * 7 + ty * 13;
+        // Shadow edges (3D effect)
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.fillRect(sx, sy + T - 3, T, 3);  // bottom shadow
+        ctx.fillRect(sx + T - 2, sy, 2, T);  // right shadow
+        // Highlight on top-left
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.fillRect(sx, sy, T - 2, 2);      // top highlight
+        ctx.fillRect(sx, sy, 2, T - 2);      // left highlight
+        // Rocky surface texture — small irregular cracks
+        ctx.strokeStyle = `rgba(0,0,0,${0.15 + (seed % 3) * 0.05})`;
+        ctx.lineWidth = 0.6;
+        const crackCount = 2 + (seed % 2);
+        for (let i = 0; i < crackCount; i++) {
+          const x1 = sx + 2 + ((seed + i * 11) % (T - 4));
+          const y1 = sy + 2 + ((seed + i * 17) % (T - 4));
+          const x2 = sx + 2 + ((seed + i * 19) % (T - 4));
+          const y2 = sy + 2 + ((seed + i * 23) % (T - 4));
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      }
+
+      // --- Green variation texture: random mossy patches for grass/recovered terrain ---
+      if (tile.terrain === 'grass') {
+        const seed = tx * 7 + ty * 13;
+        // Random darker green patches (moss/shade)
+        const patchCount = 2 + (seed % 3);
+        for (let i = 0; i < patchCount; i++) {
+          const patchSeed = seed + i * 29;
+          const px = sx + 3 + ((patchSeed) % (T - 6));
+          const py = sy + 3 + ((patchSeed * 11) % (T - 6));
+          const pw = 4 + ((patchSeed * 3) % 6);
+          const ph = 3 + ((patchSeed * 5) % 5);
+          // Darker green overlay
+          ctx.fillStyle = `rgba(30, 60, 15, ${0.1 + ((patchSeed % 10) * 0.02)})`;
+          ctx.fillRect(px, py, pw, ph);
+        }
+        // Random lighter green highlights (sunlight/different grass type)
+        const highlightCount = 1 + (seed % 2);
+        for (let i = 0; i < highlightCount; i++) {
+          const hlSeed = seed + i * 31 + 1000;
+          const hx = sx + 2 + ((hlSeed) % (T - 4));
+          const hy = sy + 2 + ((hlSeed * 13) % (T - 4));
+          const hw = 3 + ((hlSeed * 2) % 4);
+          const hh = 2 + ((hlSeed * 7) % 3);
+          // Lighter green overlay
+          ctx.fillStyle = `rgba(150, 210, 90, ${0.08 + ((hlSeed % 10) * 0.015)})`;
+          ctx.fillRect(hx, hy, hw, hh);
+        }
+      }
 
       // --- Water tile (permanent pond / pool) ---
       if (tile.terrain === 'water') {
