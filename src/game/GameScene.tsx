@@ -3239,7 +3239,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   onClick={() => {
                     playButton();
                     track('custom_reshape_mode_selected', { mode: opt.mode });
-                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' | 'create_grass' | 'create_dry_soil' | 'create_moist_soil' }));
+                    // Clear held entity when switching to creation modes (since you can't hold and create)
+                    const shouldClearEntity = opt.mode !== 'move';
+                    setUI((prev) => ({ ...prev, reshapeMode: opt.mode as 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks' | 'create_grass' | 'create_dry_soil' | 'create_moist_soil', heldEntity: shouldClearEntity ? null : prev.heldEntity }));
                   }}
                   style={{
                     flex: 1,
