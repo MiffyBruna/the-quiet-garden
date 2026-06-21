@@ -32,6 +32,7 @@ import {
   serializeDiscoveries, deserializeDiscoveries,
   serializeGameState, deserializeGameState,
   FAIRY_CONDITIONS, WILDLIFE_CONDITIONS,
+  debugWildlifeStatus,
 } from './engine/gameEngine';
 import {
   INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS, MESQUITE_OFFSETS,
@@ -910,6 +911,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
     calculateFrogHeight();
     window.addEventListener('resize', calculateFrogHeight);
     return () => window.removeEventListener('resize', calculateFrogHeight);
+  }, []);
+
+  // Expose debug function to console for wildlife status checking
+  useEffect(() => {
+    (window as any).debugWildlife = () => {
+      debugWildlifeStatus(gsRef.current);
+    };
   }, []);
 
   // Rain cooldown timer countdown
