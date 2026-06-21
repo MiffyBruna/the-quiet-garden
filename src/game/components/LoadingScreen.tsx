@@ -175,7 +175,7 @@ export function LoadingScreen() {
             marginBottom: '8px',
             fontWeight: 900,
             fontFamily: "'Cinzel', serif",
-            textShadow: '3px 3px 0px rgba(0, 0, 0, 0.3), 6px 6px 12px rgba(0, 0, 0, 0.2)',
+            textShadow: '-2px -2px 0 #3D2817, 2px -2px 0 #3D2817, -2px 2px 0 #3D2817, 2px 2px 0 #3D2817, -1px 0 0 #3D2817, 1px 0 0 #3D2817, 0 -1px 0 #3D2817, 0 1px 0 #3D2817',
             letterSpacing: '1px',
           }}
         >
