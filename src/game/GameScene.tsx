@@ -263,26 +263,20 @@ function renderFrame(
     return n - Math.floor(n);
   };
 
-  // Pre-compute which tiles should have sprouts (consistent across reloads)
+  // Pre-compute which tiles should have sprouts (consistent across reloads, scattered across map)
   const sproutTiles = new Set<string>();
   if (grassSpawnCount > 0) {
+    const threshold = grassSpawnCount / (MAP_W * MAP_H); // Probability each tile should have a sprout
     for (let ty = 0; ty < MAP_H; ty++) {
       for (let tx = 0; tx < MAP_W; tx++) {
         const tile = getTile(gs.tiles, tx, ty);
         if (tile && !tile.plant && tile.terrain !== 'water' && tile.terrain !== 'rock' && tile.terrain !== 'bund') {
-          const tileHash = seededRandom(tx * 73, ty * 97, grassSpawnCount * 1337);
-          const selectedIndex = Math.floor(tileHash * (MAP_W * MAP_H) / grassSpawnCount);
-          if (selectedIndex < grassSpawnCount) {
+          const tileHash = seededRandom(tx * 73 + ty * 131, grassSpawnCount, 42);
+          if (tileHash < threshold && sproutTiles.size < grassSpawnCount) {
             sproutTiles.add(`${tx},${ty}`);
           }
         }
       }
-    }
-    // Ensure we have exactly grassSpawnCount sprouts
-    const sproutArray = Array.from(sproutTiles);
-    while (sproutArray.length > grassSpawnCount) {
-      sproutArray.pop();
-      sproutTiles.delete(sproutArray[sproutArray.length - 1]);
     }
   }
 
@@ -410,8 +404,8 @@ function renderFrame(
         const spawnTypeRand = seededRandom(tx + 100, ty + 200, grassSpawnCount);
         const plantType = spawnTypeRand < 0.4 ? 'blue_grama' : spawnTypeRand < 0.7 ? 'desert_marigold' : 'milkweed';
 
-        // Draw actual plant sprite at stage 0 (young sprout)
-        spriteLoader.drawSprite(ctx, plantType, 0, sx + T / 2, sy + T / 2, T * 0.7);
+        // Draw actual plant sprite at stage 4 (almost final form)
+        spriteLoader.drawSprite(ctx, plantType, 4, sx + T / 2, sy + T / 2, T * 0.7);
       }
 
       // --- Water tile (permanent pond / pool) ---
