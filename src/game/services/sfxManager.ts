@@ -158,8 +158,15 @@ export async function getSFX(sfxType: SFXType): Promise<string | null> {
  */
 export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<void> {
   try {
+    const sfxEnabled = isSfxEnabled();
+    const sfxVolume = getSfxVolume();
+    console.error(`🔊 FOOTSTEP SOUND PLAYING - SFX Enabled: ${sfxEnabled}, SFX Volume: ${sfxVolume}/100`);
+
     // Check if SFX is enabled
-    if (!isSfxEnabled()) return;
+    if (!sfxEnabled) {
+      console.error(`🔊 SFX DISABLED - Not playing ${sfxType}`);
+      return;
+    }
 
     let url: string | null = null;
 
@@ -217,8 +224,9 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         const handleCanPlay = () => {
           audio.removeEventListener('canplay', handleCanPlay);
           audio.removeEventListener('error', handleError);
+          console.error(`🔊 ATTEMPTING TO PLAY ${sfxType.toUpperCase()} - Volume: ${audio.volume}`);
           audio.play().catch((e) => {
-            console.warn(`Failed to play SFX ${sfxType}:`, e);
+            console.error(`❌🔊 PLAY FAILED FOR ${sfxType}: ${e.name || 'Unknown'} - ${e.message || String(e)}`);
           });
           RundotGameAPI.analytics.recordCustomEvent('sfx_played', { type: sfxType });
           resolve();
@@ -238,8 +246,9 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         const timeout = setTimeout(() => {
           audio.removeEventListener('canplay', handleCanPlay);
           audio.removeEventListener('error', handleError);
+          console.error(`🔊 TIMEOUT - ATTEMPTING TO PLAY ${sfxType.toUpperCase()} ANYWAY - Volume: ${audio.volume}`);
           audio.play().catch((e) => {
-            console.warn(`SFX ${sfxType} timeout, play error:`, e);
+            console.error(`❌🔊 TIMEOUT PLAY FAILED FOR ${sfxType}: ${e.name || 'Unknown'} - ${e.message || String(e)}`);
           });
           resolve();
         }, 5000);
