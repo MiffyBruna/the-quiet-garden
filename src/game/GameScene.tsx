@@ -1470,7 +1470,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
     if (dy < 0) gs.playerFacing = 'n';
 
     // Play footstep sound
-    playSFX('footstep', 0.3).catch(() => {});
+    playSFX('footstep', 0.7).catch(() => {});
     track('custom_sfx_footstep');
   }, [isWalkableTile]);
 
@@ -2221,7 +2221,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           gs.playerTX = nextStep.x;
           gs.playerTY = nextStep.y;
           // Play footstep sound as player moves
-          playSFX('footstep', 0.5);
+          playSFX('footstep', 0.8);
         } else {
           // Path is blocked - stop following it
           gs.playerPath = [];

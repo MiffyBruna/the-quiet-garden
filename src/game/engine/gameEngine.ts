@@ -747,7 +747,7 @@ export function applyLandscape(
 
   // Create rocks: turn terrain into rocks — but not if plant is on the tile
   if (mode === 'create_rocks' && !heldEntity) {
-    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil'];
+    const convertibleTerrains = ['grass', 'mulch', 'bund', 'moist_soil', 'cracked_soil', 'dry_soil', 'soil'];
     if (convertibleTerrains.includes(tile.terrain) && !tile.plant) {
       setTile(gs.tiles, tx, ty, { terrain: 'rock', isModified: true });
       return { action: 'placed', entity: null }; // use 'placed' to indicate conversion happened
