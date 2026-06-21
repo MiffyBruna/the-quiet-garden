@@ -175,7 +175,7 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
       try {
         // Randomly pick one of the two footstep sound variants
         const variant = Math.floor(Math.random() * 2);
-        const filename = variant === 0 ? 'footstep00.ogg' : 'footstep01.ogg';
+        const filename = variant === 0 ? 'footstep00 (1).ogg' : 'footstep01 (1).ogg';
         console.error(`🔊 LOADING FOOTSTEP: ${filename}`);
         url = await loadCdnAsset(filename);
         console.error(`🔊 FOOTSTEP LOADED: ${filename}`);
