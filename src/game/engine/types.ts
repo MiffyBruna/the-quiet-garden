@@ -251,4 +251,7 @@ export interface UIState {
   // Reshape tool menu
   showReshapeMenu: boolean; // reshape tool mode selector
   reshapeMode: 'move' | 'create_water' | 'create_rocks' | 'destroy_rocks'; // move = swap tiles, create_water = turn to water, create_rocks = turn to rocks, destroy_rocks = remove rocks
+
+  // Journal: newly discovered species (cleared when journal opens)
+  newlyDiscoveredSpecies: Set<string>; // plant IDs or wildlife IDs that are new discoveries
 }

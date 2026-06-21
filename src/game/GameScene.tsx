@@ -823,10 +823,11 @@ const INITIAL_UI: UIState = {
   showSeedPanel: true,
   showReshapeMenu: false,
   reshapeMode: 'move',
+  newlyDiscoveredSpecies: new Set<string>(),
 };
 
 export function GameScene({ onShowWatershed, isContinue }: {
-  onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[]) => void;
+  onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[]) => void;
   isContinue: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1851,7 +1852,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
           [...gs.discoveredWildlife],
           [...gs.discoveredFairies],
           [...gs.discoveredPlants],
+          [...currentUI.newlyDiscoveredSpecies],
         );
+        // Clear the "new" discovery indicators when journal opens
+        setUI((p) => ({ ...p, newlyDiscoveredSpecies: new Set() }));
         track('custom_journal_opened');
         return;
       }
@@ -2110,11 +2114,40 @@ export function GameScene({ onShowWatershed, isContinue }: {
         }
       }
 
+      // Track newly discovered species
+      const prevPlants = new Set(gs.discoveredPlants);
+      const prevWildlife = new Set(gs.discoveredWildlife);
+      const prevFairies = new Set(gs.discoveredFairies);
+
       updateGame(
         gs,
         dt,
         (restoration, avgMoisture, wildlifeCount, plantCount, questStep) => {
-          setUI((prev) => ({ ...prev, restoration, avgMoisture, wildlifeCount, plantCount, questStep }));
+          // Check for newly discovered species
+          const newSpecies = new Set(uiRef.current.newlyDiscoveredSpecies);
+
+          // Add newly discovered plants
+          gs.discoveredPlants.forEach((plant) => {
+            if (!prevPlants.has(plant)) {
+              newSpecies.add(plant);
+            }
+          });
+
+          // Add newly discovered wildlife
+          gs.discoveredWildlife.forEach((wildlife) => {
+            if (!prevWildlife.has(wildlife)) {
+              newSpecies.add(wildlife);
+            }
+          });
+
+          // Add newly discovered fairies
+          gs.discoveredFairies.forEach((fairy) => {
+            if (!prevFairies.has(fairy)) {
+              newSpecies.add(fairy);
+            }
+          });
+
+          setUI((prev) => ({ ...prev, restoration, avgMoisture, wildlifeCount, plantCount, questStep, newlyDiscoveredSpecies: newSpecies }));
         },
         (_milestone, lines) => {
           // Ecological milestone — Moss or Clover comments on ecosystem recovery
@@ -2399,6 +2432,10 @@ export function GameScene({ onShowWatershed, isContinue }: {
         }
         .tool-active {
           animation: toolPulse 1.8s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+          0%, 100% { box-shadow: 0 0 12px rgba(124, 202, 124, 0.8), inset 0 0 12px rgba(124, 202, 124, 0.3); }
+          50% { box-shadow: 0 0 20px rgba(124, 202, 124, 1), inset 0 0 20px rgba(124, 202, 124, 0.5); }
         }
         @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
         .dialogue-cursor { animation: blink 0.65s step-end infinite; }
@@ -3227,12 +3264,16 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
                   }
                   const gss = gsRef.current;
+                  const currentUI = uiRef.current;
                   onShowWatershed(
                     calculateRestoration(gss),
                     [...gss.discoveredWildlife],
                     [...gss.discoveredFairies],
                     [...gss.discoveredPlants],
+                    [...currentUI.newlyDiscoveredSpecies],
                   );
+                  // Clear the "new" discovery indicators when journal opens
+                  setUI((p) => ({ ...p, newlyDiscoveredSpecies: new Set() }));
                   track('custom_journal_opened');
                   RundotGameAPI.analytics.recordCustomEvent('journal_opened');
                   playButton();
@@ -3309,6 +3350,12 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 cursor: rainBlocked ? 'default' : 'pointer',
                 opacity: rainBlocked ? 0.4 : 1,
                 minWidth: 32,
+                // Glow effect for journal button with new discoveries
+                ...(def.id === 'journal' && ui.newlyDiscoveredSpecies.size > 0 && {
+                  boxShadow: '0 0 12px rgba(124, 202, 124, 0.8), inset 0 0 12px rgba(124, 202, 124, 0.3)',
+                  background: 'rgba(124,202,124,0.25)',
+                  animation: 'pulse-glow 1.5s ease-in-out infinite',
+                }),
               }}
             >
               <span style={{ fontSize: 18, lineHeight: '1' }}>{def.emoji}</span>

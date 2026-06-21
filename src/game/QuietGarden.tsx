@@ -33,6 +33,7 @@ interface WatershedData {
   discoveredWildlife: string[];
   discoveredFairies: string[];
   discoveredPlants: string[];
+  newlyDiscovered: string[];
 }
 
 export function QuietGarden() {
@@ -44,6 +45,7 @@ export function QuietGarden() {
     discoveredWildlife: [],
     discoveredFairies: [],
     discoveredPlants: [],
+    newlyDiscovered: [],
   });
 
   const handleStartGame = useCallback((isContinue: boolean) => {
@@ -53,12 +55,13 @@ export function QuietGarden() {
   }, []);
 
   const handleOpenWatershed = useCallback(
-    (restoration: number, wildlife: string[], fairies: string[], plants: string[]) => {
+    (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[]) => {
       setWatershedData({
         chapter1Restoration: restoration,
         discoveredWildlife: wildlife,
         discoveredFairies: fairies,
         discoveredPlants: plants,
+        newlyDiscovered,
       });
       setShowWatershed(true);
       track('custom_watershed_opened');
@@ -79,6 +82,7 @@ export function QuietGarden() {
           discoveredWildlife={watershedData.discoveredWildlife}
           discoveredFairies={watershedData.discoveredFairies}
           discoveredPlants={watershedData.discoveredPlants}
+          newlyDiscovered={watershedData.newlyDiscovered}
           onClose={() => {
             setShowWatershed(false);
             track('custom_watershed_closed');

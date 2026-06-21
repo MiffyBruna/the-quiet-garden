@@ -33,6 +33,7 @@ interface WatershedProgressProps {
   discoveredWildlife: string[];
   discoveredFairies: string[];
   discoveredPlants: string[];
+  newlyDiscovered: string[];
   onClose: () => void;
 }
 
@@ -41,6 +42,7 @@ export function WatershedProgress({
   discoveredWildlife,
   discoveredFairies,
   discoveredPlants,
+  newlyDiscovered,
   onClose,
 }: WatershedProgressProps) {
   const c = theme.colors;
@@ -251,8 +253,13 @@ export function WatershedProgress({
                       );
                     })()}
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, textTransform: 'capitalize' }}>
+                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
                         {wildlifeType.replace(/_/g, ' ')}
+                        {newlyDiscovered.includes(wildlifeType) && (
+                          <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(124,202,124,0.3)', color: '#7CCA7C', padding: '2px 6px', borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            NEW
+                          </span>
+                        )}
                       </div>
                       <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, fontStyle: 'italic', lineHeight: 1.4 }}>
                         &ldquo;{info.wisdom}&rdquo;
@@ -319,8 +326,13 @@ export function WatershedProgress({
                       );
                     })()}
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary }}>
+                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
                         {info.name}
+                        {newlyDiscovered.includes(plantType) && (
+                          <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(124,202,124,0.3)', color: '#7CCA7C', padding: '2px 6px', borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            NEW
+                          </span>
+                        )}
                       </div>
                       <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, lineHeight: 1.4, fontStyle: 'italic' }}>
                         {info.role}
@@ -394,8 +406,13 @@ export function WatershedProgress({
                       );
                     })()}
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary }}>
+                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
                         {info.name}
+                        {newlyDiscovered.includes(fairyType) && (
+                          <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(124,202,124,0.3)', color: '#7CCA7C', padding: '2px 6px', borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            NEW
+                          </span>
+                        )}
                       </div>
                       <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, lineHeight: 1.5 }}>
                         <div><strong>Appears at:</strong> {info.restorationPercent}% restoration</div>
