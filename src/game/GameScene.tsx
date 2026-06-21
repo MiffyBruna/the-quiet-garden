@@ -3825,7 +3825,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 // ---------------------------------------------------------------------------
 
 const TOOL_DEFS: Array<{ id: ToolType; emoji: string; label: string }> = [
-  { id: 'move',      emoji: '👟', label: 'Move' },
+  { id: 'move',      emoji: '👟', label: 'Walk' },
   { id: 'inspect',   emoji: '🔍', label: 'Inspect' },
   { id: 'bund',      emoji: '🌙', label: 'Dig Bund' },
   { id: 'shovel',    emoji: '⛏️',  label: 'Undo' },
