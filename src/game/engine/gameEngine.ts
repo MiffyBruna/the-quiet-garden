@@ -269,7 +269,7 @@ export function createInitialGameState(): GameState {
     chapter2ClustersFound: 0,
     chapter2HummingbirdSeen: false,
 
-    highlightTiles: INSPECT_HIGHLIGHTS,
+    highlightTiles: [],
 
     discoveredWildlife: [],
     discoveredFairies: [],
@@ -334,7 +334,7 @@ export function createChapter2InitialState(): GameState {
     chapter2ClustersFound: 0,
     chapter2HummingbirdSeen: false,
 
-    highlightTiles: CHAPTER2_INSPECT_HIGHLIGHTS,
+    highlightTiles: [],
 
     discoveredWildlife: [],
     discoveredFairies: [],
