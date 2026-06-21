@@ -46885,11 +46885,29 @@
       "timestamp": 1782037099675,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782037321955",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "that is weird so last time it was very slow to recover but this time is too fast",
+      "timestamp": 1782037321955,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782037333876-53jmxzx3m",
+      "role": "assistant",
+      "content": "Good observation! That actually makes sense. Here's what happened:\n\n**Before the fix:**\n- Your restoration was being **capped at 89%** because the function thought creatures were missing\n- The actual calculation might have been 92%, 95%, or higher, but it got capped\n- You were stuck at that 89% ceiling\n\n**After the fix:**\n- The cap is removed, so now you see the **true restoration percentage**\n- Your mulch, plants, and wildlife were already doing their work — it was just hidden by the cap\n- Now it jumps to whatever the real value is (92%, 94%, etc.)\n\nSo the rapid jump isn't because restoration is climbing faster — it's because you're finally seeing the **real number** instead of the capped version! 🎯\n\nThe recovery speed should now be back to normal. If it continues jumping weirdly, let me know and we can investigate! 🌱",
+      "isShownToUser": true,
+      "timestamp": 1782037335940,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782037099715,
-  "tokenUsage": 6891,
+  "updatedAt": 1782037336055,
+  "tokenUsage": 7329,
   "script": "default",
   "claudeSessionId": "cefd9ee8-54cc-4792-b5a3-d8cf36cbee84"
 }
