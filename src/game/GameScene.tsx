@@ -269,29 +269,52 @@ function renderFrame(
       const sy = ty * T - camY;
 
       // Base terrain colour
-      ctx.fillStyle = tileBaseColor(tile);
-      ctx.fillRect(sx, sy, T, T);
+      if (tile.terrain === 'rock') {
+        // Draw rounded rock boulder instead of square tile
+        ctx.fillStyle = tileBaseColor(tile);
+        const radius = T * 0.35;
+        ctx.beginPath();
+        ctx.moveTo(sx + radius, sy);
+        ctx.arcTo(sx + T, sy, sx + T, sy + radius, radius);
+        ctx.arcTo(sx + T, sy + T, sx + T - radius, sy + T, radius);
+        ctx.arcTo(sx, sy + T, sx, sy + T - radius, radius);
+        ctx.arcTo(sx, sy, sx + radius, sy, radius);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = tileBaseColor(tile);
+        ctx.fillRect(sx, sy, T, T);
+      }
 
       // --- Rock texture: cracks, shadows, highlights ---
       if (tile.terrain === 'rock') {
         const seed = tx * 7 + ty * 13;
-        // Shadow edges (3D effect)
-        ctx.fillStyle = 'rgba(0,0,0,0.25)';
-        ctx.fillRect(sx, sy + T - 3, T, 3);  // bottom shadow
-        ctx.fillRect(sx + T - 2, sy, 2, T);  // right shadow
-        // Highlight on top-left
-        ctx.fillStyle = 'rgba(255,255,255,0.15)';
-        ctx.fillRect(sx, sy, T - 2, 2);      // top highlight
-        ctx.fillRect(sx, sy, 2, T - 2);      // left highlight
-        // Rocky surface texture — small irregular cracks
+        const radius = T * 0.35;
+
+        // Shadow edges (3D effect on rounded rock)
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.beginPath();
+        ctx.moveTo(sx + T - radius, sy + T);
+        ctx.arcTo(sx + T, sy + T, sx + T, sy + T - radius, radius);
+        ctx.lineTo(sx + T, sy + T);
+        ctx.fill();
+
+        // Highlight on top-left (curved)
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.beginPath();
+        ctx.moveTo(sx + radius, sy);
+        ctx.arcTo(sx, sy, sx, sy + radius, radius);
+        ctx.lineTo(sx + radius, sy);
+        ctx.fill();
+
+        // Rocky surface texture — small irregular cracks on rounded surface
         ctx.strokeStyle = `rgba(0,0,0,${0.15 + (seed % 3) * 0.05})`;
         ctx.lineWidth = 0.6;
         const crackCount = 2 + (seed % 2);
         for (let i = 0; i < crackCount; i++) {
-          const x1 = sx + 2 + ((seed + i * 11) % (T - 4));
-          const y1 = sy + 2 + ((seed + i * 17) % (T - 4));
-          const x2 = sx + 2 + ((seed + i * 19) % (T - 4));
-          const y2 = sy + 2 + ((seed + i * 23) % (T - 4));
+          const x1 = sx + 3 + ((seed + i * 11) % (T - 6));
+          const y1 = sy + 3 + ((seed + i * 17) % (T - 6));
+          const x2 = sx + 3 + ((seed + i * 19) % (T - 6));
+          const y2 = sy + 3 + ((seed + i * 23) % (T - 6));
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
