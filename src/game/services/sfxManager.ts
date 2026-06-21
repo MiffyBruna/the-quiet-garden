@@ -14,6 +14,9 @@ interface CachedSFX {
 const CACHE_KEY = 'quiet-garden-sfx-cache';
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
+// Track which footstep variant to play next (alternates 0, 1, 0, 1...)
+let footstepVariant = 0;
+
 // Sound descriptions for garden ambience
 const SOUND_DESCRIPTIONS = {
   footstep: {
@@ -168,9 +171,9 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
     // For footsteps, try to load user-uploaded footstep sounds first
     if (sfxType === 'footstep') {
       try {
-        // Randomly pick one of the two footstep sound variants
-        const variant = Math.floor(Math.random() * 2);
-        const filename = variant === 0 ? 'footstep00 (1).ogg' : 'footstep01 (1).ogg';
+        // Alternate between the two footstep sound variants
+        const filename = footstepVariant === 0 ? 'footstep00 (1).ogg' : 'footstep01 (1).ogg';
+        footstepVariant = 1 - footstepVariant; // Toggle between 0 and 1
         // Try direct path first (uploaded files are in /uploads/)
         url = `/uploads/${filename}`;
       } catch (e) {
