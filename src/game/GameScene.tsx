@@ -521,6 +521,17 @@ function renderFrame(
         ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
       }
 
+      // Quest highlights — golden tiles to inspect or interact with
+      const isHighlighted = highlights.some((h) => h.x === tx && h.y === ty);
+      if (isHighlighted) {
+        const hpulse = 0.5 + 0.5 * Math.sin(tick * 0.12 + tx * 0.3 + ty * 0.3);
+        ctx.fillStyle = `rgba(255,215,0,${0.15 + hpulse * 0.10})`;
+        ctx.fillRect(sx + 1, sy + 1, T - 2, T - 2);
+        ctx.strokeStyle = `rgba(255,200,0,${0.7 + hpulse * 0.3})`;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(sx + 1, sy + 1, T - 2, T - 2);
+      }
+
       // Bund stencil preview (teal outline — shown while positioning before confirm)
       const isStencil = stencilTiles.some((s) => s.x === tx && s.y === ty);
       if (isStencil) {
