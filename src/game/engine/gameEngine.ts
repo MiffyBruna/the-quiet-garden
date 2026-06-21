@@ -1807,10 +1807,19 @@ export function spawnFairies(gs: GameState, restoration: number): void {
   // Prevent spawning too close together (cooldown: 180 ticks = ~3 seconds at 60fps)
   if (gs.fairySpawnCooldown > 0) return;
 
-  for (const milestone of FAIRY_MILESTONES) {
-    if (gs.discoveredFairies.includes(milestone.id)) continue;
-    if (restoration < milestone.percent) continue;
+  console.log(`✨ Checking fairy spawn: restoration=${restoration}%, discovered=${gs.discoveredFairies.join(',')}, total fairies=${gs.fairies.length}`);
 
+  for (const milestone of FAIRY_MILESTONES) {
+    if (gs.discoveredFairies.includes(milestone.id)) {
+      console.log(`  - ${milestone.id} already discovered, skip`);
+      continue;
+    }
+    if (restoration < milestone.percent) {
+      console.log(`  - ${milestone.id} requires ${milestone.percent}%, not ready (${restoration}%)`);
+      continue;
+    }
+
+    console.log(`  ✅ Spawning ${milestone.id} at ${restoration}%`);
     const [prefX, prefY] = milestone.preferredTile(gs);
     const [fx, fy] = findFairySafeTile(gs, prefX, prefY);
 
