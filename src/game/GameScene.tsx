@@ -31,6 +31,7 @@ import {
   getTile,
   serializeDiscoveries, deserializeDiscoveries,
   serializeGameState, deserializeGameState,
+  FAIRY_CONDITIONS,
 } from './engine/gameEngine';
 import {
   INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS, MESQUITE_OFFSETS,
@@ -802,6 +803,7 @@ const INITIAL_UI: UIState = {
   activeTool: 'move',
   selectedSeed: 'blue_grama',
   inspectedTile: null,
+  inspectedEntity: null,
   dialogue: null,
   dialogueQueue: [],
   questStep: 'intro',
@@ -1593,7 +1595,60 @@ export function GameScene({ onShowWatershed, isContinue }: {
           }
         }
 
-        setUI((prev) => ({ ...prev, inspectedTile: { x: tx, y: ty, tile: { ...tile } } }));
+        // Check for entities (plant, wildlife, fairy) at this location
+        let inspectedEntity: { type: 'plant' | 'wildlife' | 'fairy'; name: string } | null = null;
+
+        // Check for plant
+        if (tile.plant) {
+          const plantReqs = PLANT_REQUIREMENTS[tile.plant.type];
+          if (plantReqs) {
+            inspectedEntity = { type: 'plant', name: plantReqs.name };
+          }
+        }
+
+        // Check for wildlife at pixel location (convert tile to pixel coords)
+        if (!inspectedEntity) {
+          const tileCenterX = tx * TILE_SIZE + TILE_SIZE / 2;
+          const tileCenterY = ty * TILE_SIZE + TILE_SIZE / 2;
+          const tolerance = TILE_SIZE * 0.7; // Check within tile bounds
+
+          for (const entity of gs.entities) {
+            if (
+              Math.abs(entity.px - tileCenterX) < tolerance &&
+              Math.abs(entity.py - tileCenterY) < tolerance
+            ) {
+              // Found wildlife - capitalize the type name
+              inspectedEntity = {
+                type: 'wildlife',
+                name: entity.type.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+              };
+              break;
+            }
+          }
+        }
+
+        // Check for fairy at pixel location
+        if (!inspectedEntity) {
+          const tileCenterX = tx * TILE_SIZE + TILE_SIZE / 2;
+          const tileCenterY = ty * TILE_SIZE + TILE_SIZE / 2;
+          const tolerance = TILE_SIZE * 0.7;
+
+          for (const fairy of gs.fairies) {
+            if (
+              Math.abs(fairy.px - tileCenterX) < tolerance &&
+              Math.abs(fairy.py - tileCenterY) < tolerance
+            ) {
+              // Found fairy - get name from FAIRY_CONDITIONS
+              const fairyInfo = FAIRY_CONDITIONS.find((f) => f.type === fairy.type);
+              if (fairyInfo) {
+                inspectedEntity = { type: 'fairy', name: fairyInfo.name };
+              }
+              break;
+            }
+          }
+        }
+
+        setUI((prev) => ({ ...prev, inspectedTile: { x: tx, y: ty, tile: { ...tile } }, inspectedEntity }));
         // Trigger inspect flash animation
         inspectFlashRef.current = { x: tx, y: ty, startTick: gs.tick };
         track('custom_tile_inspected', { terrain: tile.terrain, moisture: Math.round(tile.moisture) });
@@ -1935,7 +1990,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
       if (e.key === 'Escape') {
         if (currentUI.bundMode === 'positioning') { cancelBund(); return; }
         if (currentUI.mesquiteMode === 'positioning') { cancelMesquite(); return; }
-        if (currentUI.inspectedTile) setUI((p) => ({ ...p, inspectedTile: null }));
+        if (currentUI.inspectedTile) setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null }));
         return;
       }
 
@@ -2597,7 +2652,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
               Tile Info
             </div>
             <button
-              onClick={() => setUI((p) => ({ ...p, inspectedTile: null }))}
+              onClick={() => setUI((p) => ({ ...p, inspectedTile: null, inspectedEntity: null }))}
               style={{ background: 'none', border: 'none', color: '#7CCA7C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}
             >
               ×
@@ -2624,6 +2679,16 @@ export function GameScene({ onShowWatershed, isContinue }: {
             const suggestion = suggMap[t.terrain] ?? 'Inspect nearby tiles to understand water flow.';
             return (
               <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.7 }}>
+                {ui.inspectedEntity && (
+                  <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(124,202,124,0.2)' }}>
+                    <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.05em', marginBottom: 3 }}>
+                      {ui.inspectedEntity.type}
+                    </div>
+                    <div style={{ fontStyle: 'italic', color: '#A8E6A8' }}>
+                      {ui.inspectedEntity.name}
+                    </div>
+                  </div>
+                )}
                 <div><b>Terrain:</b> {label}</div>
                 <div><b>Moisture Retention:</b> {Math.round(t.moisture)}%</div>
                 <div><b>Fertility:</b> {Math.round(t.fertility)}%</div>
@@ -3300,6 +3365,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                       bundMode: 'positioning',
                       bundTargetTiles: [],
                       inspectedTile: null,
+                      inspectedEntity: null,
                     }));
                     playButton();
                     track('custom_tool_selected', { tool: def.id });
@@ -3318,6 +3384,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     bundMode: null,
                     bundTargetTiles: [],
                     inspectedTile: null,
+                    inspectedEntity: null,
                   }));
                   playButton();
                   track('custom_tool_selected', { tool: def.id });
@@ -3329,6 +3396,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   ...p,
                   activeTool: def.id,
                   inspectedTile: null,
+                  inspectedEntity: null,
                   // When switching to seed tool, show the seed panel
                   ...(def.id === 'seed' && { showSeedPanel: true }),
                   // When switching to landscape tool, show the reshape menu

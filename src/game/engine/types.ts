@@ -222,6 +222,7 @@ export interface UIState {
   activeTool: ToolType;
   selectedSeed: PlantType;
   inspectedTile: { x: number; y: number; tile: Tile } | null;
+  inspectedEntity: { type: 'plant' | 'wildlife' | 'fairy'; name: string } | null;
   dialogue: DialogueLine | null;
   dialogueQueue: DialogueLine[];
   questStep: QuestStep;
