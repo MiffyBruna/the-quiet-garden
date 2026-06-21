@@ -58,13 +58,10 @@ export function LoadingScreen() {
         }
 
         @keyframes floatCloud {
-          0% { transform: translateX(-150px) translateY(0px); opacity: 0; }
+          0% { left: -100px; opacity: 0; }
           5% { opacity: 0.7; }
-          25% { transform: translateX(20vw) translateY(-6px); }
-          50% { transform: translateX(50vw) translateY(0px); }
-          75% { transform: translateX(80vw) translateY(-6px); }
           95% { opacity: 0.7; }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(0px); opacity: 0; }
+          100% { left: 100vw; opacity: 0; }
         }
 
         .rain-drop {
