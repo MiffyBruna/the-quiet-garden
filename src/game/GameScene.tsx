@@ -1033,7 +1033,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
       switch (questStep) {
         case 'inspect_soil':
-          highlights.push(...INSPECT_HIGHLIGHTS);
+          // Don't load highlights here — they appear after dialogue closes
           unlockedTools.push('inspect');
           break;
         case 'first_rain':
