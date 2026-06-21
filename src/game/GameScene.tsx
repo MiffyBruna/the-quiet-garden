@@ -621,8 +621,8 @@ function renderFrame(
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
     const float = Math.sin(fairy.glowPhase + tick * 0.04) * 2;
 
-    // Render fairy sprite, fallback to emoji if type is missing or sprite unavailable
-    const spriteDrawn = fairyLoader.drawSprite(ctx, fairy.type, sx, sy + float, 35);
+    // Render fairy sprite, fallback to emoji if type is missing or sprite unavailable (scaled +10%)
+    const spriteDrawn = fairyLoader.drawSprite(ctx, fairy.type, sx, sy + float, 39);
     if (!spriteDrawn) {
       const emoji = fairyEmojis[fairy.type] ?? '✨';
       ctx.font = '16px serif';
@@ -639,8 +639,8 @@ function renderFrame(
     if (sx < -T || sx > W + T || sy < -T || sy > H + T) continue;
 
     // Try to render as sprite first, fall back to emoji
-    // Insects are smaller than animals for visual distinction
-    const spriteSize = isInsect(entity.type) ? 25 : 32;
+    // Insects are smaller than animals for visual distinction (scaled +10%)
+    const spriteSize = isInsect(entity.type) ? 28 : 35;
     const spriteDrawn = wildlifeLoader.drawSprite(ctx, entity.type, sx, sy, spriteSize);
     if (!spriteDrawn) {
       ctx.font = '14px serif';
@@ -712,9 +712,9 @@ function renderFrame(
     const sprite = getPlayerSprite(gs.playerFacing, isMoving, tick);
     if (sprite && sprite.complete && sprite.naturalWidth > 0) {
       // Sprite is loaded and ready
-      // Display size for all frames (scaled up 15%)
-      const spriteDisplayWidth = 37;
-      const spriteDisplayHeight = 37;
+      // Display size for all frames (scaled up 15% + 10% more)
+      const spriteDisplayWidth = 41;
+      const spriteDisplayHeight = 41;
       // Anchor at feet (bottom center)
       const spriteX = sx + T / 2 - spriteDisplayWidth / 2;
       const spriteY = sy + T - spriteDisplayHeight;
