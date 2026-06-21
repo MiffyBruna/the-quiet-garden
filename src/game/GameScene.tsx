@@ -3530,8 +3530,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                   inspectedWildlife: null,
                   // When switching to seed tool, show the seed panel
                   ...(def.id === 'seed' && { showSeedPanel: true }),
-                  // When switching to landscape tool, show the reshape menu
-                  ...(def.id === 'landscape' && { showReshapeMenu: true }),
+                  // When switching to landscape tool, hide the reshape menu so destination squares are visible
+                  ...(def.id === 'landscape' && { showReshapeMenu: false }),
                 }));
                 playButton();
                 track('custom_tool_selected', { tool: def.id });
