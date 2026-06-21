@@ -1659,7 +1659,7 @@ export function spawnWildlife(gs: GameState): void {
     };
     gs.entities.push(entity);
     gs.discoveredWildlife.push(cond.type);
-    break; // Spawn one at a time
+    // Spawn all eligible wildlife — no cooldown delay
   }
 }
 
