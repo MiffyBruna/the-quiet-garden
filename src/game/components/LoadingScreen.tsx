@@ -58,10 +58,15 @@ export function LoadingScreen() {
         }
 
         @keyframes floatCloud {
-          0% { transform: translateX(-100px) translateY(0px); opacity: 0; }
-          10% { opacity: 0.6; }
-          90% { opacity: 0.6; }
-          100% { transform: translateX(100vw) translateY(0px); opacity: 0; }
+          0% { transform: translateX(-150px) translateY(var(--float-offset, 0px)); opacity: 0; }
+          5% { opacity: 0.7; }
+          95% { opacity: 0.7; }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(var(--float-offset, 0px)); opacity: 0; }
+        }
+
+        @keyframes cloudBob {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
         }
 
         .rain-drop {
@@ -162,10 +167,10 @@ export function LoadingScreen() {
           key={`cloud-${i}`}
           className="cloud"
           style={{
-            top: `${10 + Math.random() * 40}%`,
-            animation: `floatCloud ${8 + Math.random() * 6}s linear infinite`,
-            animationDelay: `${Math.random() * 3}s`,
-            opacity: 0.5 + Math.random() * 0.3,
+            top: `${15 + Math.random() * 35}%`,
+            animation: `floatCloud ${12 + Math.random() * 8}s linear infinite, cloudBob ${3 + Math.random() * 2}s ease-in-out infinite`,
+            animationDelay: `${Math.random() * 4}s`,
+            opacity: 0.6,
           }}
         >
           ☁️
