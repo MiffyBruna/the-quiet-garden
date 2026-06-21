@@ -324,6 +324,23 @@ function renderFrame(
           ctx.lineTo(x2, y2);
           ctx.stroke();
         }
+
+        // Bezel effect: beveled edges for 3D depth
+        // Light bevel on top-left
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(sx + radius + 1, sy + 1);
+        ctx.arcTo(sx + 1, sy + 1, sx + 1, sy + radius + 1, radius - 1);
+        ctx.stroke();
+
+        // Dark bevel on bottom-right
+        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(sx + T - radius - 1, sy + T - 1);
+        ctx.arcTo(sx + T - 1, sy + T - 1, sx + T - 1, sy + T - radius - 1, radius - 1);
+        ctx.stroke();
       }
 
       // --- Green variation texture: random mossy patches for grass/recovered terrain ---
