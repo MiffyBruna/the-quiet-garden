@@ -48395,11 +48395,29 @@
       "timestamp": 1782164365635,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782164510986",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "there are no read and write",
+      "timestamp": 1782164510986,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782164517880-gqqemenl7",
+      "role": "assistant",
+      "content": "What permissions do you see in the list? Can you tell me what options are showing under the **Contents** section?\n\nFine-grained tokens should have those options. It's possible the UI might be slightly different, or you might need to look in a different section.\n\nWhat does the **Permissions** section show? 📝",
+      "isShownToUser": true,
+      "timestamp": 1782164518438,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782164365674,
-  "tokenUsage": 44742,
+  "updatedAt": 1782164518574,
+  "tokenUsage": 45028,
   "script": "default",
   "claudeSessionId": "426c8754-c077-47b5-855d-6399d3327185"
 }
