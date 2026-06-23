@@ -4362,7 +4362,7 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
           bottom: safeArea.bottom + 8,
           right: 12,
           fontSize: '9px',
-          color: 'rgba(124, 202, 124, 0.5)',
+          color: 'rgba(124, 202, 124, 1)',
           fontFamily: 'monospace',
           zIndex: 10,
           pointerEvents: 'none',
