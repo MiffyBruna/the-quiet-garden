@@ -3975,6 +3975,22 @@ export function GameScene({ onShowWatershed, isContinue }: {
           </div>
         </div>
       )}
+
+      {/* Version Legend */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: safeArea.bottom + 8,
+          right: 12,
+          fontSize: '9px',
+          color: 'rgba(124, 202, 124, 0.5)',
+          fontFamily: 'monospace',
+          zIndex: 10,
+          pointerEvents: 'none',
+        }}
+      >
+        v1.2.3
+      </div>
     </div>
   );
 }

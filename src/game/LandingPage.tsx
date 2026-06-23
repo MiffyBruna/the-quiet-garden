@@ -797,6 +797,22 @@ export function LandingPage({ onStart }: LandingPageProps) {
           </div>
         </div>
       )}
+
+      {/* Version Legend */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 8,
+          right: 12,
+          fontSize: '10px',
+          color: 'rgba(255, 255, 255, 0.5)',
+          fontFamily: 'monospace',
+          zIndex: 10,
+          pointerEvents: 'none',
+        }}
+      >
+        The Quiet Garden v1.2.3
+      </div>
     </div>
   );
 }
