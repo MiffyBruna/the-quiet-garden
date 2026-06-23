@@ -9,6 +9,7 @@ import { useState, useCallback } from 'react';
 import { registerKitLifecycles } from '../services/lifecycles';
 import { track } from '../services/analytics';
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
+import { GameStats } from './engine/gameEngine';
 import { LandingPage } from './LandingPage';
 import { GameScene } from './GameScene';
 import { WatershedProgress } from './WatershedProgress';
@@ -34,6 +35,7 @@ interface WatershedData {
   discoveredFairies: string[];
   discoveredPlants: string[];
   newlyDiscovered: string[];
+  gameStats: GameStats;
 }
 
 export function QuietGarden() {
@@ -46,6 +48,14 @@ export function QuietGarden() {
     discoveredFairies: [],
     discoveredPlants: [],
     newlyDiscovered: [],
+    gameStats: {
+      avgFertility: 0,
+      bloomCount: 0,
+      mulchCount: 0,
+      restoration: 0,
+      plantDiversity: 0,
+      waterTileCount: 0,
+    },
   });
 
   const handleStartGame = useCallback((isContinue: boolean) => {
@@ -55,13 +65,14 @@ export function QuietGarden() {
   }, []);
 
   const handleOpenWatershed = useCallback(
-    (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[]) => {
+    (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[], gameStats: GameStats) => {
       setWatershedData({
         chapter1Restoration: restoration,
         discoveredWildlife: wildlife,
         discoveredFairies: fairies,
         discoveredPlants: plants,
         newlyDiscovered,
+        gameStats,
       });
       setShowWatershed(true);
       track('custom_watershed_opened');
@@ -83,6 +94,7 @@ export function QuietGarden() {
           discoveredFairies={watershedData.discoveredFairies}
           discoveredPlants={watershedData.discoveredPlants}
           newlyDiscovered={watershedData.newlyDiscovered}
+          gameStats={watershedData.gameStats}
           onClose={() => {
             setShowWatershed(false);
             track('custom_watershed_closed');

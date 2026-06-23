@@ -1226,7 +1226,7 @@ interface WildlifeCondition {
   wisdom: string;
 }
 
-interface GameStats {
+export interface GameStats {
   avgFertility: number;
   bloomCount: number;
   mulchCount: number;
@@ -1472,7 +1472,7 @@ export function getMossWildlifeHint(gs: GameState): DialogueLine | null {
   return null;
 }
 
-function computeGameStats(gs: GameState): GameStats {
+export function computeGameStats(gs: GameState): GameStats {
   let totalFertility = 0;
   let tileCount = 0;
   let bloomCount = 0;

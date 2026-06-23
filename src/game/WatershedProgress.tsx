@@ -5,14 +5,14 @@
  */
 import { useState, useEffect } from 'react';
 import { theme } from '../theme';
-import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS, FAIRY_CONDITIONS } from './engine/gameEngine';
+import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS, FAIRY_CONDITIONS, GameStats } from './engine/gameEngine';
 import { spriteLoader } from './services/spriteLoader';
 import { wildlifeLoader } from './services/wildlifeLoader';
 import { fairyLoader } from './services/fairyLoader';
 import { playMenuSelect } from './services/audioManager';
 import { PLANTS } from './journalData';
 import { ZONES } from './gardenData';
-import type { PlantType } from './engine/types';
+import type { PlantType, WildlifeType } from './engine/types';
 
 type CatalogTab = 'plants' | 'wildlife' | 'fairies';
 
@@ -27,6 +27,87 @@ const scrollbarHiddenStyles = `
   }
 `;
 
+// ---------------------------------------------------------------------------
+// Helper: Generate hint for a specific undiscovered wildlife
+// ---------------------------------------------------------------------------
+
+function getHintForWildlife(
+  wildlifeType: WildlifeType,
+  stats: GameStats,
+  discoveredPlants: string[]
+): string | null {
+  const discovered = new Set(discoveredPlants);
+
+  switch (wildlifeType) {
+    case 'ant':
+      if (stats.avgFertility < 20) {
+        return '💡 The soil needs life in it first. Ants 🐜 follow fertility — add mulch and let the land rest.';
+      }
+      break;
+    case 'bee':
+      if (stats.bloomCount < 1) {
+        return '💡 Not a single flower is open yet. Bees 🐝 need something to visit — plant a seed and let it bloom.';
+      }
+      break;
+    case 'monarch':
+      if (!discovered.has('milkweed')) {
+        return '💡 There is a butterfly that will only come for one plant. The Monarch 🦋 follows milkweed — plant it and wait.';
+      }
+      break;
+    case 'frog':
+      if (stats.waterTileCount < 2) {
+        return `💡 Something is missing from the edges of this place. Frogs 🐸 need water to return — the land needs at least two pools. You have ${stats.waterTileCount}.`;
+      }
+      break;
+    case 'beetle':
+      if (stats.mulchCount < 2 || stats.avgFertility < 25) {
+        return `💡 The ground needs more organic matter. Beetles 🪲 hide under mulch in fertile soil — you have ${stats.mulchCount} mulch tile${stats.mulchCount === 1 ? '' : 's'}.`;
+      }
+      break;
+    case 'hoverfly':
+      if (stats.bloomCount < 3) {
+        return `💡 ${stats.bloomCount} flower${stats.bloomCount === 1 ? ' is' : 's are'} open. Hoverflies 🦟 need three blooms at once to find the valley.`;
+      }
+      break;
+    case 'painted_lady':
+      if (stats.plantDiversity < 3 || stats.bloomCount < 2) {
+        return `💡 You have ${stats.plantDiversity} plant type${stats.plantDiversity === 1 ? '' : 's'} and ${stats.bloomCount} blooming. The Painted Lady 🦋 needs variety — three kinds of plants, two in bloom.`;
+      }
+      break;
+    case 'dragonfly':
+      if (stats.waterTileCount < 3) {
+        return `💡 ${stats.waterTileCount} water tile${stats.waterTileCount === 1 ? '' : 's'} isn't enough. Dragonflies 🪲 patrol larger pools — the valley needs three.`;
+      }
+      break;
+    case 'cottontail':
+      if (stats.bloomCount < 3 || stats.plantDiversity < 3) {
+        return `💡 ${stats.bloomCount} blooms, ${stats.plantDiversity} plant types. Cottontail 🐇 needs both — three blooms and three kinds of plants at once.`;
+      }
+      break;
+    case 'finch':
+      if (stats.plantDiversity < 4) {
+        return `💡 ${stats.plantDiversity} plant type${stats.plantDiversity === 1 ? '' : 's'} so far. Finches 🐦‍⬛ need a diverse valley — try planting a fourth kind.`;
+      }
+      break;
+    case 'quail':
+      if (stats.restoration < 70) {
+        return `💡 The valley is ${Math.round(stats.restoration)}% restored. Quail 🐦 return when the land reaches 70% — keep going.`;
+      }
+      break;
+    case 'hawk':
+      if (stats.restoration < 80) {
+        return `💡 The valley is ${Math.round(stats.restoration)}% restored. The Hawk 🦅 waits for 80% before it lands.`;
+      }
+      break;
+    case 'swallow':
+      if (stats.bloomCount < 5 || stats.restoration < 85) {
+        return `💡 ${stats.bloomCount} flower${stats.bloomCount === 1 ? '' : 's'} blooming, ${Math.round(stats.restoration)}% restored. The Swallow 🕊️ counts every open bloom — it needs five at once and 85% restoration. Plant in waves so blooms overlap.`;
+      }
+      break;
+  }
+
+  return null;
+}
 
 interface WatershedProgressProps {
   chapter1Restoration: number;
@@ -34,6 +115,7 @@ interface WatershedProgressProps {
   discoveredFairies: string[];
   discoveredPlants: string[];
   newlyDiscovered: string[];
+  gameStats: GameStats;
   onClose: () => void;
 }
 
@@ -43,6 +125,7 @@ export function WatershedProgress({
   discoveredFairies,
   discoveredPlants,
   newlyDiscovered,
+  gameStats,
   onClose,
 }: WatershedProgressProps) {
   const c = theme.colors;
@@ -193,69 +276,85 @@ export function WatershedProgress({
         }}
       >
         {/* Catalog View (switches based on active tab) */}
-        {activeTab === 'wildlife' && discoveredWildlife.length > 0 && (
+        {activeTab === 'wildlife' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
-            {discoveredWildlife.map((wildlifeType) => {
-              const info = WILDLIFE_CONDITIONS.find((w) => w.type === wildlifeType);
-              if (!info) return null;
+            {WILDLIFE_CONDITIONS.map((info) => {
+              const isDiscovered = discoveredWildlife.includes(info.type);
+              const hint = !isDiscovered ? getHintForWildlife(info.type as WildlifeType, gameStats, discoveredPlants) : null;
+
               return (
                 <div
-                  key={wildlifeType}
+                  key={info.type}
                   style={{
                     borderRadius: theme.borderRadius.lg,
-                    border: `1px solid ${c.border}`,
-                    background: c.surface,
+                    border: `1px solid ${isDiscovered ? c.border : 'rgba(128,128,128,0.3)'}`,
+                    background: isDiscovered ? c.surface : 'rgba(128,128,128,0.08)',
                     padding: theme.spacing.md,
                     display: 'flex',
                     gap: theme.spacing.sm,
                     alignItems: 'flex-start',
+                    opacity: isDiscovered ? 1 : 0.6,
                   }}
                 >
-                    {(() => {
-                      const sprite = wildlifeLoader.getLoadedSprite(wildlifeType);
-                      console.log(`[WatershedProgress] Rendering wildlife ${wildlifeType}: sprite=${sprite ? 'loaded' : 'not loaded'}`);
-                      return sprite ? (
-                        <canvas
-                          ref={(canvas) => {
-                            if (canvas && sprite) {
-                              console.log(`[WatershedProgress] Canvas ref callback for ${wildlifeType}, sprite dimensions: ${sprite.width}x${sprite.height}`);
-                              // Set canvas dimensions FIRST
-                              canvas.width = 40;
-                              canvas.height = 40;
-                              // THEN get context (must be after setting dimensions)
-                              const ctx = canvas.getContext('2d');
-                              if (ctx) {
-                                ctx.clearRect(0, 0, 40, 40);
-                                const w = sprite.width * (36 / Math.max(sprite.width, sprite.height));
-                                const h = sprite.height * (36 / Math.max(sprite.width, sprite.height));
-                                console.log(`[WatershedProgress] Drawing ${wildlifeType} to canvas, scaled size: ${w.toFixed(1)}x${h.toFixed(1)}`);
-                                ctx.drawImage(sprite, 20 - w / 2, 20 - h / 2, w, h);
-                              } else {
-                                console.error(`[WatershedProgress] Failed to get canvas context for ${wildlifeType}`);
+                  {isDiscovered ? (
+                    <>
+                      {(() => {
+                        const sprite = wildlifeLoader.getLoadedSprite(info.type);
+                        return sprite ? (
+                          <canvas
+                            ref={(canvas) => {
+                              if (canvas && sprite) {
+                                canvas.width = 40;
+                                canvas.height = 40;
+                                const ctx = canvas.getContext('2d');
+                                if (ctx) {
+                                  ctx.clearRect(0, 0, 40, 40);
+                                  const w = sprite.width * (36 / Math.max(sprite.width, sprite.height));
+                                  const h = sprite.height * (36 / Math.max(sprite.width, sprite.height));
+                                  ctx.drawImage(sprite, 20 - w / 2, 20 - h / 2, w, h);
+                                }
                               }
-                            } else {
-                              console.warn(`[WatershedProgress] Canvas ref callback called but sprite missing for ${wildlifeType}`);
-                            }
-                          }}
-                          style={{ imageRendering: 'pixelated', width: 40, height: 40, minWidth: 40 }}
-                        />
-                      ) : (
-                        <div style={{ fontSize: 24, minWidth: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{info.emoji}</div>
-                      );
-                    })()}
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
-                        {wildlifeType.replace(/_/g, ' ')}
-                        {newlyDiscovered.includes(wildlifeType) && (
-                          <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(124,202,124,0.3)', color: '#7CCA7C', padding: '2px 6px', borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            NEW
-                          </span>
+                            }}
+                            style={{ imageRendering: 'pixelated', width: 40, height: 40, minWidth: 40 }}
+                          />
+                        ) : (
+                          <div style={{ fontSize: 24, minWidth: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{info.emoji}</div>
+                        );
+                      })()}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.primary, textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
+                          {info.type.replace(/_/g, ' ')}
+                          {newlyDiscovered.includes(info.type) && (
+                            <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(124,202,124,0.3)', color: '#7CCA7C', padding: '2px 6px', borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                              NEW
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, fontStyle: 'italic', lineHeight: 1.4 }}>
+                          &ldquo;{info.wisdom}&rdquo;
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: 24, minWidth: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}>?</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.muted, textTransform: 'capitalize' }}>
+                          Unknown
+                        </div>
+                        {hint && (
+                          <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, lineHeight: 1.4, fontStyle: 'italic' }}>
+                            {hint}
+                          </div>
+                        )}
+                        {!hint && (
+                          <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, lineHeight: 1.4, fontStyle: 'italic' }}>
+                            Continue restoring the valley to discover this animal.
+                          </div>
                         )}
                       </div>
-                      <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, fontStyle: 'italic', lineHeight: 1.4 }}>
-                        &ldquo;{info.wisdom}&rdquo;
-                      </div>
-                    </div>
+                    </>
+                  )}
                 </div>
               );
             })}
@@ -421,11 +520,6 @@ export function WatershedProgress({
         )}
 
         {/* Empty state */}
-        {activeTab === 'wildlife' && discoveredWildlife.length === 0 && (
-          <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: c.text.muted, marginTop: theme.spacing.md }}>
-            No wildlife discovered yet. Keep restoring the valley!
-          </div>
-        )}
         {activeTab === 'plants' && discoveredPlants.length === 0 && (
           <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: c.text.muted, marginTop: theme.spacing.md }}>
             No plants discovered yet. Plant some seeds!

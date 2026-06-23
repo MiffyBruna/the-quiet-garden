@@ -33,6 +33,7 @@ import {
   serializeGameState, deserializeGameState,
   FAIRY_CONDITIONS, WILDLIFE_CONDITIONS,
   debugWildlifeStatus, getDebugInfo, getMossWildlifeHint,
+  computeGameStats, GameStats,
 } from './engine/gameEngine';
 import {
   INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS, MESQUITE_OFFSETS,
@@ -885,7 +886,7 @@ const INITIAL_UI: UIState = {
 };
 
 export function GameScene({ onShowWatershed, isContinue }: {
-  onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[]) => void;
+  onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[], gameStats: GameStats) => void;
   isContinue: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -2038,6 +2039,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           [...gs.discoveredFairies],
           [...gs.discoveredPlants],
           [...currentUI.newlyDiscoveredSpecies],
+          computeGameStats(gs),
         );
         // Clear the "new" discovery indicators when journal opens
         setUI((p) => ({ ...p, newlyDiscoveredSpecies: new Set() }));
@@ -3763,6 +3765,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                     [...gss.discoveredFairies],
                     [...gss.discoveredPlants],
                     [...currentUI.newlyDiscoveredSpecies],
+                    computeGameStats(gss),
                   );
                   // Clear the "new" discovery indicators when journal opens
                   setUI((p) => ({ ...p, newlyDiscoveredSpecies: new Set() }));

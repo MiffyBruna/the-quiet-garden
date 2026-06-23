@@ -44,7 +44,7 @@ export interface PlantState {
 export type WildlifeType =
   | 'ant' | 'beetle' | 'bee' | 'hoverfly'
   | 'painted_lady' | 'monarch' | 'cottontail'
-  | 'quail' | 'finch' | 'hawk'
+  | 'quail' | 'finch' | 'hawk' | 'swallow'
   | 'dragonfly' | 'frog';
 
 export interface WildlifeEntity {
