@@ -174,14 +174,17 @@ export function playRain(): void {
     rainAudioInstance = null;
   }
 
-  try {
-    rainAudioInstance = new Audio('/rain.wav');
-    rainAudioInstance.loop = true;
-    rainAudioInstance.volume = (currentSettings.sfxVolume / 100) * 0.6; // Slightly quieter than other SFX
-    playAudioWithUnlock(rainAudioInstance, 'rain sound');
-  } catch (e) {
-    console.warn('Failed to load rain sound:', e);
-  }
+  (async () => {
+    try {
+      const audioUrl = await loadCdnAsset('rain.wav');
+      rainAudioInstance = new Audio(audioUrl);
+      rainAudioInstance.loop = true;
+      rainAudioInstance.volume = (currentSettings.sfxVolume / 100) * 0.6; // Slightly quieter than other SFX
+      playAudioWithUnlock(rainAudioInstance, 'rain sound');
+    } catch (e) {
+      console.warn('Failed to load rain sound:', e);
+    }
+  })();
 }
 
 /**
