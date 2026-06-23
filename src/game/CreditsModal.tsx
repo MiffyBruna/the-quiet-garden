@@ -179,12 +179,30 @@ export function CreditsModal({ onNameAdded, onClose }: CreditsModalProps) {
 
         {/* WATCHING AD STAGE */}
         {stage === 'watching-ad' && (
-          <div style={{ color: '#fff', textAlign: 'center', padding: theme.spacing.lg }}>
-            <div style={{ fontSize: 18, fontWeight: 'bold', marginBottom: theme.spacing.md }}>
-              🎬 Playing Ad...
+          <>
+            <div style={{ color: '#fff', textAlign: 'center', marginBottom: theme.spacing.lg }}>
+              <div style={{ fontSize: 18, fontWeight: 'bold', marginBottom: theme.spacing.md }}>
+                🎬 Playing Ad...
+              </div>
+              <div style={{ opacity: 0.7 }}>Please wait for the ad to finish</div>
             </div>
-            <div style={{ opacity: 0.7 }}>Please wait for the ad to finish</div>
-          </div>
+
+            <button
+              onClick={onClose}
+              style={{
+                width: '100%',
+                padding: `${theme.spacing.sm}px`,
+                background: 'transparent',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: theme.borderRadius.md,
+                fontSize: 14,
+                cursor: 'pointer',
+              }}
+            >
+              Close
+            </button>
+          </>
         )}
 
         {/* ADDING STAGE */}
