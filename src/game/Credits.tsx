@@ -13,9 +13,10 @@ export type { Credit };
 interface CreditsProps {
   credits: Credit[];
   onCreditsFinished: () => void;
+  onClose?: () => void;
 }
 
-export function Credits({ credits, onCreditsFinished }: CreditsProps) {
+export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
   const safeArea = getSafeArea();
   const [scrollPosition, setScrollPosition] = useState(0);
   const [scrollSpeed, setScrollSpeed] = useState(20); // pixels per second
@@ -119,8 +120,8 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
 
       {/* Sparkles disabled */}
 
-      {/* Header — Speed controls only */}
-      <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: '#fff', zIndex: 10 }}>
+      {/* Header — Speed controls + Close button */}
+      <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: '#fff', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {/* Speed control */}
         <div style={{ display: 'flex', gap: theme.spacing.sm, justifyContent: 'center', alignItems: 'center' }}>
           <button
@@ -152,6 +153,24 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
             + Fast
           </button>
         </div>
+
+        {/* Close button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: '1px solid rgba(255,255,255,0.5)',
+              color: '#fff',
+              padding: `${theme.spacing.xs}px ${theme.spacing.sm}px`,
+              borderRadius: theme.borderRadius.sm,
+              cursor: 'pointer',
+              fontSize: 12,
+            }}
+          >
+            Close
+          </button>
+        )}
       </div>
 
       {/* Credits scroll container */}

@@ -4334,6 +4334,10 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
           <Credits
             credits={getRecentCredits(50)}
             onCreditsFinished={() => setCreditsPreviewFinished(true)}
+            onClose={() => {
+              setShowCreditsPreview(false);
+              setCreditsPreviewFinished(false);
+            }}
           />
           {creditsPreviewFinished && (
             <CreditsModal
