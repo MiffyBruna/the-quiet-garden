@@ -2017,10 +2017,16 @@ export function GameScene({ onShowWatershed, isContinue }: {
       if (tool === 'talk') {
         // Moss dialogue
         let dialogues = (ui.unlockedTools.includes('landscape') || gs.completionTriggered) ? MOSS_LANDSCAPE_DIALOGUE : getQuestMossDialogue(gs.questStep);
-        queueDialogue(dialogues.length > 0 ? dialogues : [{
+        const mainDialogue = dialogues.length > 0 ? dialogues : [{
           speaker: 'Moss', emoji: '🐸',
           text: 'The valley heals slowly, like memory. Each action reaches forward in time.',
-        }]);
+        }];
+
+        // Add wildlife hint if available (during free play only)
+        const wildlifeHint = getMossWildlifeHint(gs);
+        const finalDialogue = wildlifeHint ? [...mainDialogue, wildlifeHint] : mainDialogue;
+
+        queueDialogue(finalDialogue);
         track('custom_moss_talked');
         return;
       }
