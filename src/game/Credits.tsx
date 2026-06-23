@@ -227,6 +227,41 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
             </div>
           </div>
 
+          {/* Game Credits */}
+          <div style={{ textAlign: 'center', color: '#fff', paddingBottom: theme.spacing.xl, borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: theme.spacing.xl }}>
+            <div style={{ fontSize: 16, fontWeight: 'bold', marginBottom: theme.spacing.md, color: '#A8E6A8' }}>
+              Game
+            </div>
+            <div style={{ fontSize: 14, marginBottom: theme.spacing.lg }}>Created by GENTLECATBYTES</div>
+
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: theme.spacing.sm, color: '#A8E6A8' }}>
+              Music
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.9, marginBottom: theme.spacing.xs }}>
+              Clay pots and rain
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.9, marginBottom: theme.spacing.md }}>
+              Puddles at Golden Hour
+            </div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginBottom: theme.spacing.lg }}>
+              Created with Lyria AI v3
+            </div>
+
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: theme.spacing.sm, color: '#A8E6A8' }}>
+              Sound Effects
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.9 }}>
+              kenney.nl/assets
+            </div>
+          </div>
+
+          {/* Player Contributors Header */}
+          <div style={{ textAlign: 'center', color: '#fff', marginBottom: theme.spacing.lg }}>
+            <div style={{ fontSize: 16, fontWeight: 'bold', color: '#A8E6A8' }}>
+              Recent Contributors
+            </div>
+          </div>
+
           {/* Credits list */}
           {credits.map((credit, idx) => (
             <div
