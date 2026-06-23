@@ -50595,11 +50595,20 @@
       "timestamp": 1782176152319,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "1782176158628-5adz691lf",
+      "role": "assistant",
+      "content": "Ah! Here are the **unlock conditions for each of the 13 wildlife animals**:\n\n1. **🐜 Ant** — Average fertility ≥ 20\n\n2. **🪲 Beetle** — Mulch tiles ≥ 2 AND avg fertility ≥ 25\n\n3. **🐝 Bee** — Bloom count ≥ 1\n\n4. **🦟 Hoverfly** — Bloom count ≥ 3\n\n5. **🦋 Painted Lady** — Plant diversity ≥ 3 AND bloom count ≥ 2\n\n6. **🦋 Monarch** — Discover milkweed (plant it once)\n\n7. **🐇 Cottontail** — Bloom count ≥ 3 AND plant diversity ≥ 3\n\n8. **🐸 Frog** — Water tiles ≥ 2\n\n9. **🪲 Dragonfly** — Water tiles ≥ 3\n\n10. **🐦 Quail** — Restoration ≥ 70%\n\n11. **🐦‍⬛ Finch** — Plant diversity ≥ 4\n\n12. **🦅 Hawk** — Restoration ≥ 80%\n\n13. **🦅 Swallow** — Bloom count ≥ 5 AND restoration ≥ 85% *(the hardest!)*\n\n**Quick ranking by difficulty:**\n- **Easiest:** Ant (just fertility)\n- **Moderate:** Frog, Bee, Monarch (straightforward)\n- **Hard:** Quail, Hawk (need high restoration)\n- **Hardest:** Swallow (needs 5 simultaneous blooms + 85% restoration)\n\nThe Swallow is why you were stuck at 12/13 — you need those 5 blooming plants at the **same time**, which requires careful timing! 🌸",
+      "isShownToUser": true,
+      "timestamp": 1782176162663,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782176156706,
-  "tokenUsage": 0,
+  "updatedAt": 1782176162720,
+  "tokenUsage": 557,
   "script": "default",
   "claudeSessionId": "8ff606ea-31b9-46fa-8158-37d987a78916"
 }
