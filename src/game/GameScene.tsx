@@ -2959,13 +2959,13 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
         .toolbar-scroll::-webkit-scrollbar {
           display: none;  /* Chrome, Safari and Opera */
         }
-        /* Mobile responsive toolbar — wrap instead of scroll on small screens */
-        @media (max-width: 768px) {
+        /* Phone-only toolbar — 2 rows instead of scroll (phones < 650px width) */
+        @media (max-width: 650px) {
           .toolbar-scroll {
             flex-wrap: wrap;
             align-content: flex-start;
             height: auto;
-            min-height: 82px;
+            min-height: 164px;
             gap: 6px;
             padding: 6px 4px;
             overflow-x: visible;
@@ -2975,7 +2975,7 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
             font-size: 11px;
             padding: 8px 6px !important;
             min-width: auto;
-            flex: 0 0 auto;
+            flex: 0 0 calc(50% - 3px);
           }
         }
       `}</style>
