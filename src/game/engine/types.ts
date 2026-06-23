@@ -35,6 +35,7 @@ export interface PlantState {
   waterStress: number;  // 0–100; climbs when moisture < plant minimum, drops when above
   isWilted: boolean;    // true when waterStress ≥ 50; growth pauses
   isMesquiteOccupied?: boolean; // true for the 3 non-anchor tiles in a 2x2 mesquite placement
+  maturityEstimate?: { minMinutes: number; maxMinutes: number; minSeconds: number; maxSeconds: number }; // Static estimate calculated once
 }
 
 // ---------------------------------------------------------------------------

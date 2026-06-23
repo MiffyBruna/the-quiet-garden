@@ -914,6 +914,15 @@ function calculateGrowthTimer(plant: PlantState): GrowthTimer {
     return { currentStage, totalStages, minMinutes: 0, maxMinutes: 0, minSeconds: 0, maxSeconds: 0 };
   }
 
+  // If estimate already calculated, return the stored value (static, doesn't count down)
+  if (plant.maturityEstimate) {
+    return {
+      currentStage,
+      totalStages,
+      ...plant.maturityEstimate,
+    };
+  }
+
   // Growth speed varies from 0.6x (dry soil) to 1.3x (optimal moisture)
   // Calculate range: fastest to slowest possible growth
   const stagesRemaining = 4 - currentStage; // Stages until blooming
@@ -929,6 +938,9 @@ function calculateGrowthTimer(plant: PlantState): GrowthTimer {
   const maxMinutes = Math.floor(secondsSlowest / 60);
   const minSeconds = secondsFastest % 60;
   const maxSeconds = secondsSlowest % 60;
+
+  // Store the estimate on the plant so it never changes
+  plant.maturityEstimate = { minMinutes, maxMinutes, minSeconds, maxSeconds };
 
   return { currentStage, totalStages, minMinutes, maxMinutes, minSeconds, maxSeconds };
 }
