@@ -933,10 +933,11 @@ function calculateGrowthTimer(plant: PlantState): GrowthTimer {
   return { currentStage, totalStages, minMinutes, maxMinutes, minSeconds, maxSeconds };
 }
 
-export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
+export function GameScene({ onShowWatershed, isContinue, onGameComplete, onReturnHome }: {
   onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[], gameStats: GameStats, hasMatureMesquite: boolean) => void;
   isContinue: boolean;
   onGameComplete: () => void;
+  onReturnHome: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gsRef = useRef<GameState>(createInitialGameState());
@@ -3981,6 +3982,34 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
             </button>
           );
         })}
+        {/* Home button — always available at end of toolbar */}
+        <button
+          onClick={() => {
+            playButton();
+            if (confirm('Return to home? Your progress is auto-saved.')) {
+              onReturnHome();
+            }
+          }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 1,
+            background: 'transparent',
+            border: '1px solid transparent',
+            borderRadius: 8,
+            padding: '3px 2px',
+            cursor: 'pointer',
+            opacity: 1,
+            minWidth: 48,
+            flexShrink: 0,
+            marginLeft: 'auto',
+          }}
+          title="Return to home"
+        >
+          <span style={{ fontSize: 26, lineHeight: '1' }}>🏠</span>
+          <span style={{ fontSize: 11, color: 'rgba(240,255,240,0.6)', textAlign: 'center', lineHeight: '1' }}>Home</span>
+        </button>
       </div>
       )}
 

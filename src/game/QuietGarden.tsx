@@ -120,13 +120,19 @@ export function QuietGarden() {
     RundotGameAPI.analytics.recordCustomEvent('credits_modal_closed_skip');
   }, []);
 
+  const handleReturnHome = useCallback(() => {
+    setGameStarted(false);
+    setShowWatershed(false);
+    RundotGameAPI.analytics.recordCustomEvent('game_returned_to_home');
+  }, []);
+
   if (!gameStarted) {
     return <LandingPage onStart={handleStartGame} />;
   }
 
   return (
     <>
-      <GameScene onShowWatershed={handleOpenWatershed} isContinue={isContinue} onGameComplete={handleGameComplete} />
+      <GameScene onShowWatershed={handleOpenWatershed} isContinue={isContinue} onGameComplete={handleGameComplete} onReturnHome={handleReturnHome} />
       {showWatershed && (
         <WatershedProgress
           chapter1Restoration={watershedData.chapter1Restoration}
