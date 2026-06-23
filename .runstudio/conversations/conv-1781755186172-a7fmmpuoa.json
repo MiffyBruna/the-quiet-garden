@@ -57006,11 +57006,29 @@
       "timestamp": 1782184907821,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782185121407",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "IF THE LIST GETS TOO LONG WHAT SHOULD WE DO SHOULD WE INSTEAD DO IT FOR A CERTAIN AMOUNT OF TIME LIKE add their name for a week?",
+      "timestamp": 1782185121407,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782185129155-3anb5ta3g",
+      "role": "assistant",
+      "content": "Great question! The rotating credits idea is actually really clever for engagement. Here are the main approaches:\n\n**Option 1: Time-based (Your suggestion)**\n- Show only names added in the last 7 days (or whatever window)\n- Pro: List stays manageable, encourages repeat plays (\"try to get on the credits this week!\")\n- Con: Earlier contributors disappear, might feel unfair\n\n**Option 2: Keep all credits (Current approach)**\n- Everyone who added a name stays permanently\n- Pro: True recognition, inclusive\n- Con: List grows forever, scroll takes longer\n\n**Option 3: Hybrid**\n- Show recent credits (last 7 days) prominently\n- Add a \"View All Contributors\" button to see complete history\n- Pro: Best of both worlds — fresh + inclusive\n\n**Option 4: Capped list**\n- Show only the most recent 50 names (or whatever number fits nicely)\n- New names push old ones off the bottom\n- Pro: Balanced list size, still rolling recognition\n\n---\n\nFor a relaxing game like The Quiet Garden, I'd actually recommend **Option 3 (Hybrid)** — it feels less \"competitive\" while still keeping the list fresh. But if you want to drive engagement and have players replaying to get their name up there, **Option 1 (time-based)** is genius.\n\nWhich direction feels right for your game? Or would you prefer something different?",
+      "isShownToUser": true,
+      "timestamp": 1782185132414,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782184907860,
-  "tokenUsage": 62809,
+  "updatedAt": 1782185132516,
+  "tokenUsage": 63448,
   "script": "default",
   "claudeSessionId": "8ff606ea-31b9-46fa-8158-37d987a78916"
 }
