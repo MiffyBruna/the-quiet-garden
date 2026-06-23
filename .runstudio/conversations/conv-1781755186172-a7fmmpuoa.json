@@ -58687,11 +58687,29 @@
       "timestamp": 1782187189390,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782187189678",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "does the current credit screen use check to check for innapropiate content",
+      "timestamp": 1782187189678,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782187196396-57m1x5l9d",
+      "role": "assistant",
+      "content": "Yes! The current credits system **does check for inappropriate content** using **Google Perspective API**.\n\nHere's how it works:\n\n**In CreditsModal.tsx (lines 58-89):**\n- When a player submits their name after watching an ad\n- The name is sent to Google's Perspective API\n- It returns a **toxicity score (0-1)**\n- Names with **toxicity < 0.5 are approved** ✓\n- Names above that threshold are **rejected** with message: *\"Name contains inappropriate content. Please try another name.\"*\n\n**The flow:**\n1. Player watches ad\n2. Types their name\n3. Clicks \"Add to Credits\"\n4. System checks toxicity via Perspective API\n5. If clean → \"Welcome to the Credits!\" \n6. If flagged → \"Name contains inappropriate content. Try again\"\n\n**Safety notes:**\n- Uses free Google Perspective API (no cost)\n- Pattern-based, not AI (you mentioned concerns about AI moderation)\n- Rate limited to 1,000 requests/day on free tier\n- Graceful fallback: if API fails, names are allowed (better UX than blocking)\n\nIs this moderation approach working well for you, or would you like to adjust the toxicity threshold or change how it works?",
+      "isShownToUser": true,
+      "timestamp": 1782187199314,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782187189430,
-  "tokenUsage": 96504,
+  "updatedAt": 1782187199530,
+  "tokenUsage": 96952,
   "script": "default",
   "claudeSessionId": "0940c680-54c8-4b38-9f9a-211d1e55b426"
 }
