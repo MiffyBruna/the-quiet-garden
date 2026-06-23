@@ -1060,16 +1060,18 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete, onRetur
             spriteLoader.preloadPlants(['blue_grama', 'desert_marigold', 'lupine', 'milkweed', 'sage', 'mesquite']),
             wildlifeLoader.preloadAll(),
             wildlifeLoader.loadSprite('moss'),
-            loadCdnAsset('rain.wav'), // Preload rain sound for mobile
           ]);
         } catch (e) {
           console.error('Failed to load critical game assets:', e);
           throw new Error(`Critical assets failed to load: ${e}`);
         }
 
-        // Preload sound effects in background (after game is loaded)
-        preloadSFX().catch((e) => {
-          console.warn('Failed to preload SFX:', e);
+        // Preload sound effects and rain sound in background (after game is loaded)
+        Promise.all([
+          preloadSFX(),
+          loadCdnAsset('rain.wav'), // Preload rain sound for mobile
+        ]).catch((e) => {
+          console.warn('Failed to preload SFX or rain sound:', e);
         });
       } catch (e) {
         console.warn('Failed to load game state:', e);
