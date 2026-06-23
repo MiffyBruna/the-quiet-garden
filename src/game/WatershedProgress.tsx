@@ -3,8 +3,9 @@
  * Accessible from the Journal button in-game.
  * Replaces the old dashboard as the primary screen.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { theme } from '../theme';
+import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { WILDLIFE_CONDITIONS, PLANT_REQUIREMENTS, FAIRY_CONDITIONS, GameStats } from './engine/gameEngine';
 import { spriteLoader } from './services/spriteLoader';
 import { wildlifeLoader } from './services/wildlifeLoader';
@@ -146,6 +147,67 @@ export function WatershedProgress({
   };
   const [activeTab, setActiveTab] = useState<CatalogTab>('plants');
   const [, setSpritesLoaded] = useState(false);
+
+  // Particle effects for fairy Easter egg
+  const [particles, setParticles] = useState<Record<string, Array<{ id: number; emoji: string; x: number; y: number; vx: number; vy: number; life: number }>>>({});
+  const particleIdRef = useRef(0);
+
+  const getEasterEggEmojis = (fairyType: string): string[] => {
+    const emojiMap: Record<string, string[]> = {
+      'sprig': ['🌟', '⚡', '🎉', '💫', '✨'],
+      'nima': ['💧', '🌊', '🌙', '✨', '💎'],
+      'bloom': ['🌸', '🌺', '🌻', '🦋', '🌹'],
+      'ripple': ['🌀', '💨', '🌊', '🎪', '🎨'],
+      'tampopo': ['🌿', '🍃', '🕊️', '🌾', '🍂'],
+    };
+    return emojiMap[fairyType] || ['✨'];
+  };
+
+  const handleFairyClick = (fairyType: string) => {
+    RundotGameAPI.analytics.recordCustomEvent('fairy_easter_egg_triggered', { fairy: fairyType });
+
+    const emojis = getEasterEggEmojis(fairyType);
+    const newParticles = Array.from({ length: 8 }, (_, i) => {
+      const angle = (i / 8) * Math.PI * 2;
+      const speed = 120 + Math.random() * 80;
+      const emoji = emojis[Math.floor(Math.random() * emojis.length)] || '✨';
+      return {
+        id: particleIdRef.current++,
+        emoji,
+        x: 0,
+        y: 0,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+      };
+    });
+    setParticles((prev) => ({ ...prev, [fairyType]: newParticles }));
+  };
+
+  // Animate particles
+  useEffect(() => {
+    if (Object.keys(particles).length === 0) return;
+
+    const interval = setInterval(() => {
+      setParticles((prev) => {
+        const updated: typeof prev = {};
+        for (const [fairyType, ps] of Object.entries(prev)) {
+          updated[fairyType] = ps
+            .map((p) => ({
+              ...p,
+              x: p.x + p.vx * 0.016,
+              y: p.y + p.vy * 0.016,
+              vy: p.vy + 200 * 0.016,
+              life: p.life - 0.016 / 0.6,
+            }))
+            .filter((p) => p.life > 0);
+        }
+        return updated;
+      });
+    }, 16);
+
+    return () => clearInterval(interval);
+  }, [particles]);
 
   // Ensure fairy and wildlife sprites are loaded when journal opens
   useEffect(() => {
@@ -468,7 +530,12 @@ export function WatershedProgress({
                       display: 'flex',
                       gap: theme.spacing.sm,
                       alignItems: 'flex-start',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'background 0.1s',
                     }}
+                    onClick={() => handleFairyClick(fairyType)}
+                    onTouchEnd={() => handleFairyClick(fairyType)}
                   >
                     {(() => {
                       const sprite = fairyLoader.getLoadedSprite(fairyType);
@@ -520,6 +587,25 @@ export function WatershedProgress({
                         &ldquo;{info.wisdom}&rdquo;
                       </div>
                     </div>
+
+                    {/* Explosion particles */}
+                    {particles[fairyType]?.map((p) => (
+                      <div
+                        key={p.id}
+                        style={{
+                          position: 'absolute',
+                          left: '28px',
+                          top: '28px',
+                          transform: `translate(calc(-50% + ${p.x}px), calc(-50% + ${p.y}px))`,
+                          fontSize: 16,
+                          pointerEvents: 'none',
+                          opacity: p.life,
+                          transition: 'none',
+                        }}
+                      >
+                        {p.emoji}
+                      </div>
+                    ))}
                   </div>
                 );
               })}
