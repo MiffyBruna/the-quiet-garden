@@ -59102,11 +59102,29 @@
       "timestamp": 1782187892370,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782187915411",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "IS THERE A WEBSITE THAT ALLOWS ME TO TEST THAT",
+      "timestamp": 1782187915411,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782187921105-shros6irf",
+      "role": "assistant",
+      "content": "Yes! Google has an official Perspective API demo website:\n\n**https://www.perspectiveapi.com/**\n\nYou can:\n1. Paste or type any text\n2. See the **toxicity score in real-time** (0.0–1.0)\n3. Test different names to see which ones score above/below the 0.5 threshold\n4. Understand exactly what the filter catches\n\nTry testing things like:\n- `Alice` (normal name → low score ✅)\n- `p3nis` (obfuscated word → high score ❌)\n- `john` (normal name ✅)\n- Actual offensive words (blocked ❌)\n\nThat way you can see exactly how the filter will behave with different inputs before deploying!",
+      "isShownToUser": true,
+      "timestamp": 1782187922643,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782187892414,
-  "tokenUsage": 1731,
+  "updatedAt": 1782187922717,
+  "tokenUsage": 2060,
   "script": "default",
   "claudeSessionId": "0940c680-54c8-4b38-9f9a-211d1e55b426"
 }
