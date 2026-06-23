@@ -204,7 +204,7 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
           {/* Title with Logo */}
           <div style={{ textAlign: 'center', color: '#fff', paddingBottom: theme.spacing.xl }}>
             <img
-              src="/logo.png"
+              src="/cdn-assets/logo.png"
               alt="The Quiet Garden"
               style={{ maxWidth: '200px', height: 'auto', marginBottom: theme.spacing.md }}
             />
