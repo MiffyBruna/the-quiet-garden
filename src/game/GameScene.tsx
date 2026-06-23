@@ -2229,6 +2229,37 @@ export function GameScene({ onShowWatershed, isContinue }: {
       const tx = Math.floor(worldX / TILE_SIZE);
       const ty = Math.floor(worldY / TILE_SIZE);
 
+      // During positioning modes (bund or mesquite), taps move the player instead of the active tool
+      if (currentUI.bundMode === 'positioning' || currentUI.mesquiteMode === 'positioning') {
+        // Move player to tapped location using same logic as move tool
+        const isWalkable = (x: number, y: number) => {
+          const t = getTile(gs.tiles, x, y);
+          return t && t.terrain !== 'rock' && t.terrain !== 'water';
+        };
+
+        let destX = tx;
+        let destY = ty;
+
+        if (!isWalkable(destX, destY)) {
+          // Find nearest adjacent walkable tile
+          const neighbors = [
+            { x: destX + 1, y: destY }, { x: destX - 1, y: destY },
+            { x: destX, y: destY + 1 }, { x: destX, y: destY - 1 },
+          ].filter(({ x, y }) => isWalkable(x, y));
+
+          if (neighbors.length === 0) return;
+          destX = neighbors[0]!.x;
+          destY = neighbors[0]!.y;
+        }
+
+        // Walk to the clicked location
+        const path = findPath(gs.playerTX, gs.playerTY, destX, destY);
+        if (path && path.length > 0) {
+          gs.playerPath = path;
+        }
+        return;
+      }
+
       useTool(tx, ty);
     },
     [useTool, handleDialogueInput],

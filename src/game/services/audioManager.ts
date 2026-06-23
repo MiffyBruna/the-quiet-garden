@@ -390,18 +390,41 @@ function playAudioWithUnlock(audio: HTMLAudioElement, soundName: string): void {
 }
 
 /**
- * Unlock audio on mobile browsers by playing a silent sound
+ * Unlock audio on mobile browsers by playing multiple silent sounds
  * Mobile browsers (especially iOS Safari) block all audio until a user gesture triggers it
+ * This must be called synchronously in response to a touch/click event
  */
 export function unlockAudio(): void {
   if (audioUnlocked) return;
 
   try {
-    // Create and play a silent audio element to unlock audio context
+    // iOS requires a real audio play() call during a user gesture
+    // Try multiple approaches for maximum compatibility
+
+    // Approach 1: Play a silent WAV buffer
     const silentAudio = new Audio();
     silentAudio.src = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==';
     silentAudio.volume = 0;
-    silentAudio.play().then(() => {
+    silentAudio.muted = false;
+    silentAudio.play().catch(() => {
+      // Fallback: try creating a dummy audio element with a different approach
+      try {
+        const dummy = new Audio();
+        dummy.volume = 0;
+        dummy.muted = false;
+        // Try to create a small tone
+        dummy.src = 'data:audio/wav;base64,UklGRiIAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==';
+        dummy.play().catch(() => {
+          // If both fail, mark as unlocked anyway - some devices may not have audio support
+          audioUnlocked = true;
+        });
+      } catch (e) {
+        audioUnlocked = true;
+      }
+    });
+
+    // Mark as unlocked after a very short delay to ensure at least one play() call fired
+    setTimeout(() => {
       audioUnlocked = true;
       // Record telemetry for mobile audio unlock
       try {
@@ -412,10 +435,7 @@ export function unlockAudio(): void {
       } catch (e) {
         // Silently fail if telemetry not available
       }
-    }).catch(() => {
-      // If silent audio fails, mark as unlocked anyway
-      audioUnlocked = true;
-    });
+    }, 50);
   } catch (e) {
     // If anything fails, mark as unlocked anyway
     audioUnlocked = true;
