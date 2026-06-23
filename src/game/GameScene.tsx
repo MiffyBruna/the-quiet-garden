@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel, setupAudioUnlock } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, toggleSfx, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel, setupAudioUnlock } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -1059,6 +1059,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   // Audio settings modal
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [isMusicOn, setIsMusicOn] = useState(true);
+  const [isSfxOn, setIsSfxOn] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(70);
   const [sfxVolume, setSfxVolumeState] = useState(80);
 
@@ -1075,6 +1076,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   useEffect(() => {
     const settings = loadAudioSettings();
     setIsMusicOn(settings.musicEnabled);
+    setIsSfxOn(settings.sfxEnabled);
     setMusicVolumeState(settings.musicVolume);
     setSfxVolumeState(settings.sfxVolume);
   }, []);
@@ -3774,7 +3776,57 @@ export function GameScene({ onShowWatershed, isContinue }: {
               </button>
             </div>
 
-            {/* Volume Slider */}
+            {/* SFX Toggle */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '16px',
+                padding: '12px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '6px',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  color: '#7CCA7C',
+                }}
+              >
+                Sound Effects
+              </span>
+              <button
+                onClick={() => {
+                  toggleSfx(!isSfxOn);
+                  setIsSfxOn(!isSfxOn);
+                  track('custom_game_sfx_toggled');
+                  RundotGameAPI.analytics.recordCustomEvent('audio_sfx_toggled', { enabled: !isSfxOn });
+                }}
+                style={{
+                  background: isSfxOn ? '#7CCA7C' : '#4a6d4a',
+                  border: 'none',
+                  color: '#0a3d0a',
+                  padding: '6px 14px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                {isSfxOn ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            {/* Music Volume Slider */}
             {isMusicOn && (
               <div
                 style={{
@@ -3815,44 +3867,46 @@ export function GameScene({ onShowWatershed, isContinue }: {
               </div>
             )}
 
-            {/* FX Volume Slider */}
-            <div
-              style={{
-                marginBottom: '20px',
-                padding: '12px',
-                background: 'rgba(0, 0, 0, 0.2)',
-                borderRadius: '6px',
-              }}
-            >
+            {/* SFX Volume Slider */}
+            {isSfxOn && (
               <div
                 style={{
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  color: '#7CCA7C',
-                  marginBottom: '10px',
+                  marginBottom: '20px',
+                  padding: '12px',
+                  background: 'rgba(0, 0, 0, 0.2)',
+                  borderRadius: '6px',
                 }}
               >
-                FX Volume: {sfxVolume}%
+                <div
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    color: '#7CCA7C',
+                    marginBottom: '10px',
+                  }}
+                >
+                  Volume: {sfxVolume}%
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={sfxVolume}
+                  onChange={(e) => {
+                    const newVolume = parseInt(e.target.value);
+                    setSfxVolumeState(newVolume);
+                    setSfxVolume(newVolume);
+                    RundotGameAPI.analytics.recordCustomEvent('audio_sfx_volume_changed', { volume: newVolume });
+                  }}
+                  style={{
+                    width: '100%',
+                    cursor: 'pointer',
+                    accentColor: '#7CCA7C',
+                  }}
+                  title="Sound Effects Volume"
+                />
               </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={sfxVolume}
-                onChange={(e) => {
-                  const newVolume = parseInt(e.target.value);
-                  setSfxVolumeState(newVolume);
-                  setSfxVolume(newVolume);
-                  RundotGameAPI.analytics.recordCustomEvent('audio_sfx_volume_changed', { volume: newVolume });
-                }}
-                style={{
-                  width: '100%',
-                  cursor: 'pointer',
-                  accentColor: '#7CCA7C',
-                }}
-                title="Sound Effects Volume"
-              />
-            </div>
+            )}
 
             {/* Close Button */}
             <button

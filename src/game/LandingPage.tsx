@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
-import { playMusic, loadAudioSettings, toggleMusic, setMusicVolume, playMenuSelect } from './services/audioManager';
+import { playMusic, loadAudioSettings, toggleMusic, toggleSfx, setMusicVolume, setSfxVolume, playMenuSelect } from './services/audioManager';
 import { loadCdnAsset } from './services/assetLoader';
 
 interface LandingPageProps {
@@ -24,7 +24,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const [isMusicOn, setIsMusicOn] = useState(true);
+  const [isSfxOn, setIsSfxOn] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(70);
+  const [sfxVolume, setSfxVolumeState] = useState(80);
   const [landingBgUrl, setLandingBgUrl] = useState<string>('');
   const [gameTitleUrl, setGameTitleUrl] = useState<string>('');
   const [btnStartUrl, setBtnStartUrl] = useState<string>('');
@@ -59,7 +61,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
   useEffect(() => {
     const settings = loadAudioSettings();
     setIsMusicOn(settings.musicEnabled);
+    setIsSfxOn(settings.sfxEnabled);
     setMusicVolumeState(settings.musicVolume);
+    setSfxVolumeState(settings.sfxVolume);
 
     if (settings.musicEnabled) {
       playMusic('soundtrack.mp3', settings.musicVolume);
@@ -629,7 +633,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
               </button>
             </div>
 
-            {/* Volume Slider */}
+            {/* Music Volume Slider */}
             {isMusicOn && (
               <div
                 style={{
@@ -665,6 +669,98 @@ export function LandingPage({ onStart }: LandingPageProps) {
                     accentColor: '#D4AF37',
                   }}
                   title="Music Volume"
+                />
+              </div>
+            )}
+
+            {/* SFX Toggle */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '20px',
+                padding: '12px',
+                background: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '6px',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  color: '#D4AF37',
+                }}
+              >
+                Sound Effects
+              </span>
+              <button
+                onClick={() => {
+                  playMenuSelect();
+                  toggleSfx(!isSfxOn);
+                  setIsSfxOn(!isSfxOn);
+                  RundotGameAPI.analytics.recordCustomEvent('audio_settings_sfx_toggled', {
+                    enabled: String(!isSfxOn),
+                  });
+                }}
+                style={{
+                  background: isSfxOn ? '#D4AF37' : '#8B7355',
+                  border: 'none',
+                  color: '#2C1810',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                {isSfxOn ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            {/* SFX Volume Slider */}
+            {isSfxOn && (
+              <div
+                style={{
+                  marginBottom: '20px',
+                  padding: '12px',
+                  background: 'rgba(0, 0, 0, 0.2)',
+                  borderRadius: '6px',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#D4AF37',
+                    marginBottom: '10px',
+                  }}
+                >
+                  Volume: {sfxVolume}%
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={sfxVolume}
+                  onChange={(e) => {
+                    const newVolume = parseInt(e.target.value);
+                    setSfxVolumeState(newVolume);
+                    setSfxVolume(newVolume);
+                  }}
+                  style={{
+                    width: '100%',
+                    cursor: 'pointer',
+                    accentColor: '#D4AF37',
+                  }}
+                  title="Sound Effects Volume"
                 />
               </div>
             )}

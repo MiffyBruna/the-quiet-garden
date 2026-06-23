@@ -153,6 +153,13 @@ export function isSfxEnabled(): boolean {
   return currentSettings.sfxEnabled;
 }
 
+/**
+ * Toggle SFX on/off
+ */
+export function toggleSfx(enabled: boolean): void {
+  saveAudioSettings({ sfxEnabled: enabled });
+}
+
 let rainAudioInstance: HTMLAudioElement | null = null;
 
 /**
