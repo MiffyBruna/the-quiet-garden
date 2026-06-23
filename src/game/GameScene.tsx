@@ -2959,6 +2959,25 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
         .toolbar-scroll::-webkit-scrollbar {
           display: none;  /* Chrome, Safari and Opera */
         }
+        /* Mobile responsive toolbar — wrap instead of scroll on small screens */
+        @media (max-width: 768px) {
+          .toolbar-scroll {
+            flex-wrap: wrap;
+            align-content: flex-start;
+            height: auto;
+            min-height: 82px;
+            gap: 6px;
+            padding: 6px 4px;
+            overflow-x: visible;
+            overflow-y: hidden;
+          }
+          .toolbar-scroll button {
+            font-size: 11px;
+            padding: 8px 6px !important;
+            min-width: auto;
+            flex: 0 0 auto;
+          }
+        }
       `}</style>
 
       {/* ── Top HUD ──────────────────────────────────────────────────────── */}
