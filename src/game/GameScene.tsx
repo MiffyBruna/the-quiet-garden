@@ -984,12 +984,24 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
       stopRain();
       stopMusic();
 
-      // Create and play credits music directly
+      // Create and play credits music with mobile audio unlock
       creditsAudio = new Audio('/credits-music.mp3');
       creditsAudio.loop = true;
       creditsAudio.volume = isMusicEnabled() ? 0.6 : 0;
-      creditsAudio.play().catch((err) => {
-        console.warn('Credits music playback failed:', err);
+
+      // Play with mobile audio context unlock
+      creditsAudio.play().catch((err: any) => {
+        if (err?.name === 'NotAllowedError') {
+          // Mobile browsers block audio until a user gesture
+          unlockAudio();
+          setTimeout(() => {
+            creditsAudio?.play().catch((retryErr) => {
+              console.warn('Credits music playback failed after unlock:', retryErr);
+            });
+          }, 100);
+        } else {
+          console.warn('Credits music playback failed:', err);
+        }
       });
     }
 
