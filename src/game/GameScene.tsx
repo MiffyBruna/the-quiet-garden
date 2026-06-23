@@ -934,6 +934,7 @@ function calculateGrowthTimer(plant: PlantState): GrowthTimer {
   // Slowest case: 0.6x growth multiplier (dry soil <20 moisture)
   const secondsSlowest = Math.ceil(ticksRemaining / TICKS_PER_SECOND / 0.6);
 
+  // Store actual seconds for display (not just minutes)
   const minMinutes = Math.floor(secondsFastest / 60);
   const maxMinutes = Math.floor(secondsSlowest / 60);
   const minSeconds = secondsFastest % 60;
@@ -943,6 +944,19 @@ function calculateGrowthTimer(plant: PlantState): GrowthTimer {
   plant.maturityEstimate = { minMinutes, maxMinutes, minSeconds, maxSeconds };
 
   return { currentStage, totalStages, minMinutes, maxMinutes, minSeconds, maxSeconds };
+}
+
+function formatMaturityTime(timer: GrowthTimer): string {
+  // If less than 1 minute, show seconds
+  if (timer.minMinutes === 0 && timer.maxMinutes === 0) {
+    return `${timer.minSeconds}–${timer.maxSeconds} sec`;
+  }
+  // If max is less than 1 minute, show seconds
+  if (timer.maxMinutes === 0) {
+    return `${timer.minSeconds}–${timer.maxSeconds} sec`;
+  }
+  // Otherwise show minutes
+  return `${timer.minMinutes}–${timer.maxMinutes} min`;
 }
 
 export function GameScene({ onShowWatershed, isContinue, onGameComplete, onReturnHome }: {
@@ -3203,7 +3217,7 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete, onRetur
                             <b>Stage:</b> {timer.currentStage}/{timer.totalStages}
                           </div>
                           <div>
-                            <b>Mature in:</b> {timer.minMinutes}–{timer.maxMinutes} min
+                            <b>Mature in:</b> {formatMaturityTime(timer)}
                           </div>
                         </div>
                       );
