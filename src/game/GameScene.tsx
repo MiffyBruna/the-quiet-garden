@@ -3003,7 +3003,7 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
           <div style={{ fontSize: 11, color: '#7CCA7C', fontWeight: 700, letterSpacing: '0.08em', lineHeight: 1 }}>
             THE QUIET GARDEN
           </div>
-          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 1, lineHeight: 1 }}>
+          <div style={{ fontSize: 9, color: '#fff', marginTop: 1, lineHeight: 1 }}>
             The Valley That Forgot the Rain
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2, flexWrap: 'wrap' }}>
@@ -3085,8 +3085,8 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
               );
             })()}
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', lineHeight: 1 }}>restored</div>
-          <div style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>
+          <div style={{ fontSize: 8, color: '#fff', lineHeight: 1 }}>restored</div>
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 8, color: '#fff' }}>
             💧{Math.round(ui.avgMoisture)}% · 🐾{ui.wildlifeCount} · 🌱{ui.plantCount}/6
           </div>
         </div>
