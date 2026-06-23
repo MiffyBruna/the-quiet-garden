@@ -41,69 +41,69 @@ function getHintForWildlife(
   switch (wildlifeType) {
     case 'ant':
       if (stats.avgFertility < 20) {
-        return `💡 Ants 🐜 need fertile soil. Currently ${Math.round(stats.avgFertility)}% fertile — add mulch and let the land rest.`;
+        return `💡 Something needs fertile soil. Currently ${Math.round(stats.avgFertility)}% fertile — add mulch and let the land rest.`;
       }
-      return '✓ Ready: Ants 🐜 should appear soon (soil is fertile enough)';
+      return '✓ Ready: Something should appear soon (soil is fertile enough)';
     case 'bee':
       if (stats.bloomCount < 1) {
-        return '💡 Bees 🐝 need open flowers. Plant a seed and let it bloom.';
+        return '💡 Something needs open flowers. Plant a seed and let it bloom.';
       }
-      return `✓ Ready: Bees 🐝 should appear soon (${stats.bloomCount} flower open)`;
+      return `✓ Ready: Something should appear soon (${stats.bloomCount} flower open)`;
     case 'monarch':
       if (!discovered.has('milkweed')) {
-        return '💡 Monarch 🦋 only comes for milkweed. Plant milkweed and wait.';
+        return '💡 Something needs a specific plant. Plant milkweed and wait.';
       }
-      return '✓ Ready: Monarch 🦋 should appear soon (milkweed planted)';
+      return '✓ Ready: Something should appear soon (the required plant is there)';
     case 'frog':
       if (stats.waterTileCount < 2) {
-        return `💡 Frogs 🐸 need water. Create 2+ pools (you have ${stats.waterTileCount}).`;
+        return `💡 Something needs water. Create 2+ pools (you have ${stats.waterTileCount}).`;
       }
-      return `✓ Ready: Frogs 🐸 should appear soon (${stats.waterTileCount} water tiles)`;
+      return `✓ Ready: Something should appear soon (${stats.waterTileCount} water tiles)`;
     case 'beetle':
       if (stats.mulchCount < 2 || stats.avgFertility < 25) {
-        return `💡 Beetles 🪲 need mulch & fertile soil. You have ${stats.mulchCount} mulch, ${Math.round(stats.avgFertility)}% fertility.`;
+        return `💡 Something needs mulch & fertile soil. You have ${stats.mulchCount} mulch, ${Math.round(stats.avgFertility)}% fertility.`;
       }
-      return '✓ Ready: Beetles 🪲 should appear soon (mulch & fertility OK)';
+      return '✓ Ready: Something should appear soon (mulch & fertility OK)';
     case 'hoverfly':
       if (stats.bloomCount < 3) {
-        return `💡 Hoverflies 🦟 need 3 blooms at once. You have ${stats.bloomCount}.`;
+        return `💡 Something needs 3 blooms at once. You have ${stats.bloomCount}.`;
       }
-      return `✓ Ready: Hoverflies 🦟 should appear soon (${stats.bloomCount} blooms)`;
+      return `✓ Ready: Something should appear soon (${stats.bloomCount} blooms)`;
     case 'painted_lady':
       if (stats.plantDiversity < 3 || stats.bloomCount < 2) {
-        return `💡 Painted Lady 🦋 needs variety: 3 plant types & 2 blooms. You have ${stats.plantDiversity} types, ${stats.bloomCount} blooming.`;
+        return `💡 Something needs variety: 3 plant types & 2 blooms. You have ${stats.plantDiversity} types, ${stats.bloomCount} blooming.`;
       }
-      return `✓ Ready: Painted Lady 🦋 should appear soon (${stats.plantDiversity} types, ${stats.bloomCount} blooms)`;
+      return `✓ Ready: Something should appear soon (${stats.plantDiversity} types, ${stats.bloomCount} blooms)`;
     case 'dragonfly':
       if (stats.waterTileCount < 3) {
-        return `💡 Dragonflies 🪲 patrol larger pools. Need 3+ water tiles (you have ${stats.waterTileCount}).`;
+        return `💡 Something needs larger pools. Need 3+ water tiles (you have ${stats.waterTileCount}).`;
       }
-      return `✓ Ready: Dragonflies 🪲 should appear soon (${stats.waterTileCount} water tiles)`;
+      return `✓ Ready: Something should appear soon (${stats.waterTileCount} water tiles)`;
     case 'cottontail':
       if (stats.bloomCount < 3 || stats.plantDiversity < 3) {
-        return `💡 Cottontail 🐇 needs 3 blooms & 3 plant types at once. You have ${stats.bloomCount} blooms, ${stats.plantDiversity} types.`;
+        return `💡 Something needs 3 blooms & 3 plant types at once. You have ${stats.bloomCount} blooms, ${stats.plantDiversity} types.`;
       }
-      return `✓ Ready: Cottontail 🐇 should appear soon (${stats.bloomCount} blooms, ${stats.plantDiversity} types)`;
+      return `✓ Ready: Something should appear soon (${stats.bloomCount} blooms, ${stats.plantDiversity} types)`;
     case 'finch':
       if (stats.plantDiversity < 4) {
-        return `💡 Finches 🐦‍⬛ love diverse valleys. Plant a 4th kind (you have ${stats.plantDiversity}).`;
+        return `💡 Something loves diversity. Plant a 4th kind (you have ${stats.plantDiversity}).`;
       }
-      return `✓ Ready: Finches 🐦‍⬛ should appear soon (${stats.plantDiversity} plant types)`;
+      return `✓ Ready: Something should appear soon (${stats.plantDiversity} plant types)`;
     case 'quail':
       if (stats.restoration < 70) {
-        return `💡 Quail 🐦 return at 70% restoration. Valley is ${Math.round(stats.restoration)}% restored.`;
+        return `💡 Something returns at 70% restoration. Valley is ${Math.round(stats.restoration)}% restored.`;
       }
-      return `✓ Ready: Quail 🐦 should appear soon (${Math.round(stats.restoration)}% restored)`;
+      return `✓ Ready: Something should appear soon (${Math.round(stats.restoration)}% restored)`;
     case 'hawk':
       if (stats.restoration < 80) {
-        return `💡 Hawk 🦅 waits for 80% restoration. Valley is ${Math.round(stats.restoration)}% restored.`;
+        return `💡 Something waits for 80% restoration. Valley is ${Math.round(stats.restoration)}% restored.`;
       }
-      return `✓ Ready: Hawk 🦅 should appear soon (${Math.round(stats.restoration)}% restored)`;
+      return `✓ Ready: Something should appear soon (${Math.round(stats.restoration)}% restored)`;
     case 'swallow':
       if (stats.bloomCount < 5 || stats.restoration < 85) {
-        return `💡 Swallow 🕊️ needs 5 blooms + 85% restoration. You have ${stats.bloomCount} blooms, ${Math.round(stats.restoration)}% restored.`;
+        return `💡 Something needs 5 blooms + 85% restoration. You have ${stats.bloomCount} blooms, ${Math.round(stats.restoration)}% restored.`;
       }
-      return `✓ Ready: Swallow 🕊️ should appear soon (${stats.bloomCount} blooms, ${Math.round(stats.restoration)}% restored)`;
+      return `✓ Ready: Something should appear soon (${stats.bloomCount} blooms, ${Math.round(stats.restoration)}% restored)`;
     default:
       return 'Continue restoring the valley to discover this animal.';
   }
