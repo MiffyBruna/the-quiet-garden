@@ -2531,7 +2531,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
           // Add newly discovered plants
           gs.discoveredPlants.forEach((plant) => {
             if (!prevPlants.has(plant)) {
-              console.log('🌿 New plant discovered:', plant);
               newSpecies.add(plant);
             }
           });
@@ -2539,7 +2538,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
           // Add newly discovered wildlife
           gs.discoveredWildlife.forEach((wildlife) => {
             if (!prevWildlife.has(wildlife)) {
-              console.log('🦋 New wildlife discovered:', wildlife);
               newSpecies.add(wildlife);
             }
           });
@@ -2547,14 +2545,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
           // Add newly discovered fairies
           gs.discoveredFairies.forEach((fairy) => {
             if (!prevFairies.has(fairy)) {
-              console.log('✨ New fairy discovered:', fairy);
               newSpecies.add(fairy);
             }
           });
-
-          if (newSpecies.size > 0) {
-            console.log('📋 Journal should glow! New species count:', newSpecies.size, 'Species:', Array.from(newSpecies));
-          }
 
           setUI((prev) => ({ ...prev, restoration, avgMoisture, wildlifeCount, plantCount, questStep, newlyDiscoveredSpecies: newSpecies }));
         },

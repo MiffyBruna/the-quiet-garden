@@ -1356,25 +1356,10 @@ export function getDebugInfo(gs: GameState): string[] {
  * Returns null if all animals are discovered or game isn't in free play
  */
 export function getMossWildlifeHint(gs: GameState): DialogueLine | null {
-  console.log('🎯 getMossWildlifeHint called');
-  console.log('  questStep:', gs.questStep, '(should be free_play)');
-  console.log('  discoveredWildlife.length:', gs.discoveredWildlife.length, '(should be < 13)');
-
-  if (gs.questStep !== 'free_play' || gs.discoveredWildlife.length === 13) {
-    console.log('❌ Hint conditions not met - returning null');
-    return null;
-  }
+  if (gs.questStep !== 'free_play' || gs.discoveredWildlife.length === 13) return null;
 
   const stats = computeGameStats(gs);
   const discovered = new Set(gs.discoveredWildlife);
-
-  console.log('📊 Game stats:', {
-    avgFertility: stats.avgFertility,
-    bloomCount: stats.bloomCount,
-    waterTileCount: stats.waterTileCount,
-    mulchCount: stats.mulchCount,
-    plantDiversity: stats.plantDiversity,
-  });
 
   // Check each animal in order of difficulty (easiest first)
   // so the most actionable hint shows first
@@ -1483,7 +1468,6 @@ export function getMossWildlifeHint(gs: GameState): DialogueLine | null {
     };
   }
 
-  console.log('❌ No hint matched - all conditions already met! Discovered:', Array.from(discovered));
   return null;
 }
 
