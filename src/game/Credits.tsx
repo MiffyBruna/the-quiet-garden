@@ -34,14 +34,6 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
     opacity: Math.random() * 0.6 + 0.2,
   }));
 
-  // Sparkles
-  const sparkles = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    delay: Math.random() * 3,
-  }));
-
   // Animation loop
   useEffect(() => {
     const animate = () => {
@@ -125,36 +117,12 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
         `}</style>
       </div>
 
-      {/* Sparkles */}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-        {sparkles.map((sparkle) => (
-          <div
-            key={sparkle.id}
-            style={{
-              position: 'absolute',
-              left: `${sparkle.left}%`,
-              top: `${sparkle.top}%`,
-              width: '4px',
-              height: '4px',
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.8)',
-              boxShadow: '0 0 6px rgba(255,255,255,0.8)',
-              animation: `sparkle 2s ease-in-out ${sparkle.delay}s infinite`,
-            }}
-          />
-        ))}
-        <style>{`
-          @keyframes sparkle {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
-          }
-        `}</style>
-      </div>
+      {/* Sparkles disabled */}
 
       {/* Header */}
       <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: '#fff', zIndex: 10 }}>
         <div style={{ fontSize: 32, fontWeight: 'bold', marginBottom: theme.spacing.md }}>
-          ✨ Recent Contributors ✨
+          Recent Contributors
         </div>
         <div style={{ fontSize: 14, opacity: 0.8, marginBottom: theme.spacing.md }}>
           {credits.length} gardeners shaping this valley
@@ -214,11 +182,13 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
             paddingBottom: '100vh',
           }}
         >
-          {/* Title */}
+          {/* Title with Logo */}
           <div style={{ textAlign: 'center', color: '#fff', paddingBottom: theme.spacing.xl }}>
-            <div style={{ fontSize: 24, fontWeight: 'bold', marginBottom: theme.spacing.md }}>
-              The Quiet Garden
-            </div>
+            <img
+              src="/logo.png"
+              alt="The Quiet Garden"
+              style={{ maxWidth: '200px', height: 'auto', marginBottom: theme.spacing.md }}
+            />
             <div style={{ fontSize: 14, opacity: 0.8 }}>
               A collaboration by gardeners from around the world
             </div>

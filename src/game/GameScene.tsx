@@ -977,30 +977,18 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
 
   // Credits music: Play when credits preview starts (stop all other music)
   useEffect(() => {
-    let audio: HTMLAudioElement | null = null;
-
     if (showCreditsPreview) {
-      // Stop all background music
+      // Stop all background music and rain
       stopRain();
       stopMusic();
 
-      // Play the credits music (credits only)
-      audio = new Audio('/Puddles_at_Golden_Hour.mp3');
-      audio.loop = true;
-      audio.volume = 0.7;
-      audio.play().catch(() => {
-        // Fallback if autoplay fails
-        console.log('Credits music autoplay blocked');
-      });
+      // Play the credits music
+      playMusic('/credits-music.mp3', 0.6);
     }
 
     return () => {
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-      // Optionally resume background music when credits close
-      // playMusic(); // uncomment if you want music to resume
+      // Stop credits music when credits close
+      stopMusic();
     };
   }, [showCreditsPreview]);
 
