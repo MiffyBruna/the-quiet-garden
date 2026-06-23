@@ -2183,6 +2183,12 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
         return;
       }
 
+      // Credits preview (Shift+C)
+      if (e.shiftKey && e.key === 'C') {
+        onGameComplete();
+        return;
+      }
+
       // Inspect mode: movement disabled — player must switch back to Move first
       if (currentUI.activeTool === 'inspect') return;
 
