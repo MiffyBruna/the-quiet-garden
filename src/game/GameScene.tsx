@@ -1108,11 +1108,6 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
   const [musicVolume, setMusicVolumeState] = useState(70);
   const [sfxVolume, setSfxVolumeState] = useState(80);
 
-  // Virtual joystick state (mobile movement control)
-  const [joystickPos, setJoystickPos] = useState<{ x: number; y: number } | null>(null);
-  const [joystickOpacity, setJoystickOpacity] = useState(1);
-  const joystickFadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   // Intro animation: track if dialogue was shown last frame
   const introDialogueWasShownRef = useRef(false);
 
@@ -2343,13 +2338,6 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
       const touchX = e.clientX - rect.left;
       const touchY = e.clientY - rect.top;
       joystickStartRef.current = { x: touchX, y: touchY };
-      setJoystickPos({ x: touchX, y: touchY });
-      setJoystickOpacity(0.8);
-
-      // Clear any pending fade timeout
-      if (joystickFadeTimeoutRef.current) {
-        clearTimeout(joystickFadeTimeoutRef.current);
-      }
     },
     []
   );
@@ -2373,7 +2361,6 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
         const now = Date.now();
         if (now - joystickLastMoveTimeRef.current < 200) {
           // Not enough time has passed, skip this movement
-          setJoystickOpacity(0.8);
           return;
         }
         joystickLastMoveTimeRef.current = now;
@@ -2419,9 +2406,6 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
           gs.playerPY = nextTY * TILE_SIZE + TILE_SIZE / 2;
         }
       }
-
-      // Keep joystick visible while dragging
-      setJoystickOpacity(0.8);
     },
     []
   );
@@ -2430,16 +2414,6 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       if (e.pointerType !== 'touch') return;
       joystickStartRef.current = null;
-
-      // Fade out the joystick
-      if (joystickFadeTimeoutRef.current) {
-        clearTimeout(joystickFadeTimeoutRef.current);
-      }
-
-      joystickFadeTimeoutRef.current = setTimeout(() => {
-        setJoystickOpacity(0);
-        setTimeout(() => setJoystickPos(null), 300);
-      }, 500);
     },
     []
   );
@@ -4268,39 +4242,6 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
           <div style={{ marginTop: 8, fontSize: 10, color: '#999' }}>
             Press Shift+D to toggle
           </div>
-        </div>
-      )}
-
-      {/* Mobile Virtual Joystick */}
-      {joystickPos && (
-        <div
-          style={{
-            position: 'fixed',
-            left: joystickPos.x - 40,
-            top: joystickPos.y - 40,
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            background: `rgba(124, 202, 124, ${joystickOpacity * 0.15})`,
-            border: `2px solid rgba(124, 202, 124, ${joystickOpacity * 0.6})`,
-            zIndex: 25,
-            pointerEvents: 'none',
-            transition: `opacity 0.3s ease`,
-            opacity: joystickOpacity,
-            boxShadow: `0 0 12px rgba(124, 202, 124, ${joystickOpacity * 0.4})`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <div
-            style={{
-              width: '12px',
-              height: '12px',
-              borderRadius: '50%',
-              background: `rgba(124, 202, 124, ${joystickOpacity * 0.8})`,
-            }}
-          />
         </div>
       )}
 
