@@ -17,6 +17,9 @@ import { spriteLoader } from './services/spriteLoader';
 import { wildlifeLoader } from './services/wildlifeLoader';
 import { fairyLoader } from './services/fairyLoader';
 import { LoadingScreen } from './components/LoadingScreen';
+import { Credits } from './Credits';
+import { CreditsModal } from './CreditsModal';
+import { getRecentCredits } from '../services/credits';
 import {
   TILE_SIZE, MAP_W, MAP_H,
   GameState, UIState, ToolType, PlantType, PlantState, DialogueLine, QuestStep, Tile,
@@ -938,6 +941,8 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
   const [gameLoaded, setGameLoaded] = useState(false);
   const [characterPortraits, setCharacterPortraits] = useState<Record<string, string>>({});
   const [rainCooldownRemaining, setRainCooldownRemaining] = useState<number>(0); // seconds remaining
+  const [showCreditsPreview, setShowCreditsPreview] = useState(false);
+  const [creditsPreviewFinished, setCreditsPreviewFinished] = useState(false);
 
   // Calculate frog height based on screen size
   useEffect(() => {
@@ -969,6 +974,29 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
 
     return () => clearInterval(interval);
   }, [ui.rainCooling, rainCooldownRemaining]);
+
+  // Credits music: Play when credits preview starts
+  useEffect(() => {
+    let audio: HTMLAudioElement | null = null;
+
+    if (showCreditsPreview) {
+      // Play the credits music
+      audio = new Audio('/Puddles_at_Golden_Hour.mp3');
+      audio.loop = true;
+      audio.volume = 0.6;
+      audio.play().catch(() => {
+        // Fallback if autoplay fails
+        console.log('Credits music autoplay blocked');
+      });
+    }
+
+    return () => {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    };
+  }, [showCreditsPreview]);
 
   // Game State Persistence: Load full game state if continuing, save periodically + on quit
   useEffect(() => {
@@ -4263,6 +4291,51 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
           />
         </div>
       )}
+
+      {/* Credits Preview */}
+      {showCreditsPreview && (
+        <>
+          <Credits
+            credits={getRecentCredits(50)}
+            onCreditsFinished={() => setCreditsPreviewFinished(true)}
+          />
+          {creditsPreviewFinished && (
+            <CreditsModal
+              onNameAdded={() => {
+                setShowCreditsPreview(false);
+                setCreditsPreviewFinished(false);
+              }}
+              onClose={() => {
+                setShowCreditsPreview(false);
+                setCreditsPreviewFinished(false);
+              }}
+            />
+          )}
+        </>
+      )}
+
+      {/* Credits Preview Button */}
+      <button
+        onClick={() => {
+          setShowCreditsPreview(true);
+          setCreditsPreviewFinished(false);
+        }}
+        style={{
+          position: 'fixed',
+          top: safeArea.top + 12,
+          right: 12,
+          background: 'rgba(124, 202, 124, 0.2)',
+          border: '1px solid rgba(124, 202, 124, 0.5)',
+          color: '#7CCA7C',
+          padding: '8px 12px',
+          borderRadius: 6,
+          cursor: 'pointer',
+          fontSize: 12,
+          zIndex: 50,
+        }}
+      >
+        📽️ Credits
+      </button>
 
       {/* Version Legend */}
       <div
