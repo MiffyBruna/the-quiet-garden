@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { theme } from '../theme';
 import { getSafeArea } from '../services/environment';
 import type { Credit } from '../services/credits';
+import logoImg from '../../public/cdn-assets/logo.png';
 
 // Re-export for convenience
 export type { Credit };
@@ -204,7 +205,7 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
           {/* Title with Logo */}
           <div style={{ textAlign: 'center', color: '#fff', paddingBottom: theme.spacing.xl }}>
             <img
-              src="/cdn-assets/logo.png"
+              src={logoImg}
               alt="The Quiet Garden"
               style={{ maxWidth: '200px', height: 'auto', marginBottom: theme.spacing.md }}
             />
