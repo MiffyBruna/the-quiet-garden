@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, toggleSfx, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel, setupAudioUnlock } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, toggleSfx, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel, setupAudioUnlock, unlockAudio } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -1062,6 +1062,11 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const [isSfxOn, setIsSfxOn] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(70);
   const [sfxVolume, setSfxVolumeState] = useState(80);
+
+  // Virtual joystick state (mobile movement control)
+  const [joystickPos, setJoystickPos] = useState<{ x: number; y: number } | null>(null);
+  const [joystickOpacity, setJoystickOpacity] = useState(1);
+  const joystickFadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Intro animation: track if dialogue was shown last frame
   const introDialogueWasShownRef = useRef(false);
@@ -2265,6 +2270,110 @@ export function GameScene({ onShowWatershed, isContinue }: {
     [useTool, handleDialogueInput],
   );
 
+  // ─────────────────────────────────────────────────────────────────
+  // Mobile Joystick Handlers (virtual movement control)
+  // ─────────────────────────────────────────────────────────────────
+  const joystickStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleJoystickStart = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (e.pointerType !== 'touch') return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const touchX = e.clientX - rect.left;
+      const touchY = e.clientY - rect.top;
+      joystickStartRef.current = { x: touchX, y: touchY };
+      setJoystickPos({ x: touchX, y: touchY });
+      setJoystickOpacity(0.8);
+
+      // Clear any pending fade timeout
+      if (joystickFadeTimeoutRef.current) {
+        clearTimeout(joystickFadeTimeoutRef.current);
+      }
+    },
+    []
+  );
+
+  const handleJoystickMove = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (e.pointerType !== 'touch' || !joystickStartRef.current) return;
+
+      const gs = gsRef.current;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const currentX = e.clientX - rect.left;
+      const currentY = e.clientY - rect.top;
+
+      // Calculate direction from start position
+      const dx = currentX - joystickStartRef.current.x;
+      const dy = currentY - joystickStartRef.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 30) {
+        // Significant drag detected - move player in that direction
+        const angle = Math.atan2(dy, dx);
+        const directions = [
+          { dir: 'right', angle: 0, offset: { x: 1, y: 0 } },
+          { dir: 'down-right', angle: Math.PI / 4, offset: { x: 1, y: 1 } },
+          { dir: 'down', angle: Math.PI / 2, offset: { x: 0, y: 1 } },
+          { dir: 'down-left', angle: (3 * Math.PI) / 4, offset: { x: -1, y: 1 } },
+          { dir: 'left', angle: Math.PI, offset: { x: -1, y: 0 } },
+          { dir: 'up-left', angle: (-3 * Math.PI) / 4, offset: { x: -1, y: -1 } },
+          { dir: 'up', angle: -Math.PI / 2, offset: { x: 0, y: -1 } },
+          { dir: 'up-right', angle: -Math.PI / 4, offset: { x: 1, y: -1 } },
+        ];
+
+        // Find closest direction
+        let closestDir = directions[0]!;
+        let minAngleDiff = Math.PI * 2;
+
+        for (const d of directions) {
+          const angleDiff = Math.min(
+            Math.abs(d.angle - angle),
+            Math.abs(d.angle + Math.PI * 2 - angle),
+            Math.abs(d.angle - Math.PI * 2 - angle)
+          );
+          if (angleDiff < minAngleDiff) {
+            minAngleDiff = angleDiff;
+            closestDir = d;
+          }
+        }
+
+        // Move player one step in that direction
+        const nextTX = gs.playerTX + closestDir.offset.x;
+        const nextTY = gs.playerTY + closestDir.offset.y;
+
+        const tile = getTile(gs.tiles, nextTX, nextTY);
+        if (tile && tile.terrain !== 'rock' && tile.terrain !== 'water') {
+          gs.playerTX = nextTX;
+          gs.playerTY = nextTY;
+          gs.playerPX = nextTX * TILE_SIZE + TILE_SIZE / 2;
+          gs.playerPY = nextTY * TILE_SIZE + TILE_SIZE / 2;
+        }
+      }
+
+      // Keep joystick visible while dragging
+      setJoystickOpacity(0.8);
+    },
+    []
+  );
+
+  const handleJoystickEnd = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (e.pointerType !== 'touch') return;
+      joystickStartRef.current = null;
+
+      // Fade out the joystick
+      if (joystickFadeTimeoutRef.current) {
+        clearTimeout(joystickFadeTimeoutRef.current);
+      }
+
+      joystickFadeTimeoutRef.current = setTimeout(() => {
+        setJoystickOpacity(0);
+        setTimeout(() => setJoystickPos(null), 300);
+      }, 500);
+    },
+    []
+  );
+
   // Handle mouse movement to highlight destination tiles when moving plants or using reshape tool
   const handleCanvasMouseMove = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -2688,6 +2797,14 @@ export function GameScene({ onShowWatershed, isContinue }: {
         paddingTop: safeArea.top,
         paddingBottom: safeArea.bottom,
       }}
+      onTouchStart={() => {
+        // Unlock audio on very first touch (critical for mobile audio)
+        unlockAudio();
+      }}
+      onClick={() => {
+        // Also unlock on click (fallback for desktop/mouse)
+        unlockAudio();
+      }}
     >
       <style>{`
         canvas {
@@ -2852,8 +2969,15 @@ export function GameScene({ onShowWatershed, isContinue }: {
           height: '100%',
           touchAction: 'none',
         }}
-        onPointerUp={handleCanvasClick}
-        onPointerMove={handleCanvasMouseMove}
+        onPointerDown={handleJoystickStart}
+        onPointerMove={(e) => {
+          handleCanvasMouseMove(e);
+          handleJoystickMove(e);
+        }}
+        onPointerUp={(e) => {
+          handleCanvasClick(e);
+          handleJoystickEnd(e);
+        }}
       />
 
       {/* ── Tile Inspect Panel (Separate Cards) ────────────────────────────── */}
@@ -3513,7 +3637,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
           borderTop: '1px solid rgba(124,202,124,0.25)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-start',
+          justifyContent: 'center',
           gap: 2,
           padding: '0 2px',
           overflowX: 'auto',
@@ -3702,7 +3826,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 padding: '3px 2px',
                 cursor: rainBlocked ? 'default' : 'pointer',
                 opacity: rainBlocked ? 0.4 : 1,
-                minWidth: 32,
+                minWidth: 48,
                 // Glow effect for journal button with new discoveries
                 ...(def.id === 'journal' && ui.newlyDiscoveredSpecies.size > 0 && {
                   boxShadow: '0 0 12px rgba(124, 202, 124, 0.8), inset 0 0 12px rgba(124, 202, 124, 0.3)',
@@ -3711,8 +3835,8 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 }),
               }}
             >
-              <span style={{ fontSize: 18, lineHeight: '1' }}>{def.emoji}</span>
-              <span style={{ fontSize: 7, color: active ? '#7CCA7C' : 'rgba(240,255,240,0.6)', textAlign: 'center', lineHeight: '1' }}>
+              <span style={{ fontSize: 26, lineHeight: '1' }}>{def.emoji}</span>
+              <span style={{ fontSize: 11, color: active ? '#7CCA7C' : 'rgba(240,255,240,0.6)', textAlign: 'center', lineHeight: '1' }}>
                 {def.id === 'rain' && rainBlocked
                   ? `${rainCooldownRemaining}s`
                   : (def.id === 'move' && ui.heldEntity?.type === 'plant' ? 'Holding Plant' : def.label)}
@@ -4004,6 +4128,39 @@ export function GameScene({ onShowWatershed, isContinue }: {
           <div style={{ marginTop: 8, fontSize: 10, color: '#999' }}>
             Press Shift+D to toggle
           </div>
+        </div>
+      )}
+
+      {/* Mobile Virtual Joystick */}
+      {joystickPos && (
+        <div
+          style={{
+            position: 'fixed',
+            left: joystickPos.x - 40,
+            top: joystickPos.y - 40,
+            width: '80px',
+            height: '80px',
+            borderRadius: '50%',
+            background: `rgba(124, 202, 124, ${joystickOpacity * 0.15})`,
+            border: `2px solid rgba(124, 202, 124, ${joystickOpacity * 0.6})`,
+            zIndex: 25,
+            pointerEvents: 'none',
+            transition: `opacity 0.3s ease`,
+            opacity: joystickOpacity,
+            boxShadow: `0 0 12px rgba(124, 202, 124, ${joystickOpacity * 0.4})`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              background: `rgba(124, 202, 124, ${joystickOpacity * 0.8})`,
+            }}
+          />
         </div>
       )}
 
