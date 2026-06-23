@@ -2221,8 +2221,9 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
   // -------------------------------------------------------------------------
   const handleCanvasClick = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
-      // Only handle primary pointer (left mouse, first touch, etc.)
-      if (e.pointerType === 'touch' && !e.isPrimary) return;
+      // For touch: allow all touches (primary for movement, secondary for digging)
+      // For mouse/pen: only handle primary pointer
+      if ((e.pointerType === 'mouse' || e.pointerType === 'pen') && !e.isPrimary) return;
 
       // When dialogue is showing: canvas tap advances it (same as tapping the dialogue box)
       if (uiRef.current.dialogue !== null) {
