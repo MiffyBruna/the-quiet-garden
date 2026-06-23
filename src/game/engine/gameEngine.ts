@@ -179,6 +179,19 @@ function countWorkingBunds(gs: GameState): number {
   return count;
 }
 
+/** Check if there's a mature (stage 3+) Mesquite tree in the ecosystem. */
+export function hasMatureMesquite(gs: GameState): boolean {
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      const t = getTile(gs.tiles, x, y);
+      if (t?.plant && t.plant.type === 'mesquite' && t.plant.stage >= 3) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /** Localized moisture retention based on proximity to bunds, mulch, and mature plants. */
 function getLocalMoistureRetention(tiles: Tile[][], x: number, y: number, restoration: number): number {
   if (restoration >= 70) return 1.0; // At high restoration, global moisture floor is sufficient
@@ -1293,7 +1306,7 @@ export const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
   },
   {
     type: 'hawk', emoji: '🦅',
-    check: (_, s) => s.restoration >= 80,
+    check: (gs, s) => s.restoration >= 80 && hasMatureMesquite(gs),
     wisdom: 'The hawk watches over everything. Its presence means the web is complete.',
   },
   {

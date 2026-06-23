@@ -36,6 +36,7 @@ interface WatershedData {
   discoveredPlants: string[];
   newlyDiscovered: string[];
   gameStats: GameStats;
+  hasMatureMesquite: boolean;
 }
 
 export function QuietGarden() {
@@ -56,6 +57,7 @@ export function QuietGarden() {
       plantDiversity: 0,
       waterTileCount: 0,
     },
+    hasMatureMesquite: false,
   });
 
   const handleStartGame = useCallback((isContinue: boolean) => {
@@ -65,7 +67,7 @@ export function QuietGarden() {
   }, []);
 
   const handleOpenWatershed = useCallback(
-    (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[], gameStats: GameStats) => {
+    (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[], gameStats: GameStats, hasMatureMesquite: boolean) => {
       setWatershedData({
         chapter1Restoration: restoration,
         discoveredWildlife: wildlife,
@@ -73,6 +75,7 @@ export function QuietGarden() {
         discoveredPlants: plants,
         newlyDiscovered,
         gameStats,
+        hasMatureMesquite,
       });
       setShowWatershed(true);
       track('custom_watershed_opened');
@@ -95,6 +98,7 @@ export function QuietGarden() {
           discoveredPlants={watershedData.discoveredPlants}
           newlyDiscovered={watershedData.newlyDiscovered}
           gameStats={watershedData.gameStats}
+          hasMatureMesquite={watershedData.hasMatureMesquite}
           onClose={() => {
             setShowWatershed(false);
             track('custom_watershed_closed');

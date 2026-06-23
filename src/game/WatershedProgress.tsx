@@ -34,7 +34,8 @@ const scrollbarHiddenStyles = `
 function getHintForWildlife(
   wildlifeType: WildlifeType,
   stats: GameStats,
-  discoveredPlants: string[]
+  discoveredPlants: string[],
+  hasMatureMesquite: boolean = false
 ): string {
   const discovered = new Set(discoveredPlants);
 
@@ -98,7 +99,10 @@ function getHintForWildlife(
       if (stats.restoration < 80) {
         return `💡 Something waits for 80% restoration. Valley is ${Math.round(stats.restoration)}% restored.`;
       }
-      return `✓ Ready: Something should appear soon (${Math.round(stats.restoration)}% restored)`;
+      if (!hasMatureMesquite) {
+        return '💡 Something needs a mature tree to establish. Grow a Mesquite to completion.';
+      }
+      return `✓ Ready: Something should appear soon (${Math.round(stats.restoration)}% restored, mature tree established)`;
     case 'swallow':
       if (stats.bloomCount < 5 || stats.restoration < 85) {
         return `💡 Something needs 5 blooms + 85% restoration. You have ${stats.bloomCount} blooms, ${Math.round(stats.restoration)}% restored.`;
@@ -116,6 +120,7 @@ interface WatershedProgressProps {
   discoveredPlants: string[];
   newlyDiscovered: string[];
   gameStats: GameStats;
+  hasMatureMesquite: boolean;
   onClose: () => void;
 }
 
@@ -126,6 +131,7 @@ export function WatershedProgress({
   discoveredPlants,
   newlyDiscovered,
   gameStats,
+  hasMatureMesquite,
   onClose,
 }: WatershedProgressProps) {
   const c = theme.colors;
@@ -280,7 +286,7 @@ export function WatershedProgress({
           <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
             {WILDLIFE_CONDITIONS.map((info) => {
               const isDiscovered = discoveredWildlife.includes(info.type);
-              const hint = !isDiscovered ? getHintForWildlife(info.type as WildlifeType, gameStats, discoveredPlants) : null;
+              const hint = !isDiscovered ? getHintForWildlife(info.type as WildlifeType, gameStats, discoveredPlants, hasMatureMesquite) : null;
 
               return (
                 <div
