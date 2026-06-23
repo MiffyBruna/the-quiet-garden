@@ -86,7 +86,11 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
         stopRain();
         stopMusic();
 
-        creditsAudioRef.current = new Audio('/credits-music.mp3');
+        // Load music from CDN (same as other large assets)
+        const musicBlob = await RundotGameAPI.cdn.fetchAsset('credits-music.mp3');
+        const musicUrl = URL.createObjectURL(musicBlob);
+
+        creditsAudioRef.current = new Audio(musicUrl);
         creditsAudioRef.current.loop = true;
         creditsAudioRef.current.volume = 0.6;
 
@@ -376,17 +380,6 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
             </div>
           ))}
 
-          {/* Character Image 3 */}
-          {greenThumbUrl && (
-            <div style={{ textAlign: 'center', paddingBottom: theme.spacing.xl }}>
-              <img
-                src={greenThumbUrl}
-                alt="Green Thumb"
-                style={{ maxWidth: '280px', height: 'auto' }}
-              />
-            </div>
-          )}
-
           {/* End message */}
           <div style={{ textAlign: 'center', color: '#fff', paddingTop: theme.spacing.xl }}>
             <div style={{ fontSize: 18, fontWeight: 'bold', marginBottom: theme.spacing.md }}>
@@ -396,6 +389,17 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
               Your contributions have made this garden grow.
             </div>
           </div>
+
+          {/* Character Image 3 */}
+          {greenThumbUrl && (
+            <div style={{ textAlign: 'center', paddingTop: theme.spacing.xl, paddingBottom: theme.spacing.xl }}>
+              <img
+                src={greenThumbUrl}
+                alt="Green Thumb"
+                style={{ maxWidth: '280px', height: 'auto' }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
