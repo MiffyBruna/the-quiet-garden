@@ -977,18 +977,28 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
 
   // Credits music: Play when credits preview starts (stop all other music)
   useEffect(() => {
+    let creditsAudio: HTMLAudioElement | null = null;
+
     if (showCreditsPreview) {
       // Stop all background music and rain
       stopRain();
       stopMusic();
 
-      // Play the credits music
-      playMusic('/credits-music.mp3', 0.6);
+      // Create and play credits music directly
+      creditsAudio = new Audio('/credits-music.mp3');
+      creditsAudio.loop = true;
+      creditsAudio.volume = isMusicEnabled() ? 0.6 : 0;
+      creditsAudio.play().catch((err) => {
+        console.warn('Credits music playback failed:', err);
+      });
     }
 
     return () => {
       // Stop credits music when credits close
-      stopMusic();
+      if (creditsAudio) {
+        creditsAudio.pause();
+        creditsAudio = null;
+      }
     };
   }, [showCreditsPreview]);
 
@@ -3767,8 +3777,8 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
           left: 0,
           right: 0,
           height: TOOLBAR_H,
-          background: 'rgba(15,25,15,0.92)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(20,35,20,0.85)',
+          backdropFilter: 'blur(4px)',
           borderTop: '1px solid rgba(124,202,124,0.25)',
           display: 'flex',
           alignItems: 'center',
@@ -3779,9 +3789,6 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
           overflowY: 'hidden',
           scrollBehavior: 'smooth',
           zIndex: 20,
-          // Visual hint: subtle right edge fade to indicate scrollable content
-          WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent)',
-          maskImage: 'linear-gradient(to right, black 85%, transparent)',
         }}
       >
         {TOOL_DEFS.filter((def) => ui.unlockedTools.includes(def.id)).map((def) => {

@@ -119,15 +119,8 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
 
       {/* Sparkles disabled */}
 
-      {/* Header */}
+      {/* Header — Speed controls only */}
       <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: '#fff', zIndex: 10 }}>
-        <div style={{ fontSize: 32, fontWeight: 'bold', marginBottom: theme.spacing.md }}>
-          Recent Contributors
-        </div>
-        <div style={{ fontSize: 14, opacity: 0.8, marginBottom: theme.spacing.md }}>
-          {credits.length} gardeners shaping this valley
-        </div>
-
         {/* Speed control */}
         <div style={{ display: 'flex', gap: theme.spacing.sm, justifyContent: 'center', alignItems: 'center' }}>
           <button
@@ -182,6 +175,13 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
             paddingBottom: '100vh',
           }}
         >
+          {/* Gardeners count */}
+          <div style={{ textAlign: 'center', color: '#fff', paddingBottom: theme.spacing.xl }}>
+            <div style={{ fontSize: 14, opacity: 0.8 }}>
+              {credits.length} gardeners shaping this valley
+            </div>
+          </div>
+
           {/* Title with Logo */}
           <div style={{ textAlign: 'center', color: '#fff', paddingBottom: theme.spacing.xl }}>
             <img
