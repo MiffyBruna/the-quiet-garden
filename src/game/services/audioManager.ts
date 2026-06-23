@@ -76,9 +76,7 @@ export function playMusic(src: string, volume?: number): void {
       audioInstance = new Audio(audioUrl);
       audioInstance.loop = true;
       audioInstance.volume = (volume ?? currentSettings.musicVolume) / 100;
-      audioInstance.play().catch((e) => {
-        console.warn('Failed to play music:', e);
-      });
+      playAudioWithUnlock(audioInstance, 'music');
     } catch (e) {
       console.warn('Failed to load music:', e);
     }
@@ -173,9 +171,7 @@ export function playRain(): void {
     rainAudioInstance = new Audio('/rain.wav');
     rainAudioInstance.loop = true;
     rainAudioInstance.volume = (currentSettings.sfxVolume / 100) * 0.6; // Slightly quieter than other SFX
-    rainAudioInstance.play().catch((e) => {
-      console.warn('Failed to play rain sound:', e);
-    });
+    playAudioWithUnlock(rainAudioInstance, 'rain sound');
   } catch (e) {
     console.warn('Failed to load rain sound:', e);
   }
@@ -210,9 +206,7 @@ export function playMulch(): void {
     mulchAudioInstance = new Audio('/mulch.ogg');
     mulchAudioInstance.loop = false;
     mulchAudioInstance.volume = currentSettings.sfxVolume / 100;
-    mulchAudioInstance.play().catch((e) => {
-      console.warn('Failed to play mulch sound:', e);
-    });
+    playAudioWithUnlock(mulchAudioInstance, 'mulch sound');
   } catch (e) {
     console.warn('Failed to load mulch sound:', e);
   }
@@ -236,9 +230,7 @@ export function playDestroy(): void {
     destroyAudioInstance = new Audio('/destroy.ogg');
     destroyAudioInstance.loop = false;
     destroyAudioInstance.volume = currentSettings.sfxVolume / 100;
-    destroyAudioInstance.play().catch((e) => {
-      console.warn('Failed to play destroy sound:', e);
-    });
+    playAudioWithUnlock(destroyAudioInstance, 'destroy sound');
   } catch (e) {
     console.warn('Failed to load destroy sound:', e);
   }
@@ -262,9 +254,7 @@ export function playMove(): void {
     moveAudioInstance = new Audio('/move.ogg');
     moveAudioInstance.loop = false;
     moveAudioInstance.volume = currentSettings.sfxVolume / 100;
-    moveAudioInstance.play().catch((e) => {
-      console.warn('Failed to play move sound:', e);
-    });
+    playAudioWithUnlock(moveAudioInstance, 'move sound');
   } catch (e) {
     console.warn('Failed to load move sound:', e);
   }
@@ -288,9 +278,7 @@ export function playWater(): void {
     waterAudioInstance = new Audio('/water.ogg');
     waterAudioInstance.loop = false;
     waterAudioInstance.volume = currentSettings.sfxVolume / 100;
-    waterAudioInstance.play().catch((e) => {
-      console.warn('Failed to play water sound:', e);
-    });
+    playAudioWithUnlock(waterAudioInstance, 'water sound');
   } catch (e) {
     console.warn('Failed to load water sound:', e);
   }
@@ -314,9 +302,7 @@ export function playButton(): void {
     buttonAudioInstance = new Audio('/button.ogg');
     buttonAudioInstance.loop = false;
     buttonAudioInstance.volume = currentSettings.sfxVolume / 100;
-    buttonAudioInstance.play().catch((e) => {
-      console.warn('Failed to play button sound:', e);
-    });
+    playAudioWithUnlock(buttonAudioInstance, 'button sound');
   } catch (e) {
     console.warn('Failed to load button sound:', e);
   }
@@ -340,9 +326,7 @@ export function playMenuSelect(): void {
     menuSelectAudioInstance = new Audio('/menu-select.ogg');
     menuSelectAudioInstance.loop = false;
     menuSelectAudioInstance.volume = currentSettings.sfxVolume / 100;
-    menuSelectAudioInstance.play().catch((e) => {
-      console.warn('Failed to play menu select sound:', e);
-    });
+    playAudioWithUnlock(menuSelectAudioInstance, 'menu select sound');
   } catch (e) {
     console.warn('Failed to load menu select sound:', e);
   }
@@ -366,10 +350,83 @@ export function playCancel(): void {
     cancelAudioInstance = new Audio('/cancel.ogg');
     cancelAudioInstance.loop = false;
     cancelAudioInstance.volume = currentSettings.sfxVolume / 100;
-    cancelAudioInstance.play().catch((e) => {
-      console.warn('Failed to play cancel sound:', e);
-    });
+    playAudioWithUnlock(cancelAudioInstance, 'cancel sound');
   } catch (e) {
     console.warn('Failed to load cancel sound:', e);
   }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Mobile Audio Unlock — unlock HTML audio on first user gesture
+// ─────────────────────────────────────────────────────────────────
+
+let audioUnlocked = false;
+
+/**
+ * Play audio with automatic unlock fallback for mobile browsers
+ * On NotAllowedError, unlocks audio and retries after a short delay
+ */
+function playAudioWithUnlock(audio: HTMLAudioElement, soundName: string): void {
+  audio.play().catch((e: any) => {
+    if (e?.name === 'NotAllowedError') {
+      // Mobile browsers block audio until a user gesture; unlock and retry
+      unlockAudio();
+      setTimeout(() => {
+        audio.play().catch((retryErr) => {
+          console.warn(`Failed to play ${soundName} after unlock retry:`, retryErr);
+        });
+      }, 100);
+    } else {
+      console.warn(`Failed to play ${soundName}:`, e);
+    }
+  });
+}
+
+/**
+ * Unlock audio on mobile browsers by playing a silent sound
+ * Mobile browsers (especially iOS Safari) block all audio until a user gesture triggers it
+ */
+export function unlockAudio(): void {
+  if (audioUnlocked) return;
+
+  try {
+    // Create and play a silent audio element to unlock audio context
+    const silentAudio = new Audio();
+    silentAudio.src = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==';
+    silentAudio.volume = 0;
+    silentAudio.play().then(() => {
+      audioUnlocked = true;
+      // Record telemetry for mobile audio unlock
+      try {
+        const RundotGameAPI = require('@series-inc/rundot-game-sdk/api').default;
+        RundotGameAPI.analytics.recordCustomEvent('audio_unlocked_mobile', {
+          trigger: 'user_gesture'
+        });
+      } catch (e) {
+        // Silently fail if telemetry not available
+      }
+    }).catch(() => {
+      // If silent audio fails, mark as unlocked anyway
+      audioUnlocked = true;
+    });
+  } catch (e) {
+    // If anything fails, mark as unlocked anyway
+    audioUnlocked = true;
+  }
+}
+
+/**
+ * Setup audio unlock listeners on document
+ * Call this once at app start to enable audio on first user interaction
+ */
+export function setupAudioUnlock(): void {
+  const unlock = () => {
+    unlockAudio();
+    // Remove listeners after first unlock
+    document.removeEventListener('touchstart', unlock);
+    document.removeEventListener('click', unlock);
+  };
+
+  document.addEventListener('touchstart', unlock, { once: true });
+  document.addEventListener('click', unlock, { once: true });
 }

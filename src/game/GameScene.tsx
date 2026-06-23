@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel, setupAudioUnlock } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -978,6 +978,9 @@ export function GameScene({ onShowWatershed, isContinue }: {
         if (isMusicEnabled()) {
           playMusic('soundtrack.mp3');
         }
+
+        // Setup audio unlock for mobile browsers (Web Audio context)
+        setupAudioUnlock();
 
         // Preload sprites and other assets BEFORE marking game as loaded
         // Fairy sprites are REQUIRED — game will not load without them

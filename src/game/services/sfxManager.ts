@@ -4,7 +4,7 @@
  */
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { loadCdnAsset } from './assetLoader';
-import { getSfxVolume, isSfxEnabled } from './audioManager';
+import { getSfxVolume, isSfxEnabled, unlockAudio } from './audioManager';
 
 interface CachedSFX {
   url: string;
@@ -223,8 +223,19 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         const handleCanPlay = () => {
           audio.removeEventListener('canplay', handleCanPlay);
           audio.removeEventListener('error', handleError);
-          audio.play().catch((e) => {
-            console.warn(`Failed to play SFX ${sfxType}:`, e);
+          audio.play().catch((e: any) => {
+            // On mobile, if play() fails due to browser audio restrictions, unlock audio and retry
+            if (e?.name === 'NotAllowedError') {
+              unlockAudio();
+              // Small delay to allow unlock to process, then retry
+              setTimeout(() => {
+                audio.play().catch((retryErr) => {
+                  console.warn(`Failed to play SFX ${sfxType} after unlock retry:`, retryErr);
+                });
+              }, 100);
+            } else {
+              console.warn(`Failed to play SFX ${sfxType}:`, e);
+            }
           });
           RundotGameAPI.analytics.recordCustomEvent('sfx_played', { type: sfxType });
           resolve();
@@ -245,8 +256,18 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
         const timeout = setTimeout(() => {
           audio.removeEventListener('canplay', handleCanPlay);
           audio.removeEventListener('error', handleError);
-          audio.play().catch((e) => {
-            console.warn(`Failed to play SFX ${sfxType} after timeout:`, e);
+          audio.play().catch((e: any) => {
+            // On mobile, if play() fails due to browser audio restrictions, unlock audio and retry
+            if (e?.name === 'NotAllowedError') {
+              unlockAudio();
+              setTimeout(() => {
+                audio.play().catch((retryErr) => {
+                  console.warn(`Failed to play SFX ${sfxType} after unlock retry:`, retryErr);
+                });
+              }, 100);
+            } else {
+              console.warn(`Failed to play SFX ${sfxType} after timeout:`, e);
+            }
           });
           resolve();
         }, 5000);
