@@ -58836,11 +58836,82 @@
       "timestamp": 1782187313412,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782187339488",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "now dont put 60px/s remove that part and why do i not see the ads in this preview will the ads work once we publish?",
+      "timestamp": 1782187339488,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782187348331-f4umzridh",
+      "role": "assistant",
+      "content": "Let me do two things:\n\n1. **Remove the scroll speed display** from the Credits screen\n2. **Explain the ads situation**\n\nFirst, let me remove the speed display:",
+      "isShownToUser": true,
+      "timestamp": 1782187348783,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782187349674-g4i4t86zw",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782187349674,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782187354883-78ldtc4y8",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782187354883,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782187358400-kfjt8vhno",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782187358400,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782187366492-mdy5yzn72",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782187366492,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782187376847-dzp7zkc71",
+      "role": "assistant",
+      "content": "Done! **v1.2.29 deployed** — scroll speed display removed. ✓\n\n---\n\n## About the Ads Not Showing\n\n**You won't see ads in the preview** because:\n\n1. **Preview environment is sandboxed** — isolated from the real RUN.game platform\n2. **Ad network requires real authentication** — only works on the deployed game on run.game, not in local/preview mode\n3. **SDK needs production context** — `RundotGameAPI.ads` only initializes properly when running on the actual RUN.game servers\n\n**When you publish (deploy), ads WILL work** because:\n- The game runs on RUN.game's actual servers\n- The SDK connects to the real ad network\n- Players see real rewarded ads when they click the ad button\n- You earn revenue from successful ad completions\n\n**To test ads flow:**\n1. Deploy to private (you already do this)\n2. Open the share link on a mobile device or in the actual RUN.game app\n3. Play through to completion → Credits button appears\n4. Click Credits → \"Watch Ad\" button will show real ads\n5. Players can complete ads → names get added\n\nSo the ads system is ready and will work once players access your game through the RUN.game platform!",
+      "isShownToUser": true,
+      "timestamp": 1782187380744,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782187313455,
-  "tokenUsage": 99319,
+  "updatedAt": 1782187380930,
+  "tokenUsage": 100998,
   "script": "default",
   "claudeSessionId": "0940c680-54c8-4b38-9f9a-211d1e55b426"
 }

@@ -176,9 +176,6 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
           >
             − Slow
           </button>
-          <div style={{ color: '#fff', fontSize: 12, minWidth: 60, textAlign: 'center' }}>
-            {scrollSpeed}px/s
-          </div>
           <button
             onClick={() => setScrollSpeed(Math.min(60, scrollSpeed + 10))}
             style={{
