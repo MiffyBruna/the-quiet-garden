@@ -899,8 +899,10 @@ const TICKS_PER_SECOND = FPS;
 interface GrowthTimer {
   currentStage: number;
   totalStages: number;
-  minutesRemaining: number;
-  secondsRemaining: number;
+  minMinutes: number;
+  maxMinutes: number;
+  minSeconds: number;
+  maxSeconds: number;
 }
 
 function calculateGrowthTimer(plant: PlantState): GrowthTimer {
@@ -909,18 +911,26 @@ function calculateGrowthTimer(plant: PlantState): GrowthTimer {
 
   // If already at full maturity (blooming), no time remaining
   if (currentStage >= 4) {
-    return { currentStage, totalStages, minutesRemaining: 0, secondsRemaining: 0 };
+    return { currentStage, totalStages, minMinutes: 0, maxMinutes: 0, minSeconds: 0, maxSeconds: 0 };
   }
 
-  // Estimate: remaining stages × ticks per stage, minus current age
-  // Assuming growth multipliers average to 1.0 (conservative estimate)
+  // Growth speed varies from 0.6x (dry soil) to 1.3x (optimal moisture)
+  // Calculate range: fastest to slowest possible growth
   const stagesRemaining = 4 - currentStage; // Stages until blooming
   const ticksRemaining = (stagesRemaining * GROWTH_TICKS_PER_STAGE) - plant.age;
-  const secondsRemaining = Math.ceil(ticksRemaining / TICKS_PER_SECOND);
-  const minutesRemaining = Math.floor(secondsRemaining / 60);
-  const secsDisplay = secondsRemaining % 60;
 
-  return { currentStage, totalStages, minutesRemaining, secondsRemaining: secsDisplay };
+  // Fastest case: 1.3x growth multiplier (optimal moisture 30-60)
+  const secondsFastest = Math.ceil(ticksRemaining / TICKS_PER_SECOND / 1.3);
+
+  // Slowest case: 0.6x growth multiplier (dry soil <20 moisture)
+  const secondsSlowest = Math.ceil(ticksRemaining / TICKS_PER_SECOND / 0.6);
+
+  const minMinutes = Math.floor(secondsFastest / 60);
+  const maxMinutes = Math.floor(secondsSlowest / 60);
+  const minSeconds = secondsFastest % 60;
+  const maxSeconds = secondsSlowest % 60;
+
+  return { currentStage, totalStages, minMinutes, maxMinutes, minSeconds, maxSeconds };
 }
 
 export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
@@ -3148,7 +3158,7 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
                             <b>Stage:</b> {timer.currentStage}/{timer.totalStages}
                           </div>
                           <div>
-                            <b>Mature in:</b> {timer.minutesRemaining} min {timer.secondsRemaining} sec
+                            <b>Mature in:</b> {timer.minMinutes}–{timer.maxMinutes} min
                           </div>
                         </div>
                       );
