@@ -2016,7 +2016,6 @@ export function GameScene({ onShowWatershed, isContinue }: {
 
       if (tool === 'talk') {
         // Moss dialogue
-        console.log('🐸 Moss clicked - questStep:', gs.questStep, '| animals:', gs.discoveredWildlife.length, '| restoration:', Math.round(calculateRestoration(gs)));
         let dialogues = (ui.unlockedTools.includes('landscape') || gs.completionTriggered) ? MOSS_LANDSCAPE_DIALOGUE : getQuestMossDialogue(gs.questStep);
         const mainDialogue = dialogues.length > 0 ? dialogues : [{
           speaker: 'Moss', emoji: '🐸',

@@ -1356,7 +1356,8 @@ export function getDebugInfo(gs: GameState): string[] {
  * Returns null if all animals are discovered or game isn't in free play
  */
 export function getMossWildlifeHint(gs: GameState): DialogueLine | null {
-  if (gs.questStep !== 'free_play' || gs.discoveredWildlife.length === 13) return null;
+  // Show hints as long as there are undiscovered animals, regardless of quest step
+  if (gs.discoveredWildlife.length === 13) return null;
 
   const stats = computeGameStats(gs);
   const discovered = new Set(gs.discoveredWildlife);
