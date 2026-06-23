@@ -35,78 +35,78 @@ function getHintForWildlife(
   wildlifeType: WildlifeType,
   stats: GameStats,
   discoveredPlants: string[]
-): string | null {
+): string {
   const discovered = new Set(discoveredPlants);
 
   switch (wildlifeType) {
     case 'ant':
       if (stats.avgFertility < 20) {
-        return '💡 The soil needs life in it first. Ants 🐜 follow fertility — add mulch and let the land rest.';
+        return `💡 Ants 🐜 need fertile soil. Currently ${Math.round(stats.avgFertility)}% fertile — add mulch and let the land rest.`;
       }
-      break;
+      return '✓ Ready: Ants 🐜 should appear soon (soil is fertile enough)';
     case 'bee':
       if (stats.bloomCount < 1) {
-        return '💡 Not a single flower is open yet. Bees 🐝 need something to visit — plant a seed and let it bloom.';
+        return '💡 Bees 🐝 need open flowers. Plant a seed and let it bloom.';
       }
-      break;
+      return `✓ Ready: Bees 🐝 should appear soon (${stats.bloomCount} flower open)`;
     case 'monarch':
       if (!discovered.has('milkweed')) {
-        return '💡 There is a butterfly that will only come for one plant. The Monarch 🦋 follows milkweed — plant it and wait.';
+        return '💡 Monarch 🦋 only comes for milkweed. Plant milkweed and wait.';
       }
-      break;
+      return '✓ Ready: Monarch 🦋 should appear soon (milkweed planted)';
     case 'frog':
       if (stats.waterTileCount < 2) {
-        return `💡 Something is missing from the edges of this place. Frogs 🐸 need water to return — the land needs at least two pools. You have ${stats.waterTileCount}.`;
+        return `💡 Frogs 🐸 need water. Create 2+ pools (you have ${stats.waterTileCount}).`;
       }
-      break;
+      return `✓ Ready: Frogs 🐸 should appear soon (${stats.waterTileCount} water tiles)`;
     case 'beetle':
       if (stats.mulchCount < 2 || stats.avgFertility < 25) {
-        return `💡 The ground needs more organic matter. Beetles 🪲 hide under mulch in fertile soil — you have ${stats.mulchCount} mulch tile${stats.mulchCount === 1 ? '' : 's'}.`;
+        return `💡 Beetles 🪲 need mulch & fertile soil. You have ${stats.mulchCount} mulch, ${Math.round(stats.avgFertility)}% fertility.`;
       }
-      break;
+      return '✓ Ready: Beetles 🪲 should appear soon (mulch & fertility OK)';
     case 'hoverfly':
       if (stats.bloomCount < 3) {
-        return `💡 ${stats.bloomCount} flower${stats.bloomCount === 1 ? ' is' : 's are'} open. Hoverflies 🦟 need three blooms at once to find the valley.`;
+        return `💡 Hoverflies 🦟 need 3 blooms at once. You have ${stats.bloomCount}.`;
       }
-      break;
+      return `✓ Ready: Hoverflies 🦟 should appear soon (${stats.bloomCount} blooms)`;
     case 'painted_lady':
       if (stats.plantDiversity < 3 || stats.bloomCount < 2) {
-        return `💡 You have ${stats.plantDiversity} plant type${stats.plantDiversity === 1 ? '' : 's'} and ${stats.bloomCount} blooming. The Painted Lady 🦋 needs variety — three kinds of plants, two in bloom.`;
+        return `💡 Painted Lady 🦋 needs variety: 3 plant types & 2 blooms. You have ${stats.plantDiversity} types, ${stats.bloomCount} blooming.`;
       }
-      break;
+      return `✓ Ready: Painted Lady 🦋 should appear soon (${stats.plantDiversity} types, ${stats.bloomCount} blooms)`;
     case 'dragonfly':
       if (stats.waterTileCount < 3) {
-        return `💡 ${stats.waterTileCount} water tile${stats.waterTileCount === 1 ? '' : 's'} isn't enough. Dragonflies 🪲 patrol larger pools — the valley needs three.`;
+        return `💡 Dragonflies 🪲 patrol larger pools. Need 3+ water tiles (you have ${stats.waterTileCount}).`;
       }
-      break;
+      return `✓ Ready: Dragonflies 🪲 should appear soon (${stats.waterTileCount} water tiles)`;
     case 'cottontail':
       if (stats.bloomCount < 3 || stats.plantDiversity < 3) {
-        return `💡 ${stats.bloomCount} blooms, ${stats.plantDiversity} plant types. Cottontail 🐇 needs both — three blooms and three kinds of plants at once.`;
+        return `💡 Cottontail 🐇 needs 3 blooms & 3 plant types at once. You have ${stats.bloomCount} blooms, ${stats.plantDiversity} types.`;
       }
-      break;
+      return `✓ Ready: Cottontail 🐇 should appear soon (${stats.bloomCount} blooms, ${stats.plantDiversity} types)`;
     case 'finch':
       if (stats.plantDiversity < 4) {
-        return `💡 ${stats.plantDiversity} plant type${stats.plantDiversity === 1 ? '' : 's'} so far. Finches 🐦‍⬛ need a diverse valley — try planting a fourth kind.`;
+        return `💡 Finches 🐦‍⬛ love diverse valleys. Plant a 4th kind (you have ${stats.plantDiversity}).`;
       }
-      break;
+      return `✓ Ready: Finches 🐦‍⬛ should appear soon (${stats.plantDiversity} plant types)`;
     case 'quail':
       if (stats.restoration < 70) {
-        return `💡 The valley is ${Math.round(stats.restoration)}% restored. Quail 🐦 return when the land reaches 70% — keep going.`;
+        return `💡 Quail 🐦 return at 70% restoration. Valley is ${Math.round(stats.restoration)}% restored.`;
       }
-      break;
+      return `✓ Ready: Quail 🐦 should appear soon (${Math.round(stats.restoration)}% restored)`;
     case 'hawk':
       if (stats.restoration < 80) {
-        return `💡 The valley is ${Math.round(stats.restoration)}% restored. The Hawk 🦅 waits for 80% before it lands.`;
+        return `💡 Hawk 🦅 waits for 80% restoration. Valley is ${Math.round(stats.restoration)}% restored.`;
       }
-      break;
+      return `✓ Ready: Hawk 🦅 should appear soon (${Math.round(stats.restoration)}% restored)`;
     case 'swallow':
       if (stats.bloomCount < 5 || stats.restoration < 85) {
-        return `💡 ${stats.bloomCount} flower${stats.bloomCount === 1 ? '' : 's'} blooming, ${Math.round(stats.restoration)}% restored. The Swallow 🕊️ counts every open bloom — it needs five at once and 85% restoration. Plant in waves so blooms overlap.`;
+        return `💡 Swallow 🕊️ needs 5 blooms + 85% restoration. You have ${stats.bloomCount} blooms, ${Math.round(stats.restoration)}% restored.`;
       }
-      break;
+      return `✓ Ready: Swallow 🕊️ should appear soon (${stats.bloomCount} blooms, ${Math.round(stats.restoration)}% restored)`;
+    default:
+      return 'Continue restoring the valley to discover this animal.';
   }
-
-  return null;
 }
 
 interface WatershedProgressProps {
@@ -342,16 +342,9 @@ export function WatershedProgress({
                         <div style={{ fontSize: theme.fontSize.sm, fontWeight: 600, color: c.text.muted, textTransform: 'capitalize' }}>
                           Unknown
                         </div>
-                        {hint && (
-                          <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, lineHeight: 1.4, fontStyle: 'italic' }}>
-                            {hint}
-                          </div>
-                        )}
-                        {!hint && (
-                          <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, lineHeight: 1.4, fontStyle: 'italic' }}>
-                            Continue restoring the valley to discover this animal.
-                          </div>
-                        )}
+                        <div style={{ fontSize: theme.fontSize.xs, color: c.text.muted, marginTop: 2, lineHeight: 1.4, fontStyle: 'italic' }}>
+                          {hint}
+                        </div>
                       </div>
                     </>
                   )}
