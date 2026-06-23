@@ -55384,11 +55384,29 @@
       "timestamp": 1782181546889,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782181687492",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "WHAT ARE THE SWALLOW HINTS",
+      "timestamp": 1782181687492,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782181695486-f5nklm0hh",
+      "role": "assistant",
+      "content": "The **Swallow** hints are:\n\n**When conditions aren't met:**\n- \"💡 Something needs 5 blooms + 85% restoration. You have X blooms, Y% restored.\"\n\n**When conditions are met:**\n- \"✓ Ready: Something should appear soon (X blooms, Y% restored)\"\n\nSo the Swallow is the most demanding animal—it needs **5 blooms flowering at the same time AND 85% valley restoration** to appear. The hint tells you how close you are to both targets without revealing it's the Swallow!",
+      "isShownToUser": true,
+      "timestamp": 1782181696227,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782181546970,
-  "tokenUsage": 12906,
+  "updatedAt": 1782181696278,
+  "tokenUsage": 13295,
   "script": "default",
   "claudeSessionId": "8ff606ea-31b9-46fa-8158-37d987a78916"
 }
