@@ -216,7 +216,7 @@ export interface UIState {
   activeTool: ToolType;
   selectedSeed: PlantType;
   inspectedTile: { x: number; y: number; tile: Tile } | null;
-  inspectedEntity: { type: 'plant' | 'wildlife' | 'fairy'; name: string } | null;
+  inspectedEntity: { type: 'plant' | 'wildlife' | 'fairy'; name: string; plant?: PlantState } | null;
   inspectedWildlife: Array<{ name: string; wisdom: string }> | null;
   dialogue: DialogueLine | null;
   dialogueQueue: DialogueLine[];

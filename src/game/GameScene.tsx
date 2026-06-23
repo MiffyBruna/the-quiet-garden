@@ -885,6 +885,41 @@ const INITIAL_UI: UIState = {
   debugInfo: [],
 };
 
+// ---------------------------------------------------------------------------
+// Utility: Calculate plant growth timer
+// ---------------------------------------------------------------------------
+
+const GROWTH_TICKS_PER_STAGE = 300; // ticks at 60fps ≈ 5 seconds per stage
+const FPS = 60;
+const TICKS_PER_SECOND = FPS;
+
+interface GrowthTimer {
+  currentStage: number;
+  totalStages: number;
+  minutesRemaining: number;
+  secondsRemaining: number;
+}
+
+function calculateGrowthTimer(plant: PlantState): GrowthTimer {
+  const totalStages = 5; // 0–4 (blooming is stage 4)
+  const currentStage = plant.stage;
+
+  // If already at full maturity (blooming), no time remaining
+  if (currentStage >= 4) {
+    return { currentStage, totalStages, minutesRemaining: 0, secondsRemaining: 0 };
+  }
+
+  // Estimate: remaining stages × ticks per stage, minus current age
+  // Assuming growth multipliers average to 1.0 (conservative estimate)
+  const stagesRemaining = 4 - currentStage; // Stages until blooming
+  const ticksRemaining = (stagesRemaining * GROWTH_TICKS_PER_STAGE) - plant.age;
+  const secondsRemaining = Math.ceil(ticksRemaining / TICKS_PER_SECOND);
+  const minutesRemaining = Math.floor(secondsRemaining / 60);
+  const secsDisplay = secondsRemaining % 60;
+
+  return { currentStage, totalStages, minutesRemaining, secondsRemaining: secsDisplay };
+}
+
 export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
   onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[], gameStats: GameStats, hasMatureMesquite: boolean) => void;
   isContinue: boolean;
@@ -1726,14 +1761,14 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
         }
 
         // Check for entities (plant, wildlife, fairy) at this location
-        let inspectedEntity: { type: 'plant' | 'wildlife' | 'fairy'; name: string } | null = null;
+        let inspectedEntity: { type: 'plant' | 'wildlife' | 'fairy'; name: string; plant?: typeof tile.plant } | null = null;
         let inspectedWildlife: Array<{ name: string; wisdom: string }> | null = null;
 
         // Check for plant
         if (tile.plant) {
           const plantReqs = PLANT_REQUIREMENTS[tile.plant.type];
           if (plantReqs) {
-            inspectedEntity = { type: 'plant', name: plantReqs.name };
+            inspectedEntity = { type: 'plant', name: plantReqs.name, plant: tile.plant };
           }
         }
 
@@ -3075,14 +3110,27 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
               </div>
               <div style={{ fontSize: 10, color: 'rgba(240,255,240,0.8)', lineHeight: 1.4 }}>
                 {/* Plant section */}
-                {ui.inspectedEntity && ui.inspectedEntity.type === 'plant' && (
+                {ui.inspectedEntity && ui.inspectedEntity.type === 'plant' && ui.inspectedEntity.plant && (
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: '#7CCA7C', letterSpacing: '0.05em', marginBottom: 4 }}>
                       Plant
                     </div>
-                    <div style={{ fontStyle: 'italic', color: '#A8E6A8', marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid rgba(124,202,124,0.2)' }}>
+                    <div style={{ fontStyle: 'italic', color: '#A8E6A8', marginBottom: 6 }}>
                       {ui.inspectedEntity.name}
                     </div>
+                    {(() => {
+                      const timer = calculateGrowthTimer(ui.inspectedEntity.plant!);
+                      return (
+                        <div style={{ fontSize: 10, color: 'rgba(168,230,168,0.9)', paddingTop: 6, borderTop: '1px solid rgba(124,202,124,0.2)' }}>
+                          <div style={{ marginBottom: 4 }}>
+                            <b>Stage:</b> {timer.currentStage}/{timer.totalStages}
+                          </div>
+                          <div>
+                            <b>Mature in:</b> {timer.minutesRemaining} min {timer.secondsRemaining} sec
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
                 {/* Soil section */}
