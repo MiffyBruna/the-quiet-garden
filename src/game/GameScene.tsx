@@ -3027,6 +3027,35 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete, onRetur
             >
               Audio
             </button>
+            <button
+              onClick={() => {
+                if (confirm('Return home? Your progress is auto-saved.')) {
+                  onReturnHome();
+                }
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                color: '#F0FFF0',
+                padding: '2px 6px',
+                borderRadius: 4,
+                cursor: 'pointer',
+                fontSize: 8,
+                fontWeight: 'bold',
+                transition: 'all 0.15s ease',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              }}
+              title="Return to home"
+            >
+              Home
+            </button>
           </div>
         </div>
 
@@ -3985,34 +4014,6 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete, onRetur
             </button>
           );
         })}
-        {/* Home button — always available at end of toolbar */}
-        <button
-          onClick={() => {
-            playButton();
-            if (confirm('Return to home? Your progress is auto-saved.')) {
-              onReturnHome();
-            }
-          }}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 1,
-            background: 'transparent',
-            border: '1px solid transparent',
-            borderRadius: 8,
-            padding: '3px 2px',
-            cursor: 'pointer',
-            opacity: 1,
-            minWidth: 48,
-            flexShrink: 0,
-            marginLeft: 'auto',
-          }}
-          title="Return to home"
-        >
-          <span style={{ fontSize: 26, lineHeight: '1' }}>🏠</span>
-          <span style={{ fontSize: 11, color: 'rgba(240,255,240,0.6)', textAlign: 'center', lineHeight: '1' }}>Home</span>
-        </button>
       </div>
       )}
 
