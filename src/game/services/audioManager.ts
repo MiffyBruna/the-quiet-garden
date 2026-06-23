@@ -398,19 +398,48 @@ let audioUnlocked = false;
  * On NotAllowedError, unlocks audio and retries after a short delay
  */
 function playAudioWithUnlock(audio: HTMLAudioElement, soundName: string): void {
-  audio.play().catch((e: any) => {
-    if (e?.name === 'NotAllowedError') {
-      // Mobile browsers block audio until a user gesture; unlock and retry
-      unlockAudio();
-      setTimeout(() => {
-        audio.play().catch((retryErr) => {
-          console.warn(`Failed to play ${soundName} after unlock retry:`, retryErr);
-        });
-      }, 100);
-    } else {
-      console.warn(`Failed to play ${soundName}:`, e);
-    }
-  });
+  const attemptPlay = () => {
+    audio.play().catch((e: any) => {
+      if (e?.name === 'NotAllowedError') {
+        // Mobile browsers block audio until a user gesture; unlock and retry
+        unlockAudio();
+        setTimeout(() => {
+          audio.play().catch((retryErr) => {
+            console.warn(`Failed to play ${soundName} after unlock retry:`, retryErr);
+          });
+        }, 100);
+      } else {
+        console.warn(`Failed to play ${soundName}:`, e);
+      }
+    });
+  };
+
+  // Wait for audio to be loadable before playing (for blob URLs from CDN)
+  if (audio.readyState >= audio.HAVE_FUTURE_DATA) {
+    // Audio is already ready
+    attemptPlay();
+  } else {
+    // Wait for audio to be loadable
+    const onCanPlay = () => {
+      audio.removeEventListener('canplay', onCanPlay);
+      audio.removeEventListener('error', onError);
+      attemptPlay();
+    };
+    const onError = () => {
+      audio.removeEventListener('canplay', onCanPlay);
+      audio.removeEventListener('error', onError);
+      console.warn(`Failed to load ${soundName} audio`);
+    };
+    audio.addEventListener('canplay', onCanPlay, { once: true });
+    audio.addEventListener('error', onError, { once: true });
+
+    // Timeout after 2 seconds and try anyway
+    setTimeout(() => {
+      audio.removeEventListener('canplay', onCanPlay);
+      audio.removeEventListener('error', onError);
+      attemptPlay();
+    }, 2000);
+  }
 }
 
 /**
