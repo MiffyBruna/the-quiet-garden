@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { theme } from '../theme';
 import { getSafeArea } from '../services/environment';
 import type { Credit } from '../services/credits';
-import logoUrl from '../../public/cdn-assets/logo.png?url';
+import logoUrl from '/cdn-assets/logo.png?url';
 
 // Re-export for convenience
 export type { Credit };
