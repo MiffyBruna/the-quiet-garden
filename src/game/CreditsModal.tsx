@@ -6,6 +6,7 @@ import { useState } from 'react';
 import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { theme } from '../theme';
 import { getSafeArea } from '../services/environment';
+import { addCredit } from '../services/credits';
 
 interface CreditsModalProps {
   onNameAdded: (name: string) => void;
@@ -75,6 +76,9 @@ export function CreditsModal({ onNameAdded, onClose }: CreditsModalProps) {
     try {
       // Small delay for better UX (shows "adding" stage briefly)
       await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Save to credits storage
+      addCredit(name);
 
       setStage('success');
       RundotGameAPI.analytics.recordCustomEvent('credits_name_added', {

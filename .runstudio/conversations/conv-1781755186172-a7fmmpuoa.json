@@ -59965,11 +59965,144 @@
       "timestamp": 1782189880557,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782189881089",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "I WATCHED THE ADD AND DIDNT ADD MY USERNAME",
+      "timestamp": 1782189881089,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782189888598-2vzvrn18s",
+      "role": "assistant",
+      "content": "That's a problem! The ad played but the username didn't get added. Let me check the Credits component to see how names are being stored:",
+      "isShownToUser": true,
+      "timestamp": 1782189888863,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782189889004-ielbesen9",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782189889004,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782189891676-2d4vfz791",
+      "role": "assistant",
+      "content": "Let me check where the credits are being fetched and stored in GameScene:",
+      "isShownToUser": true,
+      "timestamp": 1782189891911,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782189893045-r4hm49qhe",
+      "role": "assistant",
+      "content": "Using tool: Grep",
+      "isShownToUser": true,
+      "timestamp": 1782189893045,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Grep"
+      }
+    },
+    {
+      "id": "1782189895397-mlkuj0vr0",
+      "role": "assistant",
+      "content": "Using tool: Grep",
+      "isShownToUser": true,
+      "timestamp": 1782189895397,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Grep"
+      }
+    },
+    {
+      "id": "1782189898794-juj3xl7tv",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782189898795,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782189901053-q8i33zlk6",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782189901053,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782189903847-oekqnrsia",
+      "role": "assistant",
+      "content": "Found the issue! The `CreditsModal` isn't calling the `addCredit()` function to actually save the username. Let me fix that:",
+      "isShownToUser": true,
+      "timestamp": 1782189904264,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782189905574-0cvuzbsu2",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782189905574,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782189910238-rly6dh8op",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782189910238,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782189911893-i9r6xa45r",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782189911893,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782189926854-b4klxifjn",
+      "role": "assistant",
+      "content": "Done! **v1.10.0 deployed** ✅\n\n## Username Save Fixed\n\n**The problem:** Your username wasn't being saved after watching the ad.\n\n**The fix:** The CreditsModal now calls `addCredit()` to properly store your username in the credits list when you complete the ad.\n\n**What happens now:**\n1. Watch ad\n2. Username is automatically retrieved\n3. **Saved to credits** ← NEW FIX\n4. Success message appears\n5. Your name appears in the credits scroll next time\n\n**Share link**: https://w.run/gentlecatbytes/the-quiet-garden?tag=private\n\nTry watching an ad again — your username should now be added to the credits!",
+      "isShownToUser": true,
+      "timestamp": 1782189928666,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782189880788,
-  "tokenUsage": 22141,
+  "updatedAt": 1782189928700,
+  "tokenUsage": 24742,
   "script": "default",
   "claudeSessionId": "7ed31dbf-f868-414f-a610-16533b843f84"
 }
