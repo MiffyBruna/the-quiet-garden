@@ -342,7 +342,7 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
                 alt="Moss & Acacia"
                 style={{ maxWidth: '280px', height: 'auto' }}
               />
-              <div style={{ fontSize: 12, opacity: 0.8, marginTop: theme.spacing.md, fontStyle: 'italic', maxWidth: '280px', margin: '0 auto' }}>
+              <div style={{ fontSize: 12, marginTop: theme.spacing.md, fontStyle: 'italic', maxWidth: '280px', margin: `${theme.spacing.md}px auto 0`, background: 'rgba(255, 255, 255, 0.12)', padding: `${theme.spacing.sm}px ${theme.spacing.md}px`, borderRadius: theme.borderRadius.sm, color: '#E8D7C3' }}>
                 Ralph Waldo Emerson: "The earth laughs in flowers."
               </div>
             </div>
@@ -363,7 +363,7 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
                 alt="Acacia & the Fairies"
                 style={{ maxWidth: '280px', height: 'auto' }}
               />
-              <div style={{ fontSize: 12, opacity: 0.8, marginTop: theme.spacing.md, fontStyle: 'italic', maxWidth: '280px', margin: '0 auto' }}>
+              <div style={{ fontSize: 12, marginTop: theme.spacing.md, fontStyle: 'italic', maxWidth: '280px', margin: `${theme.spacing.md}px auto 0`, background: 'rgba(255, 255, 255, 0.12)', padding: `${theme.spacing.sm}px ${theme.spacing.md}px`, borderRadius: theme.borderRadius.sm, color: '#E8D7C3' }}>
                 Vincent van Gogh: "If you truly love nature, you will find beauty everywhere."
               </div>
             </div>
@@ -404,7 +404,7 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
                 alt="Green Thumb"
                 style={{ maxWidth: '280px', height: 'auto' }}
               />
-              <div style={{ fontSize: 12, opacity: 0.8, marginTop: theme.spacing.md, fontStyle: 'italic', maxWidth: '280px', margin: '0 auto' }}>
+              <div style={{ fontSize: 12, marginTop: theme.spacing.md, fontStyle: 'italic', maxWidth: '280px', margin: `${theme.spacing.md}px auto 0`, background: 'rgba(255, 255, 255, 0.12)', padding: `${theme.spacing.sm}px ${theme.spacing.md}px`, borderRadius: theme.borderRadius.sm, color: '#E8D7C3' }}>
                 Aristotle: "In all things of nature there is something of the marvelous."
               </div>
             </div>
@@ -420,6 +420,16 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
               />
             </div>
           )}
+
+          {/* End of Credits Message */}
+          <div style={{ textAlign: 'center', color: '#fff', paddingTop: theme.spacing.xl, paddingBottom: theme.spacing.xl }}>
+            <div style={{ fontSize: 14, fontWeight: 'bold', marginBottom: theme.spacing.md }}>
+              THIS IS THE END OF THE CREDITS
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.8 }}>
+              If you want your name displayed here please wait
+            </div>
+          </div>
         </div>
       </div>
 
