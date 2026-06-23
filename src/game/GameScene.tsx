@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, isMusicEnabled, toggleMusic, toggleSfx, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel, setupAudioUnlock, unlockAudio } from './services/audioManager';
+import { playMusic, stopMusic, isMusicEnabled, toggleMusic, toggleSfx, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel, setupAudioUnlock, unlockAudio } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -975,15 +975,19 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
     return () => clearInterval(interval);
   }, [ui.rainCooling, rainCooldownRemaining]);
 
-  // Credits music: Play when credits preview starts
+  // Credits music: Play when credits preview starts (stop all other music)
   useEffect(() => {
     let audio: HTMLAudioElement | null = null;
 
     if (showCreditsPreview) {
-      // Play the credits music
+      // Stop all background music
+      stopRain();
+      stopMusic();
+
+      // Play the credits music (credits only)
       audio = new Audio('/Puddles_at_Golden_Hour.mp3');
       audio.loop = true;
-      audio.volume = 0.6;
+      audio.volume = 0.7;
       audio.play().catch(() => {
         // Fallback if autoplay fails
         console.log('Credits music autoplay blocked');
@@ -995,6 +999,8 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
         audio.pause();
         audio.currentTime = 0;
       }
+      // Optionally resume background music when credits close
+      // playMusic(); // uncomment if you want music to resume
     };
   }, [showCreditsPreview]);
 
