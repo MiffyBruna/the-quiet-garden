@@ -12,6 +12,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { theme } from '../theme';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
+import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 import { ZONES } from './gardenData';
 import {
   PLANTS,
@@ -566,11 +567,73 @@ function FairiesTab({ zoneHealthMap }: { zoneHealthMap: Record<string, number> }
 function FairyCard({
   name, personality, wisdom, discovered,
 }: { name: string; personality: string; wisdom: string; discovered: boolean }) {
+  const [particles, setParticles] = useState<Array<{ id: number; emoji: string; x: number; y: number; vx: number; vy: number; life: number }>>([]);
+  const particleIdRef = useRef(0);
+
+  // Map fairy names to personality emojis for the Easter egg
+  const getEasterEggEmojis = (fairyName: string): string[] => {
+    const emojiMap: Record<string, string[]> = {
+      'Sprig': ['🌟', '⚡', '🎉', '💫', '✨'],
+      'Nima': ['💧', '🌊', '🌙', '✨', '💎'],
+      'Bloom': ['🌸', '🌺', '🌻', '🦋', '🌹'],
+      'Ripple': ['🌀', '💨', '🌊', '🎪', '🎨'],
+      'Tampopo': ['🌿', '🍃', '🕊️', '🌾', '🍂'],
+    };
+    return emojiMap[fairyName] || ['✨'];
+  };
+
+  const handleFairyClick = () => {
+    if (!discovered) return;
+
+    // Record Easter egg interaction
+    RundotGameAPI.analytics.recordCustomEvent('fairy_easter_egg_triggered', { fairy: name });
+
+    // Create explosion particles
+    const emojis = getEasterEggEmojis(name);
+    const newParticles = Array.from({ length: 8 }, (_, i) => {
+      const angle = (i / 8) * Math.PI * 2;
+      const speed = 120 + Math.random() * 80;
+      const emoji = emojis[Math.floor(Math.random() * emojis.length)] || '✨';
+      return {
+        id: particleIdRef.current++,
+        emoji,
+        x: 0,
+        y: 0,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+      };
+    });
+    setParticles(newParticles);
+  };
+
+  // Animate particles
+  useEffect(() => {
+    if (particles.length === 0) return;
+
+    const interval = setInterval(() => {
+      setParticles((prev) =>
+        prev
+          .map((p) => ({
+            ...p,
+            x: p.x + p.vx * 0.016,
+            y: p.y + p.vy * 0.016,
+            vy: p.vy + 200 * 0.016, // gravity
+            life: p.life - 0.016 / 0.6, // fade over 0.6s
+          }))
+          .filter((p) => p.life > 0)
+      );
+    }, 16);
+
+    return () => clearInterval(interval);
+  }, [particles]);
+
   return (
     <JournalCard muted={!discovered}>
       <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'flex-start' }}>
         {/* Fairy portrait area */}
         <div
+          onClick={handleFairyClick}
           style={{
             width: 56,
             height: 56,
@@ -583,9 +646,36 @@ function FairyCard({
             fontSize: 26,
             border: `1px solid ${discovered ? 'rgba(160,120,200,0.3)' : BORDER}`,
             filter: discovered ? 'none' : 'grayscale(1) opacity(0.3)',
+            cursor: discovered ? 'pointer' : 'default',
+            position: 'relative',
+            transition: discovered ? 'transform 0.1s' : 'none',
+          }}
+          onMouseDown={(e) => {
+            if (discovered) (e.currentTarget as HTMLDivElement).style.transform = 'scale(0.95)';
+          }}
+          onMouseUp={(e) => {
+            if (discovered) (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
           }}
         >
           {discovered ? '✨' : '?'}
+          {/* Explosion particles */}
+          {particles.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                transform: `translate(calc(-50% + ${p.x}px), calc(-50% + ${p.y}px))`,
+                fontSize: 16,
+                pointerEvents: 'none',
+                opacity: p.life,
+                transition: 'none',
+              }}
+            >
+              {p.emoji}
+            </div>
+          ))}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, flexWrap: 'wrap' }}>
