@@ -1060,6 +1060,7 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete, onRetur
             spriteLoader.preloadPlants(['blue_grama', 'desert_marigold', 'lupine', 'milkweed', 'sage', 'mesquite']),
             wildlifeLoader.preloadAll(),
             wildlifeLoader.loadSprite('moss'),
+            loadCdnAsset('rain.wav'), // Preload rain sound for mobile
           ]);
         } catch (e) {
           console.error('Failed to load critical game assets:', e);
