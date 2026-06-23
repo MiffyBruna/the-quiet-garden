@@ -6,10 +6,13 @@ import { useState, useEffect, useRef } from 'react';
 import { theme } from '../theme';
 import { getSafeArea } from '../services/environment';
 import type { Credit } from '../services/credits';
-import logoImg from '../assets/logo.png';
+import RundotGameAPI from '@series-inc/rundot-game-sdk/api';
 
 // Re-export for convenience
 export type { Credit };
+
+// Telemetry: Record when credits are accessed
+RundotGameAPI.analytics.recordCustomEvent('credits_opened');
 
 interface CreditsProps {
   credits: Credit[];
@@ -22,10 +25,12 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [scrollSpeed, setScrollSpeed] = useState(20); // pixels per second
   const [finished, setFinished] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   const lastTimeRef = useRef<number>(Date.now());
+  const creditsAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Rain effect
   const raindrops = Array.from({ length: 80 }, (_, i) => ({
@@ -35,6 +40,62 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
     duration: 3 + Math.random() * 2,
     opacity: Math.random() * 0.6 + 0.2,
   }));
+
+  // Load logo from CDN
+  useEffect(() => {
+    (async () => {
+      try {
+        const blob = await RundotGameAPI.cdn.fetchAsset('logo.png');
+        const url = URL.createObjectURL(blob);
+        setLogoUrl(url);
+      } catch (error) {
+        console.warn('Failed to load logo:', error);
+      }
+    })();
+  }, []);
+
+  // Start credits music on mount (stop all other audio first)
+  useEffect(() => {
+    const playCreditsMusic = async () => {
+      try {
+        // Get the audio manager functions
+        const { unlockAudio, stopRain, stopMusic } = await import('./services/audioManager');
+
+        // Stop background music and rain
+        stopRain();
+        stopMusic();
+
+        creditsAudioRef.current = new Audio('/credits-music.mp3');
+        creditsAudioRef.current.loop = true;
+        creditsAudioRef.current.volume = 0.6;
+
+        // Try to play with unlock fallback
+        creditsAudioRef.current.play().catch((err: any) => {
+          if (err?.name === 'NotAllowedError') {
+            unlockAudio();
+            setTimeout(() => {
+              creditsAudioRef.current?.play().catch((e) => {
+                console.warn('Failed to play credits music after unlock:', e);
+              });
+            }, 100);
+          } else {
+            console.warn('Failed to play credits music:', err);
+          }
+        });
+      } catch (error) {
+        console.warn('Failed to initialize credits music:', error);
+      }
+    };
+
+    playCreditsMusic();
+
+    return () => {
+      if (creditsAudioRef.current) {
+        creditsAudioRef.current.pause();
+        creditsAudioRef.current = null;
+      }
+    };
+  }, []);
 
   // Animation loop
   useEffect(() => {
@@ -204,11 +265,17 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
 
           {/* Title with Logo */}
           <div style={{ textAlign: 'center', color: '#fff', paddingBottom: theme.spacing.xl }}>
-            <img
-              src={logoImg}
-              alt="The Quiet Garden"
-              style={{ maxWidth: '200px', height: 'auto', marginBottom: theme.spacing.md }}
-            />
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="The Quiet Garden"
+                style={{ maxWidth: '200px', height: 'auto', marginBottom: theme.spacing.md }}
+              />
+            ) : (
+              <div style={{ maxWidth: '200px', height: 'auto', marginBottom: theme.spacing.md, opacity: 0.5 }}>
+                Loading...
+              </div>
+            )}
             <div style={{ fontSize: 14, opacity: 0.8 }}>
               A collaboration by gardeners from around the world
             </div>

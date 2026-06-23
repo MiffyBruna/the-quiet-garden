@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { getSafeArea } from '../services/environment';
 import { track } from '../services/analytics';
-import { playMusic, stopMusic, isMusicEnabled, toggleMusic, toggleSfx, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel, setupAudioUnlock, unlockAudio } from './services/audioManager';
+import { playMusic, isMusicEnabled, toggleMusic, toggleSfx, setMusicVolume, setSfxVolume, loadAudioSettings, playRain, stopRain, playMulch, playDestroy, playMove, playWater, playButton, playCancel, setupAudioUnlock, unlockAudio } from './services/audioManager';
 import { playSFX, preloadSFX } from './services/sfxManager';
 import { loadCdnAsset, preloadCdnAssets } from './services/assetLoader';
 import { spriteLoader } from './services/spriteLoader';
@@ -975,44 +975,8 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
     return () => clearInterval(interval);
   }, [ui.rainCooling, rainCooldownRemaining]);
 
-  // Credits music: Play when credits preview starts (stop all other music)
-  useEffect(() => {
-    let creditsAudio: HTMLAudioElement | null = null;
-
-    if (showCreditsPreview) {
-      // Stop all background music and rain
-      stopRain();
-      stopMusic();
-
-      // Create and play credits music with mobile audio unlock
-      creditsAudio = new Audio('/credits-music.mp3');
-      creditsAudio.loop = true;
-      creditsAudio.volume = isMusicEnabled() ? 0.6 : 0;
-
-      // Play with mobile audio context unlock
-      creditsAudio.play().catch((err: any) => {
-        if (err?.name === 'NotAllowedError') {
-          // Mobile browsers block audio until a user gesture
-          unlockAudio();
-          setTimeout(() => {
-            creditsAudio?.play().catch((retryErr) => {
-              console.warn('Credits music playback failed after unlock:', retryErr);
-            });
-          }, 100);
-        } else {
-          console.warn('Credits music playback failed:', err);
-        }
-      });
-    }
-
-    return () => {
-      // Stop credits music when credits close
-      if (creditsAudio) {
-        creditsAudio.pause();
-        creditsAudio = null;
-      }
-    };
-  }, [showCreditsPreview]);
+  // Credits music is now handled by the Credits component itself
+  // The Credits component will stop background music and play credits music on mount
 
   // Game State Persistence: Load full game state if continuing, save periodically + on quit
   useEffect(() => {
