@@ -32,7 +32,7 @@ import {
   serializeDiscoveries, deserializeDiscoveries,
   serializeGameState, deserializeGameState,
   FAIRY_CONDITIONS, WILDLIFE_CONDITIONS,
-  debugWildlifeStatus, getDebugInfo,
+  debugWildlifeStatus, getDebugInfo, getMossWildlifeHint,
 } from './engine/gameEngine';
 import {
   INSPECT_HIGHLIGHTS, BUND_SHAPE_OFFSETS, MESQUITE_OFFSETS,
@@ -2210,10 +2210,16 @@ export function GameScene({ onShowWatershed, isContinue }: {
             queueDialogue(getQuestMossDialogue('inspect_soil'));
           } else {
             const dialogues = getQuestMossDialogue(gs.questStep);
-            queueDialogue(dialogues.length > 0 ? dialogues : [{
+            const mainDialogue = dialogues.length > 0 ? dialogues : [{
               speaker: 'Moss', emoji: '🐸',
               text: 'The valley heals slowly, like memory. Each action reaches forward in time.',
-            }]);
+            }];
+
+            // Add wildlife hint if available (during free play only)
+            const wildlifeHint = getMossWildlifeHint(gs);
+            const finalDialogue = wildlifeHint ? [...mainDialogue, wildlifeHint] : mainDialogue;
+
+            queueDialogue(finalDialogue);
           }
           track('custom_moss_talked');
           return;

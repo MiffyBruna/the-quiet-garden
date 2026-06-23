@@ -1351,6 +1351,126 @@ export function getDebugInfo(gs: GameState): string[] {
   return lines;
 }
 
+/**
+ * Get the next wildlife hint from Moss — shows what's blocking the next undiscovered animal
+ * Returns null if all animals are discovered or game isn't in free play
+ */
+export function getMossWildlifeHint(gs: GameState): DialogueLine | null {
+  if (gs.questStep !== 'free_play' || gs.discoveredWildlife.length === 13) return null;
+
+  const stats = computeGameStats(gs);
+  const discovered = new Set(gs.discoveredWildlife);
+
+  // Check each animal in order of difficulty (easiest first)
+  // so the most actionable hint shows first
+
+  if (!discovered.has('ant') && stats.avgFertility < 20) {
+    return {
+      speaker: 'Moss',
+      text: '💡 The soil needs life in it first. Ants 🐜 follow fertility — add mulch and let the land rest.',
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('bee') && stats.bloomCount < 1) {
+    return {
+      speaker: 'Moss',
+      text: '💡 Not a single flower is open yet. Bees 🐝 need something to visit — plant a seed and let it bloom.',
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('monarch') && !gs.discoveredPlants.includes('milkweed')) {
+    return {
+      speaker: 'Moss',
+      text: '💡 There is a butterfly that will only come for one plant. The Monarch 🦋 follows milkweed — plant it and wait.',
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('frog') && stats.waterTileCount < 2) {
+    return {
+      speaker: 'Moss',
+      text: `💡 Something is missing from the edges of this place. Frogs 🐸 need water to return — the land needs at least two pools. You have ${stats.waterTileCount}.`,
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('beetle') && (stats.mulchCount < 2 || stats.avgFertility < 25)) {
+    return {
+      speaker: 'Moss',
+      text: `💡 The ground needs more organic matter. Beetles 🪲 hide under mulch in fertile soil — you have ${stats.mulchCount} mulch tile${stats.mulchCount === 1 ? '' : 's'}.`,
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('hoverfly') && stats.bloomCount < 3) {
+    return {
+      speaker: 'Moss',
+      text: `💡 ${stats.bloomCount} flower${stats.bloomCount === 1 ? ' is' : 's are'} open. Hoverflies 🦟 need three blooms at once to find the valley.`,
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('painted_lady') && (stats.plantDiversity < 3 || stats.bloomCount < 2)) {
+    return {
+      speaker: 'Moss',
+      text: `💡 You have ${stats.plantDiversity} plant type${stats.plantDiversity === 1 ? '' : 's'} and ${stats.bloomCount} blooming. The Painted Lady 🦋 needs variety — three kinds of plants, two in bloom.`,
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('dragonfly') && stats.waterTileCount < 3) {
+    return {
+      speaker: 'Moss',
+      text: `💡 ${stats.waterTileCount} water tile${stats.waterTileCount === 1 ? '' : 's'} isn't enough. Dragonflies 🪲 patrol larger pools — the valley needs three.`,
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('cottontail') && (stats.bloomCount < 3 || stats.plantDiversity < 3)) {
+    return {
+      speaker: 'Moss',
+      text: `💡 ${stats.bloomCount} blooms, ${stats.plantDiversity} plant types. Cottontail 🐇 needs both — three blooms and three kinds of plants at once.`,
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('finch') && stats.plantDiversity < 4) {
+    return {
+      speaker: 'Moss',
+      text: `💡 ${stats.plantDiversity} plant type${stats.plantDiversity === 1 ? '' : 's'} so far. Finches 🐦‍⬛ need a diverse valley — try planting a fourth kind.`,
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('quail') && stats.restoration < 70) {
+    return {
+      speaker: 'Moss',
+      text: `💡 The valley is ${Math.round(stats.restoration)}% restored. Quail 🐦 return when the land reaches 70% — keep going.`,
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('hawk') && stats.restoration < 80) {
+    return {
+      speaker: 'Moss',
+      text: `💡 The valley is ${Math.round(stats.restoration)}% restored. The Hawk 🦅 waits for 80% before it lands.`,
+      emoji: '💭',
+    };
+  }
+
+  if (!discovered.has('swallow') && (stats.bloomCount < 5 || stats.restoration < 85)) {
+    return {
+      speaker: 'Moss',
+      text: `💡 ${stats.bloomCount} flower${stats.bloomCount === 1 ? '' : 's'} blooming, ${Math.round(stats.restoration)}% restored. The Swallow 🕊️ counts every open bloom — it needs five at once and 85% restoration. Plant in waves so blooms overlap.`,
+      emoji: '💭',
+    };
+  }
+
+  return null;
+}
+
 function computeGameStats(gs: GameState): GameStats {
   let totalFertility = 0;
   let tileCount = 0;

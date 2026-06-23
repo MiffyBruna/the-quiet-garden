@@ -50604,11 +50604,294 @@
       "timestamp": 1782176162663,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782176238496",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "Perfect, so the hints should be dynamic, condition-aware, and auto-dismiss once the animal appears. Here's the full getMossHint function covering all 13:\ntsfunction getMossHint(gs: GameState): DialogueLine | null {\n  if (gs.questStep !== 'free_play') return null;\n\n  const restoration = calculateRestoration(gs);\n  const bloomCount = countBlooming(gs);\n  const plantDiversity = gs.discoveredPlants.size;\n  const mulchCount = countTerrain(gs, 'mulch');\n  const waterCount = countTerrain(gs, 'water');\n  const avgFertility = getAvgFertility(gs);\n  const discovered = gs.discoveredWildlife;\n\n  // Check each animal in order of difficulty (easiest first)\n  // so the most actionable hint shows first\n\n  if (!discovered.includes('ant') && avgFertility < 20)\n    return hint('The soil needs life in it first. 🐜 Ants follow fertility — mulch and moisture will bring them.');\n\n  if (!discovered.includes('bee') && bloomCount < 1)\n    return hint('Not a single flower is open. 🐝 Bees need something to visit — plant anything and let it bloom.');\n\n  if (!discovered.includes('monarch') && !gs.discoveredPlants.has('milkweed'))\n    return hint('There is a butterfly that will only come for one plant. 🦋 The Monarch follows milkweed — plant it and wait.');\n\n  if (!discovered.includes('frog') && waterCount < 2)\n    return hint('Something is missing from the edges of this place. 🐸 Frogs need water to return — the land needs at least two pools.');\n\n  if (!discovered.includes('beetle') && (mulchCount < 2 || avgFertility < 25))\n    return hint(`The ground needs more organic matter. 🪲 Beetles hide under mulch in fertile soil — you have ${mulchCount} mulch tile${mulchCount === 1 ? '' : 's'} so far.`);\n\n  if (!discovered.includes('hoverfly') && bloomCount < 3)\n    return hint(`${bloomCount} flower${bloomCount === 1 ? ' is' : 's are'} open. 🪰 Hoverflies need three blooms at once to find the valley.`);\n\n  if (!discovered.includes('painted_lady') && (plantDiversity < 3 || bloomCount < 2))\n    return hint(`You have ${plantDiversity} plant type${plantDiversity === 1 ? '' : 's'} and ${bloomCount} blooming. 🦋 The Painted Lady needs variety — three kinds of plants, two in bloom.`);\n\n  if (!discovered.includes('dragonfly') && waterCount < 3)\n    return hint(`${waterCount} water tile${waterCount === 1 ? '' : 's'} isn't enough. 🐛 Dragonflies patrol larger pools — the valley needs three.`);\n\n  if (!discovered.includes('cottontail') && (bloomCount < 3 || plantDiversity < 3))\n    return hint(`${bloomCount} blooms, ${plantDiversity} plant types. 🐇 Cottontail needs both — three blooms and three kinds of plants at once.`);\n\n  if (!discovered.includes('finch') && plantDiversity < 4)\n    return hint(`${plantDiversity} plant type${plantDiversity === 1 ? '' : 's'} so far. 🐦‍⬛ Finches need a diverse valley — try planting a fourth kind.`);\n\n  if (!discovered.includes('quail') && restoration < 70)\n    return hint(`The valley is ${Math.round(restoration)}% restored. 🐦 Quail return when the land reaches 70% — keep going.`);\n\n  if (!discovered.includes('hawk') && restoration < 80)\n    return hint(`${Math.round(restoration)}% restored. 🦅 The Hawk circles high — it waits for 80% before it lands.`);\n\n  if (!discovered.includes('swallow') && (bloomCount < 5 || restoration < 85))\n    return hint(`${bloomCount} flower${bloomCount === 1 ? '' : 's'} blooming, ${Math.round(restoration)}% restored. 🕊️ The Swallow counts every open bloom from above — it needs five at once and 85% restoration. Plant in waves so blooms overlap.`);\n\n  return null;\n}\n\nfunction hint(text: string): DialogueLine {\n  return { speaker: 'Moss', emoji: '💡', text };\n}\nA few things to note:\nThe hints are ordered easiest-first so the player always gets the most actionable next step, not an advanced hint when they haven't done basics yet. Once an animal is discovered its hint disappears permanently since we check !discovered.includes(...).\nThe swallow hint is the only one that gives explicit numbers for both conditions simultaneously — because by that point the player has earned the full picture.\nYou'll need countTerrain and getAvgFertility helpers if they don't exist yet:\ntsfunction countTerrain(gs: GameState, terrain: string): number {\n  let count = 0;\n  for (let y = 0; y < MAP_H; y++)\n    for (let x = 0; x < MAP_W; x++)\n      if (getTile(gs.tiles, x, y)?.terrain === terrain) count++;\n  return count;\n}\n\nfunction getAvgFertility(gs: GameState): number {\n  let total = 0, count = 0;\n  for (let y = 0; y < MAP_H; y++)\n    for (let x = 0; x < MAP_W; x++) {\n      const t = getTile(gs.tiles, x, y);\n      if (t) { total += t.fertility; count++; }\n    }\n  return count > 0 ? total / count : 0;\n}\nThen in the Talk handler just append like we discussed — one extra line queued after the normal Moss dialogue, only during free play, only if an animal is still missing.",
+      "timestamp": 1782176238496,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782176246727-kxpy028r1",
+      "role": "assistant",
+      "content": "Got it! You want dynamic hints from Moss that show the **current conditions blocking each wildlife**. Let me implement this system:",
+      "isShownToUser": true,
+      "timestamp": 1782176247199,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782176249633-b4x6mq05j",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782176249633,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782176252297-yg0yr3zst",
+      "role": "assistant",
+      "content": "Let me add a wildlife hints system to gameEngine.ts:",
+      "isShownToUser": true,
+      "timestamp": 1782176252519,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782176252755-tk97g3alz",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782176252755,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782176270368-zp5ilq4v1",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782176270368,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782176272291-k5m8tstqn",
+      "role": "assistant",
+      "content": "Now let me add the export at the top where other functions are exported:",
+      "isShownToUser": true,
+      "timestamp": 1782176272507,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782176273027-a9cik6n30",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782176273027,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782176278675-03j8qdk2s",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782176278675,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782176280358-ape9yphj3",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782176280358,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782176287223-bngfbr85w",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782176287223,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782176289240-iuxpz62jh",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782176289240,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782176291283-5gebo01k7",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782176291283,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782176294330-md2lzmhfp",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782176294330,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782176296314-hjzbwf1mo",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782176296314,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782176301037-8u9lvv8es",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782176301037,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782176303246-7xqf2usex",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782176303246,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782176305896-ckz2pf4qi",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782176305896,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782176307558-hui89qg1u",
+      "role": "assistant",
+      "content": "Now let me build and test:",
+      "isShownToUser": true,
+      "timestamp": 1782176307746,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782176308045-9vbfmnvdo",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782176308045,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782176314583-r82jd12ja",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782176314583,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782176316401-y9kdx9dkq",
+      "role": "assistant",
+      "content": "Using tool: Read",
+      "isShownToUser": true,
+      "timestamp": 1782176316401,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Read"
+      }
+    },
+    {
+      "id": "1782176319094-qvsh7yq1x",
+      "role": "assistant",
+      "content": "Using tool: Edit",
+      "isShownToUser": true,
+      "timestamp": 1782176319094,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Edit"
+      }
+    },
+    {
+      "id": "1782176321321-r58ra8bbb",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782176321321,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782176327548-emoggricf",
+      "role": "assistant",
+      "content": "Perfect! Now let me deploy:",
+      "isShownToUser": true,
+      "timestamp": 1782176327629,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782176327868-tzcxd6fv3",
+      "role": "assistant",
+      "content": "Using tool: Bash",
+      "isShownToUser": true,
+      "timestamp": 1782176327868,
+      "type": "toolUse",
+      "metadata": {
+        "toolName": "Bash"
+      }
+    },
+    {
+      "id": "1782176336727-s4xwtgumo",
+      "role": "assistant",
+      "content": "Perfect! Your wildlife hints system is now live! Here's what I added:\n\n## Dynamic Wildlife Hints from Moss 💡\n\n**How it works:**\n- When you **talk to Moss** during free play, she'll give you a helpful hint about the **next wildlife** you haven't discovered yet\n- The hint shows exactly **what you're missing** to unlock that animal\n- Each hint shows your current progress (blooms, water tiles, restoration %, etc.)\n- Once you discover an animal, its hint disappears forever\n\n**The hints guide you through all 13 animals in difficulty order:**\n\n1. **🐜 Ant** — \"Ants aerate the soil...\" (need fertility ≥ 20)\n2. **🐝 Bee** — \"Not a single flower is open...\" (need 1 bloom)\n3. **🦋 Monarch** — \"Plant milkweed...\" (need to discover milkweed)\n4. **🐸 Frog** — \"Frogs need water...\" (shows current water count)\n5. **🪲 Beetle** — \"The ground needs mulch...\" (shows current mulch)\n6. **🦟 Hoverfly** — \"3 flowers blooming...\" (shows current bloom count)\n7. **🦋 Painted Lady** — Shows both diversity AND bloom needs\n8. **🪲 Dragonfly** — \"Larger pools needed...\" (shows current water tiles)\n9. **🐇 Cottontail** — Shows both bloom AND diversity progress\n10. **🐦‍⬛ Finch** — \"Finches need diverse valley...\" (shows current plant types)\n11. **🐦 Quail** — \"Restoration % needed...\" (shows current restoration)\n12. **🦅 Hawk** — \"Hawk waits for 80%...\" (shows current restoration)\n13. **🦅 Swallow** — Most detailed hint with both bloom and restoration needs\n\n**Updated to v1.2.3:**\nhttps://w.run/gentlecatbytes/the-quiet-garden?tag=private\n\nTry talking to Moss in free play mode — she'll guide you toward your next discovery! 🌱",
+      "isShownToUser": true,
+      "timestamp": 1782176341823,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782176162720,
-  "tokenUsage": 557,
+  "updatedAt": 1782176341861,
+  "tokenUsage": 7442,
   "script": "default",
   "claudeSessionId": "8ff606ea-31b9-46fa-8158-37d987a78916"
 }
