@@ -134,7 +134,16 @@ export function WatershedProgress({
   hasMatureMesquite,
   onClose,
 }: WatershedProgressProps) {
-  const c = theme.colors;
+  // Use beige/parchment colors for Journal overlay (not the dark green game background)
+  const c = {
+    ...theme.colors,
+    background: '#FDFAF2',
+    surface: '#F5EFE0',
+    text: {
+      primary: '#2E251F',
+      muted: '#7A6A58',
+    },
+  };
   const [activeTab, setActiveTab] = useState<CatalogTab>('plants');
   const [, setSpritesLoaded] = useState(false);
 
@@ -189,8 +198,8 @@ export function WatershedProgress({
       {/* Header */}
       <div
         style={{
-          background: '#2E4A2E',
-          color: '#F0FFF0',
+          background: '#3A2A1A',
+          color: '#F5EFE0',
           padding: `14px 16px`,
           display: 'flex',
           alignItems: 'center',
