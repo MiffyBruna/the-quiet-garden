@@ -885,9 +885,10 @@ const INITIAL_UI: UIState = {
   debugInfo: [],
 };
 
-export function GameScene({ onShowWatershed, isContinue }: {
+export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
   onShowWatershed: (restoration: number, wildlife: string[], fairies: string[], plants: string[], newlyDiscovered: string[], gameStats: GameStats, hasMatureMesquite: boolean) => void;
   isContinue: boolean;
+  onGameComplete: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gsRef = useRef<GameState>(createInitialGameState());
@@ -2789,6 +2790,24 @@ export function GameScene({ onShowWatershed, isContinue }: {
       window.removeEventListener('resize', resize);
     };
   }, [gameLoaded, queueDialogue, triggerCompletionEvent]);
+
+  // Track if we've triggered the credits flow to avoid multiple calls
+  const gameCompleteTriggeredRef = useRef(false);
+
+  // Detect game completion (100% restoration + Hawk discovered)
+  useEffect(() => {
+    const gs = gsRef.current;
+    const gameStats = computeGameStats(gs);
+
+    // Check if Hawk is discovered (appears when restoration >= 80 AND hasMatureMesquite)
+    const hawkDiscovered = gs.discoveredWildlife.includes('hawk');
+
+    // Game is complete when: restoration = 100%, Hawk discovered, and we haven't triggered yet
+    if (gameStats.restoration >= 100 && hawkDiscovered && !gameCompleteTriggeredRef.current) {
+      gameCompleteTriggeredRef.current = true;
+      onGameComplete();
+    }
+  }, [onGameComplete]);
 
   // -------------------------------------------------------------------------
   // Layout constants
