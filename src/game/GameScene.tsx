@@ -1428,13 +1428,18 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
       return getTile(gs.tiles, x, y)?.terrain === 'rock';
     });
 
+    const hasPlantConflict = allShapeTiles.some(({ x, y }) => {
+      if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
+      return getTile(gs.tiles, x, y)?.plant;
+    });
+
     const mossInShape = allShapeTiles.some(({ x, y }) => x === gs.mossTX && y === gs.mossTY);
 
     const validTiles = allShapeTiles.filter(({ x, y }) => {
       if (x <= 0 || x >= MAP_W - 1 || y <= 0 || y >= MAP_H - 1) return false;
       if (x === gs.mossTX && y === gs.mossTY) return false; // never dig under Moss
       const t = getTile(gs.tiles, x, y);
-      return t && t.terrain !== 'rock' && t.terrain !== 'water';
+      return t && t.terrain !== 'rock' && t.terrain !== 'water' && !t.plant;
     });
 
     if (validTiles.length === 0) {
@@ -1473,6 +1478,13 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
       queueDialogue([{
         speaker: 'Moss', emoji: '🐸',
         text: 'Some of the shape sits on rock — those spots will be skipped. Dig what remains.',
+      }]);
+    }
+
+    if (hasPlantConflict) {
+      queueDialogue([{
+        speaker: 'Moss', emoji: '🐸',
+        text: 'Plants are in the way here. Those spots will be skipped. Dig where the plants aren\'t.',
       }]);
     }
 
