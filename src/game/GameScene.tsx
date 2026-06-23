@@ -2046,8 +2046,8 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete, onRetur
           track('custom_seed_planted', { plant: currentUI.selectedSeed });
           RundotGameAPI.analytics.recordCustomEvent('seed_planted', { plant: currentUI.selectedSeed });
 
-          // Play planting sound (same as mulch)
-          playMulch();
+          // Play planting sound
+          playSFX('planting', 0.8).catch(() => {});
           if (gs.questStep === 'plant_seed') {
             const bothPlanted = seedSpots.every(
               ({ x, y }) => getTile(gs.tiles, x, y)?.plant != null,
