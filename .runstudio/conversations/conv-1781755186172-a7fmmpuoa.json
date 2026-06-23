@@ -55820,11 +55820,29 @@
       "timestamp": 1782183048334,
       "type": "text",
       "metadata": {}
+    },
+    {
+      "id": "user-1782183143060",
+      "role": "user",
+      "isShownToUser": true,
+      "content": "but then the hint would be in the journal if they built and ecosystem without a mezquite",
+      "timestamp": 1782183143060,
+      "type": "text",
+      "metadata": {}
+    },
+    {
+      "id": "1782183153437-6wkge19yr",
+      "role": "assistant",
+      "content": "Excellent point! **If you cap restoration at 89% without a mature Mesquite, players need to know WHY.**\n\nRight now the journal hints only show wildlife requirements. But if Mesquite maturity becomes an end condition, players stuck at 89% won't see any hint about needing a tree.\n\n**Options:**\n\n1. **Add a \"missing Mesquite\" hint to journal**\n   - Show at 89% alongside other missing requirements\n   - \"Something needs a mature desert tree to complete the ecosystem\"\n   - Players see it and know: \"Ah, grow that Mesquite!\"\n\n2. **Moss dialogue hint**\n   - When player tries to call rain or interact with Moss at 89%, have Moss say something like\n   - \"The valley is nearly restored, but something is missing—a tree to anchor it all\"\n\n3. **Restoration progress indicator**\n   - In the watershed/journal view, show a checklist:\n     - ✓ All plants discovered\n     - ✓ All wildlife discovered  \n     - ✗ Mature Mesquite grown\n   - Players immediately see what's blocking 100%\n\n4. **All three** (most thorough but might be overkill)\n\n**Which approach fits your vision?** Or should the tree requirement be more mysterious—let players discover on their own that they need it?",
+      "isShownToUser": true,
+      "timestamp": 1782183156750,
+      "type": "text",
+      "metadata": {}
     }
   ],
   "createdAt": 1781755186172,
-  "updatedAt": 1782183048381,
-  "tokenUsage": 25945,
+  "updatedAt": 1782183156791,
+  "tokenUsage": 26621,
   "script": "default",
   "claudeSessionId": "8ff606ea-31b9-46fa-8158-37d987a78916"
 }
