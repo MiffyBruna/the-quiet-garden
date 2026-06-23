@@ -174,17 +174,14 @@ export function playRain(): void {
     rainAudioInstance = null;
   }
 
-  (async () => {
-    try {
-      const audioUrl = await loadCdnAsset('rain.wav');
-      rainAudioInstance = new Audio(audioUrl);
-      rainAudioInstance.loop = true;
-      rainAudioInstance.volume = (currentSettings.sfxVolume / 100) * 0.6; // Slightly quieter than other SFX
-      playAudioWithUnlock(rainAudioInstance, 'rain sound');
-    } catch (e) {
-      console.warn('Failed to load rain sound:', e);
-    }
-  })();
+  try {
+    rainAudioInstance = new Audio('/rain.wav');
+    rainAudioInstance.loop = true;
+    rainAudioInstance.volume = (currentSettings.sfxVolume / 100) * 0.6; // Slightly quieter than other SFX
+    playAudioWithUnlock(rainAudioInstance, 'rain sound');
+  } catch (e) {
+    console.warn('Failed to load rain sound:', e);
+  }
 }
 
 /**
@@ -212,17 +209,14 @@ export function playMulch(): void {
     mulchAudioInstance = null;
   }
 
-  (async () => {
-    try {
-      const audioUrl = await loadCdnAsset('mulch.ogg');
-      mulchAudioInstance = new Audio(audioUrl);
-      mulchAudioInstance.loop = false;
-      mulchAudioInstance.volume = currentSettings.sfxVolume / 100;
-      playAudioWithUnlock(mulchAudioInstance, 'mulch sound');
-    } catch (e) {
-      console.warn('Failed to load mulch sound:', e);
-    }
-  })();
+  try {
+    mulchAudioInstance = new Audio('/mulch.ogg');
+    mulchAudioInstance.loop = false;
+    mulchAudioInstance.volume = currentSettings.sfxVolume / 100;
+    playAudioWithUnlock(mulchAudioInstance, 'mulch sound');
+  } catch (e) {
+    console.warn('Failed to load mulch sound:', e);
+  }
 }
 
 let destroyAudioInstance: HTMLAudioElement | null = null;
@@ -239,17 +233,14 @@ export function playDestroy(): void {
     destroyAudioInstance = null;
   }
 
-  (async () => {
-    try {
-      const audioUrl = await loadCdnAsset('destroy.ogg');
-      destroyAudioInstance = new Audio(audioUrl);
-      destroyAudioInstance.loop = false;
-      destroyAudioInstance.volume = currentSettings.sfxVolume / 100;
-      playAudioWithUnlock(destroyAudioInstance, 'destroy sound');
-    } catch (e) {
-      console.warn('Failed to load destroy sound:', e);
-    }
-  })();
+  try {
+    destroyAudioInstance = new Audio('/destroy.ogg');
+    destroyAudioInstance.loop = false;
+    destroyAudioInstance.volume = currentSettings.sfxVolume / 100;
+    playAudioWithUnlock(destroyAudioInstance, 'destroy sound');
+  } catch (e) {
+    console.warn('Failed to load destroy sound:', e);
+  }
 }
 
 let moveAudioInstance: HTMLAudioElement | null = null;
@@ -266,17 +257,14 @@ export function playMove(): void {
     moveAudioInstance = null;
   }
 
-  (async () => {
-    try {
-      const audioUrl = await loadCdnAsset('move.ogg');
-      moveAudioInstance = new Audio(audioUrl);
-      moveAudioInstance.loop = false;
-      moveAudioInstance.volume = currentSettings.sfxVolume / 100;
-      playAudioWithUnlock(moveAudioInstance, 'move sound');
-    } catch (e) {
-      console.warn('Failed to load move sound:', e);
-    }
-  })();
+  try {
+    moveAudioInstance = new Audio('/move.ogg');
+    moveAudioInstance.loop = false;
+    moveAudioInstance.volume = currentSettings.sfxVolume / 100;
+    playAudioWithUnlock(moveAudioInstance, 'move sound');
+  } catch (e) {
+    console.warn('Failed to load move sound:', e);
+  }
 }
 
 let waterAudioInstance: HTMLAudioElement | null = null;
@@ -293,17 +281,14 @@ export function playWater(): void {
     waterAudioInstance = null;
   }
 
-  (async () => {
-    try {
-      const audioUrl = await loadCdnAsset('water.ogg');
-      waterAudioInstance = new Audio(audioUrl);
-      waterAudioInstance.loop = false;
-      waterAudioInstance.volume = currentSettings.sfxVolume / 100;
-      playAudioWithUnlock(waterAudioInstance, 'water sound');
-    } catch (e) {
-      console.warn('Failed to load water sound:', e);
-    }
-  })();
+  try {
+    waterAudioInstance = new Audio('/water.ogg');
+    waterAudioInstance.loop = false;
+    waterAudioInstance.volume = currentSettings.sfxVolume / 100;
+    playAudioWithUnlock(waterAudioInstance, 'water sound');
+  } catch (e) {
+    console.warn('Failed to load water sound:', e);
+  }
 }
 
 let buttonAudioInstance: HTMLAudioElement | null = null;
@@ -320,17 +305,14 @@ export function playButton(): void {
     buttonAudioInstance = null;
   }
 
-  (async () => {
-    try {
-      const audioUrl = await loadCdnAsset('button.ogg');
-      buttonAudioInstance = new Audio(audioUrl);
-      buttonAudioInstance.loop = false;
-      buttonAudioInstance.volume = currentSettings.sfxVolume / 100;
-      playAudioWithUnlock(buttonAudioInstance, 'button sound');
-    } catch (e) {
-      console.warn('Failed to load button sound:', e);
-    }
-  })();
+  try {
+    buttonAudioInstance = new Audio('/button.ogg');
+    buttonAudioInstance.loop = false;
+    buttonAudioInstance.volume = currentSettings.sfxVolume / 100;
+    playAudioWithUnlock(buttonAudioInstance, 'button sound');
+  } catch (e) {
+    console.warn('Failed to load button sound:', e);
+  }
 }
 
 let menuSelectAudioInstance: HTMLAudioElement | null = null;
@@ -347,17 +329,14 @@ export function playMenuSelect(): void {
     menuSelectAudioInstance = null;
   }
 
-  (async () => {
-    try {
-      const audioUrl = await loadCdnAsset('menu-select.ogg');
-      menuSelectAudioInstance = new Audio(audioUrl);
-      menuSelectAudioInstance.loop = false;
-      menuSelectAudioInstance.volume = currentSettings.sfxVolume / 100;
-      playAudioWithUnlock(menuSelectAudioInstance, 'menu select sound');
-    } catch (e) {
-      console.warn('Failed to load menu select sound:', e);
-    }
-  })();
+  try {
+    menuSelectAudioInstance = new Audio('/menu-select.ogg');
+    menuSelectAudioInstance.loop = false;
+    menuSelectAudioInstance.volume = currentSettings.sfxVolume / 100;
+    playAudioWithUnlock(menuSelectAudioInstance, 'menu select sound');
+  } catch (e) {
+    console.warn('Failed to load menu select sound:', e);
+  }
 }
 
 let cancelAudioInstance: HTMLAudioElement | null = null;
@@ -374,17 +353,14 @@ export function playCancel(): void {
     cancelAudioInstance = null;
   }
 
-  (async () => {
-    try {
-      const audioUrl = await loadCdnAsset('cancel.ogg');
-      cancelAudioInstance = new Audio(audioUrl);
-      cancelAudioInstance.loop = false;
-      cancelAudioInstance.volume = currentSettings.sfxVolume / 100;
-      playAudioWithUnlock(cancelAudioInstance, 'cancel sound');
-    } catch (e) {
-      console.warn('Failed to load cancel sound:', e);
-    }
-  })();
+  try {
+    cancelAudioInstance = new Audio('/cancel.ogg');
+    cancelAudioInstance.loop = false;
+    cancelAudioInstance.volume = currentSettings.sfxVolume / 100;
+    playAudioWithUnlock(cancelAudioInstance, 'cancel sound');
+  } catch (e) {
+    console.warn('Failed to load cancel sound:', e);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -398,48 +374,19 @@ let audioUnlocked = false;
  * On NotAllowedError, unlocks audio and retries after a short delay
  */
 function playAudioWithUnlock(audio: HTMLAudioElement, soundName: string): void {
-  const attemptPlay = () => {
-    audio.play().catch((e: any) => {
-      if (e?.name === 'NotAllowedError') {
-        // Mobile browsers block audio until a user gesture; unlock and retry
-        unlockAudio();
-        setTimeout(() => {
-          audio.play().catch((retryErr) => {
-            console.warn(`Failed to play ${soundName} after unlock retry:`, retryErr);
-          });
-        }, 100);
-      } else {
-        console.warn(`Failed to play ${soundName}:`, e);
-      }
-    });
-  };
-
-  // Wait for audio to be loadable before playing (for blob URLs from CDN)
-  if (audio.readyState >= audio.HAVE_FUTURE_DATA) {
-    // Audio is already ready
-    attemptPlay();
-  } else {
-    // Wait for audio to be loadable
-    const onCanPlay = () => {
-      audio.removeEventListener('canplay', onCanPlay);
-      audio.removeEventListener('error', onError);
-      attemptPlay();
-    };
-    const onError = () => {
-      audio.removeEventListener('canplay', onCanPlay);
-      audio.removeEventListener('error', onError);
-      console.warn(`Failed to load ${soundName} audio`);
-    };
-    audio.addEventListener('canplay', onCanPlay, { once: true });
-    audio.addEventListener('error', onError, { once: true });
-
-    // Timeout after 2 seconds and try anyway
-    setTimeout(() => {
-      audio.removeEventListener('canplay', onCanPlay);
-      audio.removeEventListener('error', onError);
-      attemptPlay();
-    }, 2000);
-  }
+  audio.play().catch((e: any) => {
+    if (e?.name === 'NotAllowedError') {
+      // Mobile browsers block audio until a user gesture; unlock and retry
+      unlockAudio();
+      setTimeout(() => {
+        audio.play().catch((retryErr) => {
+          console.warn(`Failed to play ${soundName} after unlock retry:`, retryErr);
+        });
+      }, 100);
+    } else {
+      console.warn(`Failed to play ${soundName}:`, e);
+    }
+  });
 }
 
 /**
