@@ -91,7 +91,7 @@ export interface Tile {
 
 export type ToolType =
   | 'move' | 'inspect' | 'bund' | 'mulch' | 'seed'
-  | 'rain' | 'talk' | 'journal' | 'shovel' | 'landscape';
+  | 'rain' | 'talk' | 'journal' | 'shovel' | 'landscape' | 'credits';
 
 // ---------------------------------------------------------------------------
 // Quest

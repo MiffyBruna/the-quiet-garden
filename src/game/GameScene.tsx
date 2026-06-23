@@ -3878,6 +3878,20 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
                   return;
                 }
 
+                if (def.id === 'credits') {
+                  // Cancel any bund mode (positioning or digging) if active
+                  if (uiRef.current.bundMode) {
+                    gsRef.current.highlightTiles = [];
+                    setUI((p) => ({ ...p, bundMode: null, bundTargetTiles: [] }));
+                  }
+                  setShowCreditsPreview(true);
+                  setCreditsPreviewFinished(false);
+                  track('custom_credits_opened');
+                  RundotGameAPI.analytics.recordCustomEvent('credits_opened');
+                  playButton();
+                  return;
+                }
+
                 // Leaving seed tool resets the "once per selection" message and mesquite mode
                 if (uiRef.current.activeTool === 'seed' && def.id !== 'seed') {
                   seedMsgShownRef.current = null;
@@ -4314,29 +4328,6 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
         </>
       )}
 
-      {/* Credits Preview Button */}
-      <button
-        onClick={() => {
-          setShowCreditsPreview(true);
-          setCreditsPreviewFinished(false);
-        }}
-        style={{
-          position: 'fixed',
-          top: safeArea.top + 12,
-          right: 12,
-          background: 'rgba(124, 202, 124, 0.2)',
-          border: '1px solid rgba(124, 202, 124, 0.5)',
-          color: '#7CCA7C',
-          padding: '8px 12px',
-          borderRadius: 6,
-          cursor: 'pointer',
-          fontSize: 12,
-          zIndex: 50,
-        }}
-      >
-        📽️ Credits
-      </button>
-
       {/* Version Legend */}
       <div
         style={{
@@ -4371,6 +4362,7 @@ const TOOL_DEFS: Array<{ id: ToolType; emoji: string; label: string }> = [
   { id: 'talk',      emoji: '💬', label: 'Moss' },
   { id: 'journal',   emoji: '📖', label: 'Journal' },
   { id: 'landscape', emoji: '🌿', label: 'Reshape' },
+  { id: 'credits',   emoji: '📽️', label: 'Credits' },
 ];
 
 export default GameScene;
