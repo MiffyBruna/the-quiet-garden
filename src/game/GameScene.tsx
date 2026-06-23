@@ -1190,6 +1190,7 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
           // Add landscape tool if game was completed
           if (gs.completionTriggered) {
             unlockedTools.push('landscape');
+            unlockedTools.push('credits');
           }
           break;
       }
@@ -1602,7 +1603,7 @@ export function GameScene({ onShowWatershed, isContinue, onGameComplete }: {
         setTimeout(() => {
           setUI((prev) => ({
             ...prev,
-            unlockedTools: [...prev.unlockedTools, 'landscape' as ToolType],
+            unlockedTools: [...prev.unlockedTools, 'landscape' as ToolType, 'credits' as ToolType],
             questObjective,
           }));
           queueDialogue(MOSS_LANDSCAPE_DIALOGUE);
