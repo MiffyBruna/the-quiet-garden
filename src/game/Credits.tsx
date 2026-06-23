@@ -342,6 +342,9 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
                 alt="Moss & Acacia"
                 style={{ maxWidth: '280px', height: 'auto' }}
               />
+              <div style={{ fontSize: 12, opacity: 0.8, marginTop: theme.spacing.md, fontStyle: 'italic', maxWidth: '280px', margin: '0 auto' }}>
+                Ralph Waldo Emerson: "The earth laughs in flowers."
+              </div>
             </div>
           )}
 
@@ -360,6 +363,9 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
                 alt="Acacia & the Fairies"
                 style={{ maxWidth: '280px', height: 'auto' }}
               />
+              <div style={{ fontSize: 12, opacity: 0.8, marginTop: theme.spacing.md, fontStyle: 'italic', maxWidth: '280px', margin: '0 auto' }}>
+                Vincent van Gogh: "If you truly love nature, you will find beauty everywhere."
+              </div>
             </div>
           )}
 
@@ -397,6 +403,20 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
                 src={greenThumbUrl}
                 alt="Green Thumb"
                 style={{ maxWidth: '280px', height: 'auto' }}
+              />
+              <div style={{ fontSize: 12, opacity: 0.8, marginTop: theme.spacing.md, fontStyle: 'italic', maxWidth: '280px', margin: '0 auto' }}>
+                Aristotle: "In all things of nature there is something of the marvelous."
+              </div>
+            </div>
+          )}
+
+          {/* Final Logo */}
+          {logoUrl && (
+            <div style={{ textAlign: 'center', paddingTop: theme.spacing.xl, paddingBottom: theme.spacing.xl }}>
+              <img
+                src={logoUrl}
+                alt="The Quiet Garden"
+                style={{ maxWidth: '180px', height: 'auto', opacity: 0.9 }}
               />
             </div>
           )}

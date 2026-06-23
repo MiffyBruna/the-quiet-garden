@@ -634,6 +634,7 @@ function FairyCard({
         {/* Fairy portrait area */}
         <div
           onClick={handleFairyClick}
+          onTouchEnd={handleFairyClick}
           style={{
             width: 56,
             height: 56,
@@ -649,12 +650,17 @@ function FairyCard({
             cursor: discovered ? 'pointer' : 'default',
             position: 'relative',
             transition: discovered ? 'transform 0.1s' : 'none',
+            userSelect: 'none',
+            touchAction: 'none',
           }}
           onMouseDown={(e) => {
             if (discovered) (e.currentTarget as HTMLDivElement).style.transform = 'scale(0.95)';
           }}
           onMouseUp={(e) => {
             if (discovered) (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
+          }}
+          onTouchStart={(e) => {
+            if (discovered) (e.currentTarget as HTMLDivElement).style.transform = 'scale(0.95)';
           }}
         >
           {discovered ? '✨' : '?'}
