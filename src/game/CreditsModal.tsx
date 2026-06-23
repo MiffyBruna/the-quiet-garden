@@ -164,7 +164,7 @@ export function CreditsModal({ onNameAdded, onClose }: CreditsModalProps) {
                 ✨ Add Your Name ✨
               </div>
               <div style={{ fontSize: 14, opacity: 0.8, lineHeight: 1.6 }}>
-                Watch a short ad to add your name to the credits <strong>for 7 days</strong> and become part of this garden's story.
+                Watch a short ad to add your name to the <strong>Recent Contributors</strong> (top 50) and become part of this garden's story.
               </div>
             </div>
 

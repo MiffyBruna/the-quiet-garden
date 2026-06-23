@@ -68,9 +68,9 @@ export function QuietGarden() {
     hasMatureMesquite: false,
   });
 
-  // Load recent credits (last 7 days) on mount
+  // Load recent credits (most recent 50) on mount
   useEffect(() => {
-    const credits = getRecentCredits(7);
+    const credits = getRecentCredits(50);
     setAllCredits(credits);
   }, []);
 

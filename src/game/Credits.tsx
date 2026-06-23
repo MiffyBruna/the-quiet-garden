@@ -154,10 +154,10 @@ export function Credits({ credits, onCreditsFinished }: CreditsProps) {
       {/* Header */}
       <div style={{ padding: theme.spacing.lg, textAlign: 'center', color: '#fff', zIndex: 10 }}>
         <div style={{ fontSize: 32, fontWeight: 'bold', marginBottom: theme.spacing.md }}>
-          ✨ Credits ✨
+          ✨ Recent Contributors ✨
         </div>
         <div style={{ fontSize: 14, opacity: 0.8, marginBottom: theme.spacing.md }}>
-          {credits.length} gardeners helped grow this valley
+          {credits.length} gardeners shaping this valley
         </div>
 
         {/* Speed control */}

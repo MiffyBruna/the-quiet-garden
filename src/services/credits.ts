@@ -45,16 +45,11 @@ export function addCredit(name: string): Credit {
 }
 
 /**
- * Get only recent credits (added in the last 7 days)
+ * Get only recent credits (most recent N names)
  */
-export function getRecentCredits(days: number = 7): Credit[] {
-  const now = new Date();
-  const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-
-  return loadCredits().filter((credit) => {
-    const creditDate = new Date(credit.date);
-    return creditDate >= cutoff;
-  });
+export function getRecentCredits(count: number = 50): Credit[] {
+  const allCredits = loadCredits();
+  return allCredits.slice(-count).reverse();
 }
 
 /**
