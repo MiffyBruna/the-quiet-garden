@@ -13,6 +13,9 @@ export type { Credit };
 
 // Telemetry: Record when credits are accessed
 RundotGameAPI.analytics.recordCustomEvent('credits_opened');
+RundotGameAPI.analytics.recordCustomEvent('credits_character_images_displayed', {
+  images: ['moss-acacia', 'acacia-fairies', 'green-thumb']
+});
 
 interface CreditsProps {
   credits: Credit[];
@@ -26,6 +29,9 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
   const [scrollSpeed, setScrollSpeed] = useState(20); // pixels per second
   const [finished, setFinished] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string>('');
+  const [mossAcaciaUrl, setMossAcaciaUrl] = useState<string>('');
+  const [acaciaFairiesUrl, setAcaciaFairiesUrl] = useState<string>('');
+  const [greenThumbUrl, setGreenThumbUrl] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
@@ -41,15 +47,30 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
     opacity: Math.random() * 0.6 + 0.2,
   }));
 
-  // Load logo from CDN
+  // Load assets from CDN
   useEffect(() => {
     (async () => {
       try {
-        const blob = await RundotGameAPI.cdn.fetchAsset('logo.png');
-        const url = URL.createObjectURL(blob);
-        setLogoUrl(url);
+        const [logoBlobProm, mossAcaciaBlobProm, acaciaFairiesBlobProm, greenThumbBlobProm] = [
+          RundotGameAPI.cdn.fetchAsset('logo.png'),
+          RundotGameAPI.cdn.fetchAsset('moss-acacia.png'),
+          RundotGameAPI.cdn.fetchAsset('acacia-fairies.png'),
+          RundotGameAPI.cdn.fetchAsset('green-thumb.png'),
+        ];
+
+        const [logoBlob, mossAcaciaBlob, acaciaFairiesBlob, greenThumbBlob] = await Promise.all([
+          logoBlobProm,
+          mossAcaciaBlobProm,
+          acaciaFairiesBlobProm,
+          greenThumbBlobProm,
+        ]);
+
+        setLogoUrl(URL.createObjectURL(logoBlob));
+        setMossAcaciaUrl(URL.createObjectURL(mossAcaciaBlob));
+        setAcaciaFairiesUrl(URL.createObjectURL(acaciaFairiesBlob));
+        setGreenThumbUrl(URL.createObjectURL(greenThumbBlob));
       } catch (error) {
-        console.warn('Failed to load logo:', error);
+        console.warn('Failed to load assets:', error);
       }
     })();
   }, []);
@@ -309,12 +330,34 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
             </div>
           </div>
 
+          {/* Character Image 1 */}
+          {mossAcaciaUrl && (
+            <div style={{ textAlign: 'center', paddingBottom: theme.spacing.xl }}>
+              <img
+                src={mossAcaciaUrl}
+                alt="Moss & Acacia"
+                style={{ maxWidth: '280px', height: 'auto' }}
+              />
+            </div>
+          )}
+
           {/* Player Contributors Header */}
           <div style={{ textAlign: 'center', color: '#fff', marginBottom: theme.spacing.lg }}>
             <div style={{ fontSize: 16, fontWeight: 'bold', color: '#A8E6A8' }}>
               Recent Contributors
             </div>
           </div>
+
+          {/* Character Image 2 */}
+          {acaciaFairiesUrl && (
+            <div style={{ textAlign: 'center', paddingBottom: theme.spacing.xl }}>
+              <img
+                src={acaciaFairiesUrl}
+                alt="Acacia & the Fairies"
+                style={{ maxWidth: '280px', height: 'auto' }}
+              />
+            </div>
+          )}
 
           {/* Credits list */}
           {credits.map((credit, idx) => (
@@ -332,6 +375,17 @@ export function Credits({ credits, onCreditsFinished, onClose }: CreditsProps) {
               </div>
             </div>
           ))}
+
+          {/* Character Image 3 */}
+          {greenThumbUrl && (
+            <div style={{ textAlign: 'center', paddingBottom: theme.spacing.xl }}>
+              <img
+                src={greenThumbUrl}
+                alt="Green Thumb"
+                style={{ maxWidth: '280px', height: 'auto' }}
+              />
+            </div>
+          )}
 
           {/* End message */}
           <div style={{ textAlign: 'center', color: '#fff', paddingTop: theme.spacing.xl }}>
