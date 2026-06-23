@@ -1496,7 +1496,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   const triggerCompletionEvent = useCallback(() => {
     const gs = gsRef.current;
     track('custom_restoration_complete');
-    RundotGameAPI.analytics.recordCustomEvent('restoration_complete', { valley: gs.chapter });
+    RundotGameAPI.analytics.recordCustomEvent('restoration_complete');
 
     // Valley completion — pan from bund → center map → seed area
     const waypoints: Array<{ px: number; py: number }> = [
@@ -2434,7 +2434,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
       // Intro animation: detect when dialogue finishes and trigger Moss walk
       const currentUI = uiRef.current;
       const dialogueNowShowing = currentUI.dialogue !== null;
-      if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState && !gs.introAnimationCompleted && gs.chapter === 'dryland') {
+      if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && !gs.introAnimationState && !gs.introAnimationCompleted) {
         // Dialogue just finished — start the animation (play if not yet completed, even if interrupted)
         // Both player and Moss walk toward each other, meet, then walk back
         gs.introAnimationState = {
@@ -2448,7 +2448,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
         };
         track('custom_cinematic_intro_animation', {});
         RundotGameAPI.analytics.recordCustomEvent('custom_cinematic_intro_animation', {});
-      } else if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && gs.introAnimationCompleted && !gs.introAnimationState && gs.chapter === 'dryland') {
+      } else if (introDialogueWasShownRef.current && !dialogueNowShowing && gs.questStep === 'intro' && gs.introAnimationCompleted && !gs.introAnimationState) {
         // Animation was already completed in a previous playthrough — show thank you and auto-advance
         const thankYouDialogue: DialogueLine[] = [
           {
@@ -2554,15 +2554,13 @@ export function GameScene({ onShowWatershed, isContinue }: {
           gs.playerDestTY = gs.introAnimationState.playerOriginalTY;
           gs.introAnimationState = null;
 
-          // Mark animation as completed in game state (only for Chapter 1 dryland)
-          if (gs.chapter === 'dryland') {
-            gs.introAnimationCompleted = true;
+          // Mark animation as completed in game state
+          gs.introAnimationCompleted = true;
 
-            // Advance to next quest step using the proper function
-            advanceQuest('inspect_soil');
+          // Advance to next quest step using the proper function
+          advanceQuest('inspect_soil');
 
-            RundotGameAPI.analytics.recordCustomEvent('intro_animation_completed', {});
-          }
+          RundotGameAPI.analytics.recordCustomEvent('intro_animation_completed', {});
         }
       }
 

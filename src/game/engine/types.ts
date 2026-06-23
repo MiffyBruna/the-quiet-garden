@@ -25,7 +25,7 @@ export type TerrainType =
   | 'water' // permanent water feature — ponds, seasonal pools
   | 'soil'; // custom soil tile layer
 
-export type PlantType = 'blue_grama' | 'desert_marigold' | 'lupine' | 'sage' | 'milkweed' | 'mesquite' | 'camas' | 'violet' | 'yarrow' | 'bee_balm' | 'goldenrod' | 'aster';
+export type PlantType = 'blue_grama' | 'desert_marigold' | 'lupine' | 'sage' | 'milkweed' | 'mesquite';
 export type PlantStage = 0 | 1 | 2 | 3 | 4; // seed → sprout → young → mature → blooming
 
 export interface PlantState {
@@ -126,9 +126,6 @@ export interface DialogueLine {
 // ---------------------------------------------------------------------------
 
 export interface GameState {
-  // Chapter tracking
-  chapter: 'dryland' | 'meadow';  // Which chapter is being played
-
   // World
   tiles: Tile[][];   // [y][x]
 
@@ -167,13 +164,6 @@ export interface GameState {
   inspectedCount: number; // for inspect_soil step
   bundPlaced: boolean;
   rainsCount: number;     // times player has called rain
-
-  // Chapter 2 quest tracking
-  chapter2EarlyFlowerPlanted: boolean;   // Has player planted any early bloom flower?
-  chapter2MidFlowerPlanted: boolean;     // Has player planted any mid-season flower?
-  chapter2LateFlowerPlanted: boolean;    // Has player planted any late-season flower?
-  chapter2ClustersFound: number;         // Count of valid clusters discovered
-  chapter2HummingbirdSeen: boolean;      // Has hummingbird been spotted?
 
   // Highlight tiles (for objectives)
   highlightTiles: Array<{ x: number; y: number }>;

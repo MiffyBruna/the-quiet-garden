@@ -12,9 +12,6 @@ import {
   generateChapter1Map,
   PLAYER_START_TX, PLAYER_START_TY,
   MOSS_START_TX, MOSS_START_TY,
-  generateChapter2Map,
-  CHAPTER2_PLAYER_START_TX, CHAPTER2_PLAYER_START_TY,
-  CHAPTER2_CLOVER_START_TX, CHAPTER2_CLOVER_START_TY,
   MESQUITE_OFFSETS,
 } from './mapGen';
 
@@ -37,8 +34,9 @@ export function getMissingPlants(gs: GameState): string[] {
     }
   }
 
-  const allPlantIds = PLANTS.map(p => p.id);
-  const missing = allPlantIds.filter(id => !plantedTypes.has(id));
+  // Only check for Chapter 1 plants (hardcoded to avoid depending on PLANTS array)
+  const chapter1Plants = ['blue_grama', 'desert_marigold', 'lupine', 'sage', 'milkweed', 'mesquite'];
+  const missing = chapter1Plants.filter(id => !plantedTypes.has(id));
   return missing;
 }
 
@@ -229,7 +227,6 @@ function getMoistureCap(restoration: number): number {
 export function createInitialGameState(): GameState {
   const tiles = generateChapter1Map();
   return {
-    chapter: 'dryland',
     tiles,
 
     playerTX: PLAYER_START_TX,
@@ -262,12 +259,6 @@ export function createInitialGameState(): GameState {
     bundPlaced: false,
     rainsCount: 0,
 
-    chapter2EarlyFlowerPlanted: false,
-    chapter2MidFlowerPlanted: false,
-    chapter2LateFlowerPlanted: false,
-    chapter2ClustersFound: 0,
-    chapter2HummingbirdSeen: false,
-
     highlightTiles: [],
 
     discoveredWildlife: [],
@@ -291,211 +282,6 @@ export function createInitialGameState(): GameState {
     introAnimationCompleted: false,
     playerPath: [],
   };
-}
-
-export function createChapter2InitialState(): GameState {
-  const tiles = generateChapter2Map();
-  return {
-    chapter: 'meadow',
-    tiles,
-
-    playerTX: CHAPTER2_PLAYER_START_TX,
-    playerTY: CHAPTER2_PLAYER_START_TY,
-    playerPX: CHAPTER2_PLAYER_START_TX * TILE_SIZE,
-    playerPY: CHAPTER2_PLAYER_START_TY * TILE_SIZE,
-    playerDestTX: CHAPTER2_PLAYER_START_TX,
-    playerDestTY: CHAPTER2_PLAYER_START_TY,
-    playerFacing: 's',
-
-    entities: [],
-    fairies: [],
-    fairySpawnCooldown: 0,
-    lastWildlifeSpawnTick: 0,
-
-    mossTX: CHAPTER2_CLOVER_START_TX,
-    mossTY: CHAPTER2_CLOVER_START_TY,
-
-    isRaining: false,
-    rainTimer: 0,
-    rainDrops: [],
-    lastRestorationBeforeRain: 0,
-
-    tick: 0,
-    lastPhysicsTick: 0,
-    lastGrowthTick: 0,
-
-    questStep: 'intro',
-    inspectedCount: 0,
-    bundPlaced: false,
-    rainsCount: 0,
-
-    chapter2EarlyFlowerPlanted: false,
-    chapter2MidFlowerPlanted: false,
-    chapter2LateFlowerPlanted: false,
-    chapter2ClustersFound: 0,
-    chapter2HummingbirdSeen: false,
-
-    highlightTiles: [],
-
-    discoveredWildlife: [],
-    discoveredFairies: [],
-    discoveredPlants: [],
-    discoveredGuideNotes: [],
-
-    bundCenterTX: 15,
-    bundCenterTY: 15,
-    seedSpots: [],
-    firstBundActivated: false,
-    restorationMilestonesSeen: [],
-    completionTriggered: false,
-    workingBundCount: 0,
-    firstWiltSeen: false,
-    grassSpreadingStarted: false,
-    bundRemovalPenalty: 0,
-    maxRestorationAchieved: 0,
-    cinematicCam: null,
-    introAnimationState: null,
-    introAnimationCompleted: false,
-    playerPath: [],
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Flower Cluster Detection (Chapter 2)
-// ---------------------------------------------------------------------------
-
-interface FlowerCluster {
-  tiles: Array<{ x: number; y: number }>;
-  hasEarlyBloom: boolean;
-  hasMidBloom: boolean;
-  hasLateBloom: boolean;
-  isValid: boolean;
-}
-
-const EARLY_BLOOMS = ['camas', 'violet'];
-const MID_BLOOMS = ['yarrow', 'bee_balm'];
-const LATE_BLOOMS = ['goldenrod', 'aster'];
-
-export function getFlowerClusters(tiles: Tile[][]): FlowerCluster[] {
-  const clusters: FlowerCluster[] = [];
-  const visited = new Set<string>();
-
-  for (let y = 0; y < MAP_H; y++) {
-    for (let x = 0; x < MAP_W; x++) {
-      const key = `${x},${y}`;
-      if (visited.has(key)) continue;
-
-      const tile = getTile(tiles, x, y);
-      if (!tile?.plant) continue;
-
-      // Start a new cluster from this flower
-      const clusterTiles = floodFillFlowers(tiles, x, y, visited);
-      if (clusterTiles.length >= 3) {
-        // Valid cluster has 3+ flowers
-        let hasEarlyBloom = false;
-        let hasMidBloom = false;
-        let hasLateBloom = false;
-
-        for (const { x: cx, y: cy } of clusterTiles) {
-          const t = getTile(tiles, cx, cy);
-          if (t?.plant) {
-            const type = t.plant.type;
-            if (EARLY_BLOOMS.includes(type)) hasEarlyBloom = true;
-            if (MID_BLOOMS.includes(type)) hasMidBloom = true;
-            if (LATE_BLOOMS.includes(type)) hasLateBloom = true;
-          }
-        }
-
-        clusters.push({
-          tiles: clusterTiles,
-          hasEarlyBloom,
-          hasMidBloom,
-          hasLateBloom,
-          isValid: hasEarlyBloom && hasMidBloom && hasLateBloom,
-        });
-      }
-    }
-  }
-
-  return clusters;
-}
-
-function floodFillFlowers(tiles: Tile[][], startX: number, startY: number, visited: Set<string>): Array<{ x: number; y: number }> {
-  const cluster: Array<{ x: number; y: number }> = [];
-  const queue: Array<{ x: number; y: number }> = [{ x: startX, y: startY }];
-
-  while (queue.length > 0) {
-    const { x, y } = queue.shift()!;
-    const key = `${x},${y}`;
-
-    if (visited.has(key)) continue;
-    visited.add(key);
-
-    const tile = getTile(tiles, x, y);
-    if (!tile?.plant) continue;
-
-    // Only include meadow flowers
-    if (![...EARLY_BLOOMS, ...MID_BLOOMS, ...LATE_BLOOMS].includes(tile.plant.type)) continue;
-
-    cluster.push({ x, y });
-
-    // Add neighbors (4-directional)
-    const neighbors = [
-      { x: x - 1, y },
-      { x: x + 1, y },
-      { x, y: y - 1 },
-      { x, y: y + 1 },
-    ];
-
-    for (const { x: nx, y: ny } of neighbors) {
-      const nkey = `${nx},${ny}`;
-      if (!visited.has(nkey) && inBounds(nx, ny)) {
-        queue.push({ x: nx, y: ny });
-      }
-    }
-  }
-
-  return cluster;
-}
-
-/**
- * Check Chapter 2 quest progression and return the next quest step if applicable.
- * Returns null if no progression should happen.
- */
-export function checkChapter2QuestProgression(gs: GameState): QuestStep | null {
-  const currentStep = gs.questStep;
-
-  // Move from intro to listen_quiet once the opening dialogue completes
-  // This will be triggered by GameScene when the CLOVER_OPENING_DIALOGUE finishes
-  // (handled in GameScene when dialogue queue is empty after intro)
-
-  // listen_quiet -> early_flowers: when player plants first early bloom flower
-  if (currentStep === 'listen_quiet' && gs.chapter2EarlyFlowerPlanted) {
-    return 'early_flowers';
-  }
-
-  // early_flowers -> mid_flowers: when player plants first mid-season flower
-  if (currentStep === 'early_flowers' && gs.chapter2MidFlowerPlanted) {
-    return 'mid_flowers';
-  }
-
-  // mid_flowers -> late_flowers: when player plants first late-season flower
-  if (currentStep === 'mid_flowers' && gs.chapter2LateFlowerPlanted) {
-    return 'late_flowers';
-  }
-
-  // late_flowers -> flower_clusters: when player creates first valid flower cluster
-  if (currentStep === 'late_flowers' && gs.chapter2ClustersFound > 0) {
-    return 'flower_clusters';
-  }
-
-  // flower_clusters -> free_play: when player creates clusters with all bloom times
-  // (This is handled elsewhere when restoration reaches certain thresholds)
-  if (currentStep === 'flower_clusters' && gs.chapter2ClustersFound >= 3) {
-    return 'free_play';
-  }
-
-  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -665,8 +451,6 @@ export function applyLandscape(
 ): { action: 'picked' | 'placed' | 'none'; entity: { type: 'plant' | 'animal' | 'fairy' | 'mulch' | 'grass' | 'rock'; data: any; sourceTX?: number; sourceTY?: number; sourceTerrainBefore?: TerrainType } | null } {
   const tile = getTile(gs.tiles, tx, ty);
   if (!tile) return { action: 'none', entity: null };
-
-  const TILE_SIZE = 16;
 
   // If holding an entity, try to place it
   if (heldEntity) {
@@ -906,17 +690,6 @@ export function applyPlantSeed(
     gs.discoveredPlants.push(plantType);
   }
 
-  // Chapter 2 quest tracking: update plant bloom timing tracking
-  if (EARLY_BLOOMS.includes(plantType)) {
-    gs.chapter2EarlyFlowerPlanted = true;
-  }
-  if (MID_BLOOMS.includes(plantType)) {
-    gs.chapter2MidFlowerPlanted = true;
-  }
-  if (LATE_BLOOMS.includes(plantType)) {
-    gs.chapter2LateFlowerPlanted = true;
-  }
-
   return { planted: true, reason: '' };
 }
 
@@ -1075,56 +848,6 @@ export const PLANT_REQUIREMENTS: Record<PlantType, {
     role: 'Desert canopy tree',
     attractsWildlife: ['bee', 'hawk', 'rabbit'],
     growthRate: 0.35, // trees grow slowly — about 3× longer per stage than herbs
-  },
-
-  // Chapter 2: Meadow flowers
-  camas: {
-    name: 'Camas',
-    emoji: ['🌑', '🌱', '🌿', '💙', '💙'],
-    moisture: 30,
-    fertility: 20,
-    role: 'Early bloomer for spring pollinators',
-    attractsWildlife: ['mason_bee'],
-  },
-  violet: {
-    name: 'Violet',
-    emoji: ['🌑', '🌱', '🌿', '💜', '💜'],
-    moisture: 28,
-    fertility: 18,
-    role: 'Early understory flower',
-    attractsWildlife: ['mason_bee', 'hoverfly'],
-  },
-  yarrow: {
-    name: 'Yarrow',
-    emoji: ['🌑', '🌱', '🌿', '🌻', '🌻'],
-    moisture: 25,
-    fertility: 22,
-    role: 'Mid-season favorite of many pollinators',
-    attractsWildlife: ['bumblebee', 'hoverfly'],
-  },
-  bee_balm: {
-    name: 'Bee Balm',
-    emoji: ['🌑', '🌱', '🌿', '🔴', '🔴'],
-    moisture: 35,
-    fertility: 25,
-    role: 'Vibrant mid-season pollinator magnet',
-    attractsWildlife: ['bumblebee', 'hummingbird'],
-  },
-  goldenrod: {
-    name: 'Goldenrod',
-    emoji: ['🌑', '🌱', '🌿', '💛', '💛'],
-    moisture: 28,
-    fertility: 20,
-    role: 'Late-season food for tired wings',
-    attractsWildlife: ['painted_lady', 'bumblebee'],
-  },
-  aster: {
-    name: 'Aster',
-    emoji: ['🌑', '🌱', '🌿', '💗', '💗'],
-    moisture: 26,
-    fertility: 19,
-    role: 'Late bloomer for autumn pollinators',
-    attractsWildlife: ['painted_lady', 'bumblebee'],
   },
 };
 
@@ -1573,28 +1296,6 @@ export const WILDLIFE_CONDITIONS: WildlifeCondition[] = [
     check: (_, s) => s.restoration >= 80,
     wisdom: 'The hawk watches over everything. Its presence means the web is complete.',
   },
-
-  // Chapter 2: Meadow pollinators
-  {
-    type: 'mason_bee', emoji: '🐝',
-    check: (gs) => gs.discoveredPlants.includes('camas') || gs.discoveredPlants.includes('violet'),
-    wisdom: 'Mason bees do not make a fuss. They simply arrive, work hard, and never complain.',
-  },
-  {
-    type: 'bumblebee', emoji: '🐝',
-    check: (gs) => gs.discoveredPlants.includes('yarrow') || gs.discoveredPlants.includes('bee_balm'),
-    wisdom: 'Bumblebees are the gentle giants of the meadow. They hum songs of abundance.',
-  },
-  {
-    type: 'painted_lady', emoji: '🦋',
-    check: (gs) => gs.discoveredPlants.includes('goldenrod') || gs.discoveredPlants.includes('aster'),
-    wisdom: 'Painted Ladies journey across continents on fragile wings, proving that beauty is also resilience.',
-  },
-  {
-    type: 'hummingbird', emoji: '🌺',
-    check: (gs, s) => gs.discoveredPlants.includes('bee_balm') && s.restoration >= 60,
-    wisdom: 'Hummingbirds are flying punctuation marks—tiny exclamation points with wings.',
-  },
   {
     type: 'swallow', emoji: '🦅',
     check: (_, s) => s.bloomCount >= 5 && s.restoration >= 85,
@@ -1868,20 +1569,16 @@ export function spawnFairies(gs: GameState, restoration: number): void {
   // This ensures all eligible fairies appear when restoration reaches their milestone
   for (const milestone of FAIRY_MILESTONES) {
     if (gs.discoveredFairies.includes(milestone.id)) {
-      console.log(`  - ${milestone.id} already discovered`);
       continue;
     }
     if (restoration < milestone.percent) {
-      console.log(`  - ${milestone.id} requires ${milestone.percent}%, not ready (${restoration}%)`);
       continue;
     }
 
     if (gs.fairies.length >= 5) {
-      console.log(`  ⚠️  Max 5 fairies reached, skipping ${milestone.id}`);
       break;
     }
 
-    console.log(`  ✅ Spawning ${milestone.id} at ${restoration}%`);
     const [prefX, prefY] = milestone.preferredTile(gs);
     const [fx, fy] = findFairySafeTile(gs, prefX, prefY);
 
@@ -1949,8 +1646,8 @@ export function calculateRestoration(gs: GameState): number {
       const tile = getTile(gs.tiles, x, y);
       if (!tile || tile.terrain === 'rock' || tile.terrain === 'water') continue;
 
-      // Only count tiles that are actual soil (cracked, moist, bund, mulch, grass)
-      const isSoilTile = ['cracked_soil', 'moist_soil', 'bund', 'mulch', 'grass'].includes(tile.terrain);
+      // Only count tiles that are actual soil (cracked, dry, moist, bund, mulch, grass)
+      const isSoilTile = ['cracked_soil', 'dry_soil', 'moist_soil', 'bund', 'mulch', 'grass'].includes(tile.terrain);
       if (!isSoilTile) continue;
 
       soilTileCount++;
@@ -2401,62 +2098,49 @@ export function updateGame(
 
     // Check ecological milestones — every 5% plus tipping points (only in free_play)
     if (onMilestone && gs.questStep === 'free_play') {
-      // Chapter 2 uses different milestone points and speakers
-      if (gs.chapter === 'meadow') {
-        const milestonePoints = [10, 25, 40, 55, 70, 85, 93] as const;
-        for (const pct of milestonePoints) {
-          if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
-            gs.restorationMilestonesSeen.push(pct);
-            const lines = CLOVER_MILESTONE_DIALOGUES[pct];
-            if (lines) onMilestone(pct, lines);
-            break; // Queue one at a time so lines don't pile up
-          }
-        }
-      } else {
-        // Chapter 1: Moss milestones (less frequent for a more natural feel)
-        const milestonePoints = [10, 15, 20, 30, 40, 50, 60, 70, 80, 85, 90, 95] as const;
-        for (const pct of milestonePoints) {
-          if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
-            gs.restorationMilestonesSeen.push(pct);
+      // Moss milestones (less frequent for a more natural feel)
+      const milestonePoints = [10, 15, 20, 30, 40, 50, 60, 70, 80, 85, 90, 95] as const;
+      for (const pct of milestonePoints) {
+        if (restoration >= pct && !gs.restorationMilestonesSeen.includes(pct)) {
+          gs.restorationMilestonesSeen.push(pct);
 
-            // Special handling for 85% milestone: check for missing plants and wildlife
-            if (pct === 85) {
-              const missingPlants = getMissingPlants(gs);
-              const missingWildlife = getMissingWildlife(gs);
+          // Special handling for 85% milestone: check for missing plants and wildlife
+          if (pct === 85) {
+            const missingPlants = getMissingPlants(gs);
+            const missingWildlife = getMissingWildlife(gs);
 
-              if (missingPlants.length > 0 || missingWildlife.length > 0) {
-                let missingText = 'The valley is almost whole. But it is missing voices: ';
-                const missingItems: string[] = [];
+            if (missingPlants.length > 0 || missingWildlife.length > 0) {
+              let missingText = 'The valley is almost whole. But it is missing voices: ';
+              const missingItems: string[] = [];
 
-                if (missingPlants.length > 0) {
-                  const plantNames = missingPlants.map(id => {
-                    const plant = PLANTS.find(p => p.id === id);
-                    return plant?.name || id;
-                  });
-                  missingItems.push(...plantNames);
-                }
-
-                if (missingWildlife.length > 0) {
-                  missingItems.push(...missingWildlife);
-                }
-
-                missingText += missingItems.join(', ') + '. ';
-                missingText += 'Plant and nurture these and the land will be complete.';
-
-                const line: DialogueLine = {
-                  speaker: 'Moss',
-                  emoji: '🐸',
-                  text: missingText,
-                };
-                onMilestone(pct, [line]);
-                break;
+              if (missingPlants.length > 0) {
+                const plantNames = missingPlants.map(id => {
+                  const plant = PLANTS.find(p => p.id === id);
+                  return plant?.name || id;
+                });
+                missingItems.push(...plantNames);
               }
-            }
 
-            const line = MOSS_MILESTONE_DIALOGUES[pct];
-            if (line) onMilestone(pct, [line]);  // Wrap in array for consistency
-            break; // Queue one at a time so lines don't pile up
+              if (missingWildlife.length > 0) {
+                missingItems.push(...missingWildlife);
+              }
+
+              missingText += missingItems.join(', ') + '. ';
+              missingText += 'Plant and nurture these and the land will be complete.';
+
+              const line: DialogueLine = {
+                speaker: 'Moss',
+                emoji: '🐸',
+                text: missingText,
+              };
+              onMilestone(pct, [line]);
+              break;
+            }
           }
+
+          const line = MOSS_MILESTONE_DIALOGUES[pct];
+          if (line) onMilestone(pct, [line]);  // Wrap in array for consistency
+          break; // Queue one at a time so lines don't pile up
         }
       }
     }
@@ -2537,9 +2221,6 @@ export function deserializeDiscoveries(gs: GameState, json: string): void {
  */
 export function serializeGameState(gs: GameState): string {
   return JSON.stringify({
-    // Chapter tracking
-    chapter: gs.chapter,
-
     // Player & world state
     playerTX: gs.playerTX,
     playerTY: gs.playerTY,
@@ -2608,11 +2289,8 @@ export function serializeGameState(gs: GameState): string {
 export function deserializeGameState(json: string): GameState | null {
   try {
     const data = JSON.parse(json);
-    // Determine which initial state to use based on saved chapter
-    const gs = (data.chapter === 'meadow') ? createChapter2InitialState() : createInitialGameState();
-
-    // Restore chapter (should match what was just set above, but restore for completeness)
-    if (data.chapter) gs.chapter = data.chapter;
+    // Always use single-chapter initial state
+    const gs = createInitialGameState();
 
     // Restore player & world state
     gs.playerTX = data.playerTX ?? gs.playerTX;
@@ -2651,7 +2329,6 @@ export function deserializeGameState(json: string): GameState | null {
       // Only keep wildlife that actually exist in the current game
       const validWildlifeIds = new Set(ZONES.flatMap((z) => z.wildlife.map((w) => w.id)));
       gs.discoveredWildlife = data.discoveredWildlife.filter((w: string) => validWildlifeIds.has(w));
-      console.log('[GameEngine] Filtered wildlife:', data.discoveredWildlife, '=>', gs.discoveredWildlife);
     }
     if (Array.isArray(data.discoveredFairies)) {
       // Migrate old fairy names (first_fairy, second_fairy, etc.) to new ones (sprig, nima, etc.)
@@ -2666,13 +2343,11 @@ export function deserializeGameState(json: string): GameState | null {
       // Only keep fairies that actually exist in the current game
       const validFairyIds = new Set(ZONES.flatMap((z) => z.fairies.map((f) => f.id)));
       gs.discoveredFairies = migratedFairies.filter((f: string) => validFairyIds.has(f));
-      console.log('[GameEngine] Filtered fairies:', migratedFairies, '=>', gs.discoveredFairies);
     }
     if (Array.isArray(data.discoveredPlants)) {
       // Only keep plants that actually exist in the current game
       const validPlantIds = new Set(PLANTS.map((p) => p.id));
       gs.discoveredPlants = data.discoveredPlants.filter((plant: string) => validPlantIds.has(plant));
-      console.log('[GameEngine] Filtered plants:', data.discoveredPlants, '=>', gs.discoveredPlants);
     }
     if (Array.isArray(data.discoveredGuideNotes)) gs.discoveredGuideNotes = data.discoveredGuideNotes;
 
@@ -2745,21 +2420,14 @@ export function deserializeGameState(json: string): GameState | null {
       }
     }
 
-    // Restore fairy positions from saved data, but keep correct types from Step 1
+    // Restore fairy positions from saved data by matching on type (not index)
     if (Array.isArray(data.fairies) && data.fairies.length > 0) {
-      console.log(`[fairy restore] Merging saved fairy data (count: ${data.fairies.length})`);
-      // Match saved fairies by index to the fairies created in Step 1
-      // Step 1 created them from discoveredFairies, so they have correct types
-      // We only want to restore their saved positions and glow phase
-      for (let idx = 0; idx < data.fairies.length && idx < gs.fairies.length; idx++) {
-        const savedFairy = data.fairies[idx];
-        const currentFairy = gs.fairies[idx];
-
-        if (savedFairy && currentFairy) {
-          console.log(`[fairy restore] Restoring position for fairy ${idx} (type: ${currentFairy.type})`);
-          currentFairy.px = savedFairy.px ?? currentFairy.px;
-          currentFairy.py = savedFairy.py ?? currentFairy.py;
-          currentFairy.glowPhase = savedFairy.glowPhase ?? currentFairy.glowPhase;
+      for (const savedFairy of data.fairies) {
+        const match = gs.fairies.find(f => f.type === savedFairy.type);
+        if (match) {
+          match.px = savedFairy.px ?? match.px;
+          match.py = savedFairy.py ?? match.py;
+          match.glowPhase = savedFairy.glowPhase ?? match.glowPhase;
         }
       }
     }
