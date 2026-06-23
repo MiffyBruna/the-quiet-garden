@@ -17,7 +17,7 @@ import { GameScene } from './GameScene';
 import { WatershedProgress } from './WatershedProgress';
 import { Credits, Credit } from './Credits';
 import { CreditsModal } from './CreditsModal';
-import { loadCredits, addCredit } from '../services/credits';
+import { addCredit, getRecentCredits } from '../services/credits';
 
 // ---------------------------------------------------------------------------
 // Module-scope lifecycle registration (runs once per page load)
@@ -68,9 +68,9 @@ export function QuietGarden() {
     hasMatureMesquite: false,
   });
 
-  // Load credits on mount
+  // Load recent credits (last 7 days) on mount
   useEffect(() => {
-    const credits = loadCredits();
+    const credits = getRecentCredits(7);
     setAllCredits(credits);
   }, []);
 

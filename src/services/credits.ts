@@ -45,6 +45,19 @@ export function addCredit(name: string): Credit {
 }
 
 /**
+ * Get only recent credits (added in the last 7 days)
+ */
+export function getRecentCredits(days: number = 7): Credit[] {
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+  return loadCredits().filter((credit) => {
+    const creditDate = new Date(credit.date);
+    return creditDate >= cutoff;
+  });
+}
+
+/**
  * Clear all credits (for testing/dev)
  */
 export function clearCredits(): void {
