@@ -2274,6 +2274,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
   // Mobile Joystick Handlers (virtual movement control)
   // ─────────────────────────────────────────────────────────────────
   const joystickStartRef = useRef<{ x: number; y: number } | null>(null);
+  const joystickLastMoveTimeRef = useRef<number>(0); // Track last movement time for throttling
 
   const handleJoystickStart = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -2308,6 +2309,15 @@ export function GameScene({ onShowWatershed, isContinue }: {
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance > 30) {
+        // Throttle movement to 200ms between steps to prevent too-fast walking
+        const now = Date.now();
+        if (now - joystickLastMoveTimeRef.current < 200) {
+          // Not enough time has passed, skip this movement
+          setJoystickOpacity(0.8);
+          return;
+        }
+        joystickLastMoveTimeRef.current = now;
+
         // Significant drag detected - move player in that direction
         const angle = Math.atan2(dy, dx);
         const directions = [
@@ -3637,11 +3647,16 @@ export function GameScene({ onShowWatershed, isContinue }: {
           borderTop: '1px solid rgba(124,202,124,0.25)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
           gap: 2,
           padding: '0 2px',
           overflowX: 'auto',
+          overflowY: 'hidden',
+          scrollBehavior: 'smooth',
           zIndex: 20,
+          // Visual hint: subtle right edge fade to indicate scrollable content
+          WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent)',
+          maskImage: 'linear-gradient(to right, black 85%, transparent)',
         }}
       >
         {TOOL_DEFS.filter((def) => ui.unlockedTools.includes(def.id)).map((def) => {
@@ -3827,6 +3842,7 @@ export function GameScene({ onShowWatershed, isContinue }: {
                 cursor: rainBlocked ? 'default' : 'pointer',
                 opacity: rainBlocked ? 0.4 : 1,
                 minWidth: 48,
+                flexShrink: 0,
                 // Glow effect for journal button with new discoveries
                 ...(def.id === 'journal' && ui.newlyDiscoveredSpecies.size > 0 && {
                   boxShadow: '0 0 12px rgba(124, 202, 124, 0.8), inset 0 0 12px rgba(124, 202, 124, 0.3)',

@@ -174,14 +174,17 @@ export function playRain(): void {
     rainAudioInstance = null;
   }
 
-  try {
-    rainAudioInstance = new Audio('/rain.wav');
-    rainAudioInstance.loop = true;
-    rainAudioInstance.volume = (currentSettings.sfxVolume / 100) * 0.6; // Slightly quieter than other SFX
-    playAudioWithUnlock(rainAudioInstance, 'rain sound');
-  } catch (e) {
-    console.warn('Failed to load rain sound:', e);
-  }
+  (async () => {
+    try {
+      const audioUrl = await loadCdnAsset('rain.wav');
+      rainAudioInstance = new Audio(audioUrl);
+      rainAudioInstance.loop = true;
+      rainAudioInstance.volume = (currentSettings.sfxVolume / 100) * 0.6; // Slightly quieter than other SFX
+      playAudioWithUnlock(rainAudioInstance, 'rain sound');
+    } catch (e) {
+      console.warn('Failed to load rain sound:', e);
+    }
+  })();
 }
 
 /**
@@ -209,14 +212,17 @@ export function playMulch(): void {
     mulchAudioInstance = null;
   }
 
-  try {
-    mulchAudioInstance = new Audio('/mulch.ogg');
-    mulchAudioInstance.loop = false;
-    mulchAudioInstance.volume = currentSettings.sfxVolume / 100;
-    playAudioWithUnlock(mulchAudioInstance, 'mulch sound');
-  } catch (e) {
-    console.warn('Failed to load mulch sound:', e);
-  }
+  (async () => {
+    try {
+      const audioUrl = await loadCdnAsset('mulch.ogg');
+      mulchAudioInstance = new Audio(audioUrl);
+      mulchAudioInstance.loop = false;
+      mulchAudioInstance.volume = currentSettings.sfxVolume / 100;
+      playAudioWithUnlock(mulchAudioInstance, 'mulch sound');
+    } catch (e) {
+      console.warn('Failed to load mulch sound:', e);
+    }
+  })();
 }
 
 let destroyAudioInstance: HTMLAudioElement | null = null;
@@ -233,14 +239,17 @@ export function playDestroy(): void {
     destroyAudioInstance = null;
   }
 
-  try {
-    destroyAudioInstance = new Audio('/destroy.ogg');
-    destroyAudioInstance.loop = false;
-    destroyAudioInstance.volume = currentSettings.sfxVolume / 100;
-    playAudioWithUnlock(destroyAudioInstance, 'destroy sound');
-  } catch (e) {
-    console.warn('Failed to load destroy sound:', e);
-  }
+  (async () => {
+    try {
+      const audioUrl = await loadCdnAsset('destroy.ogg');
+      destroyAudioInstance = new Audio(audioUrl);
+      destroyAudioInstance.loop = false;
+      destroyAudioInstance.volume = currentSettings.sfxVolume / 100;
+      playAudioWithUnlock(destroyAudioInstance, 'destroy sound');
+    } catch (e) {
+      console.warn('Failed to load destroy sound:', e);
+    }
+  })();
 }
 
 let moveAudioInstance: HTMLAudioElement | null = null;
@@ -257,14 +266,17 @@ export function playMove(): void {
     moveAudioInstance = null;
   }
 
-  try {
-    moveAudioInstance = new Audio('/move.ogg');
-    moveAudioInstance.loop = false;
-    moveAudioInstance.volume = currentSettings.sfxVolume / 100;
-    playAudioWithUnlock(moveAudioInstance, 'move sound');
-  } catch (e) {
-    console.warn('Failed to load move sound:', e);
-  }
+  (async () => {
+    try {
+      const audioUrl = await loadCdnAsset('move.ogg');
+      moveAudioInstance = new Audio(audioUrl);
+      moveAudioInstance.loop = false;
+      moveAudioInstance.volume = currentSettings.sfxVolume / 100;
+      playAudioWithUnlock(moveAudioInstance, 'move sound');
+    } catch (e) {
+      console.warn('Failed to load move sound:', e);
+    }
+  })();
 }
 
 let waterAudioInstance: HTMLAudioElement | null = null;
@@ -281,14 +293,17 @@ export function playWater(): void {
     waterAudioInstance = null;
   }
 
-  try {
-    waterAudioInstance = new Audio('/water.ogg');
-    waterAudioInstance.loop = false;
-    waterAudioInstance.volume = currentSettings.sfxVolume / 100;
-    playAudioWithUnlock(waterAudioInstance, 'water sound');
-  } catch (e) {
-    console.warn('Failed to load water sound:', e);
-  }
+  (async () => {
+    try {
+      const audioUrl = await loadCdnAsset('water.ogg');
+      waterAudioInstance = new Audio(audioUrl);
+      waterAudioInstance.loop = false;
+      waterAudioInstance.volume = currentSettings.sfxVolume / 100;
+      playAudioWithUnlock(waterAudioInstance, 'water sound');
+    } catch (e) {
+      console.warn('Failed to load water sound:', e);
+    }
+  })();
 }
 
 let buttonAudioInstance: HTMLAudioElement | null = null;
@@ -305,14 +320,17 @@ export function playButton(): void {
     buttonAudioInstance = null;
   }
 
-  try {
-    buttonAudioInstance = new Audio('/button.ogg');
-    buttonAudioInstance.loop = false;
-    buttonAudioInstance.volume = currentSettings.sfxVolume / 100;
-    playAudioWithUnlock(buttonAudioInstance, 'button sound');
-  } catch (e) {
-    console.warn('Failed to load button sound:', e);
-  }
+  (async () => {
+    try {
+      const audioUrl = await loadCdnAsset('button.ogg');
+      buttonAudioInstance = new Audio(audioUrl);
+      buttonAudioInstance.loop = false;
+      buttonAudioInstance.volume = currentSettings.sfxVolume / 100;
+      playAudioWithUnlock(buttonAudioInstance, 'button sound');
+    } catch (e) {
+      console.warn('Failed to load button sound:', e);
+    }
+  })();
 }
 
 let menuSelectAudioInstance: HTMLAudioElement | null = null;
@@ -329,14 +347,17 @@ export function playMenuSelect(): void {
     menuSelectAudioInstance = null;
   }
 
-  try {
-    menuSelectAudioInstance = new Audio('/menu-select.ogg');
-    menuSelectAudioInstance.loop = false;
-    menuSelectAudioInstance.volume = currentSettings.sfxVolume / 100;
-    playAudioWithUnlock(menuSelectAudioInstance, 'menu select sound');
-  } catch (e) {
-    console.warn('Failed to load menu select sound:', e);
-  }
+  (async () => {
+    try {
+      const audioUrl = await loadCdnAsset('menu-select.ogg');
+      menuSelectAudioInstance = new Audio(audioUrl);
+      menuSelectAudioInstance.loop = false;
+      menuSelectAudioInstance.volume = currentSettings.sfxVolume / 100;
+      playAudioWithUnlock(menuSelectAudioInstance, 'menu select sound');
+    } catch (e) {
+      console.warn('Failed to load menu select sound:', e);
+    }
+  })();
 }
 
 let cancelAudioInstance: HTMLAudioElement | null = null;
@@ -353,14 +374,17 @@ export function playCancel(): void {
     cancelAudioInstance = null;
   }
 
-  try {
-    cancelAudioInstance = new Audio('/cancel.ogg');
-    cancelAudioInstance.loop = false;
-    cancelAudioInstance.volume = currentSettings.sfxVolume / 100;
-    playAudioWithUnlock(cancelAudioInstance, 'cancel sound');
-  } catch (e) {
-    console.warn('Failed to load cancel sound:', e);
-  }
+  (async () => {
+    try {
+      const audioUrl = await loadCdnAsset('cancel.ogg');
+      cancelAudioInstance = new Audio(audioUrl);
+      cancelAudioInstance.loop = false;
+      cancelAudioInstance.volume = currentSettings.sfxVolume / 100;
+      playAudioWithUnlock(cancelAudioInstance, 'cancel sound');
+    } catch (e) {
+      console.warn('Failed to load cancel sound:', e);
+    }
+  })();
 }
 
 // ─────────────────────────────────────────────────────────────────

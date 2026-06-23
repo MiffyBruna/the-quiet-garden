@@ -168,15 +168,16 @@ export async function playSFX(sfxType: SFXType, volume: number = 0.7): Promise<v
 
     let url: string | null = null;
 
-    // For footsteps, try to load user-uploaded footstep sounds first
+    // For footsteps, load from CDN assets
     if (sfxType === 'footstep') {
       try {
-        // Alternate between the two footstep sound variants
-        const filename = footstepVariant === 0 ? 'footstep00 (1).ogg' : 'footstep01 (1).ogg';
-        footstepVariant = 1 - footstepVariant; // Toggle between 0 and 1
-        // Try direct path first (uploaded files are in /uploads/)
-        url = `/uploads/${filename}`;
+        // Cycle through the five snow footstep variants (000-004)
+        const variant = footstepVariant % 5;
+        footstepVariant = (footstepVariant + 1) % 5;
+        const filename = `footstep_snow_${String(variant).padStart(3, '0')}.ogg`;
+        url = await loadCdnAsset(filename);
       } catch (e) {
+        console.debug(`Footstep audio not available, falling back to generated: ${e}`);
         url = null; // Fall back to generated audio
       }
     }
